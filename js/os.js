@@ -208,37 +208,6 @@ const OS = (() => {
     }
   }
 
-  /* ---- Window Cycling ---- */
-  function cycleFocusForward() {
-    const ids = Object.keys(windowMap);
-    if (ids.length === 0) return;
-    if (ids.length === 1) {
-      if (windowMap[ids[0]].el.classList.contains('minimized')) restoreWindow(ids[0]);
-      else focusWindow(ids[0]);
-      return;
-    }
-    const currentIdx = ids.findIndex(wid => isWindowFocused(wid));
-    const nextIdx = (currentIdx + 1) % ids.length;
-    const nextId = ids[nextIdx];
-    if (windowMap[nextId].el.classList.contains('minimized')) restoreWindow(nextId);
-    else focusWindow(nextId);
-  }
-
-  function cycleFocusBack() {
-    const ids = Object.keys(windowMap);
-    if (ids.length === 0) return;
-    if (ids.length === 1) {
-      if (windowMap[ids[0]].el.classList.contains('minimized')) restoreWindow(ids[0]);
-      else focusWindow(ids[0]);
-      return;
-    }
-    const currentIdx = ids.findIndex(wid => isWindowFocused(wid));
-    const prevIdx = (currentIdx - 1 + ids.length) % ids.length;
-    const prevId = ids[prevIdx];
-    if (windowMap[prevId].el.classList.contains('minimized')) restoreWindow(prevId);
-    else focusWindow(prevId);
-  }
-
   /* ---- Drag ---- */
   function makeDraggable(win, id) {
     const bar = win.querySelector('.win-titlebar');
@@ -434,15 +403,6 @@ const OS = (() => {
     const m = document.getElementById('os-ctx-menu');
     if (m) m.remove();
   }
-
-  /* ---- Keyboard shortcuts ---- */
-  document.addEventListener('keydown', e => {
-    if (e.altKey && e.key === 'Tab') {
-      e.preventDefault();
-      if (e.shiftKey) cycleFocusBack();
-      else cycleFocusForward();
-    }
-  });
 
   /* ---- Close app menu on outside click ---- */
   document.addEventListener('click', e => {
