@@ -1,6 +1,6 @@
 /* ===== KidsOS Core ===== */
 const OS = (() => {
-  const VERSION = '0.6.7';
+  const VERSION = '0.7.0';
   const UPDATE_URL = (typeof KIDSOS_CONFIG !== 'undefined' && KIDSOS_CONFIG.updateURL) || 'http://localhost:5555';
 
   let zCounter = 100;
@@ -47,6 +47,53 @@ const OS = (() => {
     }, 120);
 
     startClock();
+    initBackButton();
+  }
+
+  /* ---- Back Button Handling ---- */
+  function initBackButton() {
+    // Push initial state so we have something to go back from
+    history.replaceState({ kidsOS: true }, '');
+
+    let lastBackTime = 0;
+
+    window.addEventListener('popstate', (e) => {
+      // Always re-push state so back button keeps working
+      history.pushState({ kidsOS: true }, '');
+
+      // Close app menu if open
+      const menu = document.getElementById('app-menu');
+      if (menu && !menu.classList.contains('hidden')) {
+        menu.classList.add('hidden');
+        return;
+      }
+
+      // Close context menu if open
+      const ctx = document.querySelector('.context-menu');
+      if (ctx) {
+        removeContextMenu();
+        return;
+      }
+
+      // Close topmost focused window
+      if (focusHistory.length > 0) {
+        const topId = focusHistory[focusHistory.length - 1];
+        closeWindow(topId);
+        return;
+      }
+
+      // No windows open — on desktop, double-back exits
+      const isMobile = window.innerWidth <= 1024;
+      if (!isMobile) {
+        const now = Date.now();
+        if (now - lastBackTime < 1500) {
+          // Double back on desktop — allow exit
+          history.back();
+          return;
+        }
+        lastBackTime = now;
+      }
+    });
   }
 
   /* ---- Clock ---- */
