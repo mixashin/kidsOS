@@ -22,6 +22,12 @@ OS.registerApp('settings', {
            onclick="SettingsApp.selectWallpaper(${i}, this)"
            title="Wallpaper ${i+1}"></div>`).join('');
 
+    const accentSwatches = OS.ACCENT_COLORS.map(c => `
+      <div class="accent-option ${(s.accentColor || '#5b8cff') === c.hex ? 'active' : ''}"
+           style="background:${c.hex}" data-color="${c.hex}"
+           onclick="SettingsApp.setAccent('${c.hex}')"
+           title="${c.name}"></div>`).join('');
+
     const now = new Date();
     const timeStr = now.toTimeString().slice(0,5);
     const dateStr = now.toISOString().slice(0,10);
@@ -56,6 +62,21 @@ OS.registerApp('settings', {
           <label>Wallpaper</label>
           <div class="wallpaper-grid">${gradientPreviews}</div>
         </div>
+        <div class="settings-group">
+          <label>Theme</label>
+          <div class="theme-options">
+            <div class="theme-option ${s.theme !== 'dark' ? 'active' : ''}" onclick="SettingsApp.setTheme('light')">
+              <span>☀️</span> Light
+            </div>
+            <div class="theme-option ${s.theme === 'dark' ? 'active' : ''}" onclick="SettingsApp.setTheme('dark')">
+              <span>🌙</span> Dark
+            </div>
+          </div>
+        </div>
+        <div class="settings-group">
+          <label>Accent Color</label>
+          <div class="accent-options">${accentSwatches}</div>
+        </div>
       </div>
 
       <!-- Date & Time Panel -->
@@ -83,7 +104,7 @@ OS.registerApp('settings', {
                  placeholder="Enter your name" maxlength="20">
         </div>
         <button class="settings-btn" onclick="SettingsApp.saveUsername()">Save Username</button>
-        <div style="margin-top:20px;padding:12px;background:#f5f5f5;border-radius:8px">
+        <div style="margin-top:20px;padding:12px;background:var(--surface-bg);border-radius:8px">
           <strong>Current User:</strong> ${s.username || 'KidsUser'}
         </div>
       </div>
@@ -98,10 +119,10 @@ OS.registerApp('settings', {
         <div class="settings-group">
           <button class="settings-btn" onclick="SettingsApp.refreshStorage()">🔄 Refresh</button>
         </div>
-        <hr style="border:none;border-top:1px solid #ddd;margin:16px 0">
+        <hr style="border:none;border-top:1px solid var(--border-color);margin:16px 0">
         <div class="settings-group">
           <label style="color:#c00">Factory Reset</label>
-          <p style="font-size:13px;color:#666;margin-bottom:12px">
+          <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">
             This will erase <b>all</b> your saved data: files, settings, chat history, game scores, and Kidstagram data. This cannot be undone!
           </p>
           <button class="settings-btn settings-btn-danger" onclick="SettingsApp.factoryReset()">🗑️ Factory Reset</button>
@@ -112,19 +133,19 @@ OS.registerApp('settings', {
       <div class="settings-panel" id="panel-updates">
         <h2>🔄 Updates</h2>
         <div class="settings-group">
-          <p style="font-size:13px;color:#666;margin-bottom:12px">
+          <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">
             Check if a newer version of KidsOS is available. Requires an internet connection.
           </p>
-          <div id="update-status" style="padding:12px;background:#f5f5f5;border-radius:8px;font-size:13px;color:#555;margin-bottom:12px">
+          <div id="update-status" style="padding:12px;background:var(--surface-bg);border-radius:8px;font-size:13px;color:var(--text-secondary);margin-bottom:12px">
             Current version: v${OS.VERSION} — Not checked yet
           </div>
           <button class="settings-btn" id="update-check-btn" onclick="SettingsApp.checkForUpdate()">🔍 Check for Updates</button>
           <button class="settings-btn" id="update-apply-btn" onclick="SettingsApp.applyUpdate()" style="display:none;margin-left:8px;background:#4caf50">⬇️ Update Now</button>
         </div>
-        <hr style="border:none;border-top:1px solid #ddd;margin:16px 0">
+        <hr style="border:none;border-top:1px solid var(--border-color);margin:16px 0">
         <div class="settings-group">
           <label>Force Reload</label>
-          <p style="font-size:13px;color:#666;margin-bottom:12px">
+          <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">
             Clear all cached files and reload KidsOS. Use this if the app feels stuck on an old version.
           </p>
           <button class="settings-btn" style="background:#ff9800" onclick="SettingsApp.forceReload()">🔁 Force Reload</button>
@@ -138,15 +159,15 @@ OS.registerApp('settings', {
           <div style="font-size:48px;text-align:center">🐧</div>
           <div style="text-align:center">
             <strong style="font-size:22px">KidsOS</strong><br>
-            <span style="color:#666">Version ${OS.VERSION}</span>
+            <span style="color:var(--text-muted)">Version ${OS.VERSION}</span>
           </div>
-          <div style="background:#f5f5f5;border-radius:8px;padding:14px;font-size:14px;color:#444;line-height:1.8">
+          <div style="background:var(--surface-bg);border-radius:8px;padding:14px;font-size:14px;color:var(--text-primary);line-height:1.8">
             <b>KidsOS</b> is a fun, educational operating system simulator designed to help children learn how to use computers!<br><br>
             🎯 <b>Apps included:</b><br>
             📁 File Manager · 📝 Notepad · 🔢 Calculator<br>
             🎨 Paint · 🐍 Snake · 🃏 Memory Match · ⚙️ Settings
           </div>
-          <div style="text-align:center;color:#888;font-size:13px">Built with HTML, CSS &amp; JavaScript ❤️</div>
+          <div style="text-align:center;color:var(--text-muted);font-size:13px">Built with HTML, CSS &amp; JavaScript ❤️</div>
         </div>
       </div>
     </div>`;
@@ -164,6 +185,20 @@ const SettingsApp = {
     if (panel) panel.classList.add('active');
     if (sidebarEl) sidebarEl.classList.add('active');
     if (name === 'storage') this.refreshStorage();
+  },
+
+  setTheme(theme) {
+    OS.saveSettings({ theme });
+    document.querySelectorAll('.theme-option').forEach(el => el.classList.remove('active'));
+    const activeEl = document.querySelector(`.theme-option:${theme === 'dark' ? 'last-child' : 'first-child'}`);
+    if (activeEl) activeEl.classList.add('active');
+  },
+
+  setAccent(hex) {
+    OS.saveSettings({ accentColor: hex });
+    document.querySelectorAll('.accent-option').forEach(el => {
+      el.classList.toggle('active', el.dataset.color === hex);
+    });
   },
 
   selectWallpaper(idx, el) {

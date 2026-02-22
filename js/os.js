@@ -1,6 +1,6 @@
 /* ===== KidsOS Core ===== */
 const OS = (() => {
-  const VERSION = '0.2.0';
+  const VERSION = '0.3.0';
   const UPDATE_URL = 'https://lena.mixorium.net';
 
   let zCounter = 100;
@@ -9,6 +9,8 @@ const OS = (() => {
   let settings = {
     username: 'KidsUser',
     wallpaper: '0',
+    theme: 'light',
+    accentColor: '#5b8cff',
     timeOffset: 0,       // minutes offset from real time
     dateOverride: null,
   };
@@ -23,6 +25,7 @@ const OS = (() => {
   /* ---- Boot ---- */
   function boot() {
     loadSettings();
+    applyTheme();
     applyWallpaper();
     updateMenuUsername();
     // Add body class when running as installed PWA
@@ -329,6 +332,7 @@ const OS = (() => {
   function saveSettings(newSettings) {
     Object.assign(settings, newSettings);
     localStorage.setItem('kidsOS_settings', JSON.stringify(settings));
+    applyTheme();
     applyWallpaper();
     updateMenuUsername();
   }
@@ -346,6 +350,20 @@ const OS = (() => {
     'linear-gradient(135deg, #f72585 0%, #7209b7 30%, #3a0ca3 60%, #4361ee 100%)',
     'linear-gradient(135deg, #f77f00 0%, #fcbf49 50%, #eae2b7 100%)',
   ];
+
+  const ACCENT_COLORS = [
+    { name: 'Blue',   hex: '#5b8cff' },
+    { name: 'Green',  hex: '#4caf50' },
+    { name: 'Purple', hex: '#9c27b0' },
+    { name: 'Orange', hex: '#ff9800' },
+    { name: 'Pink',   hex: '#e91e8c' },
+    { name: 'Teal',   hex: '#009688' },
+  ];
+
+  function applyTheme() {
+    document.documentElement.setAttribute('data-theme', settings.theme || 'light');
+    document.documentElement.style.setProperty('--accent', settings.accentColor || '#5b8cff');
+  }
 
   function applyWallpaper(idx) {
     const i = idx !== undefined ? idx : (settings.wallpaper || 0);
@@ -438,9 +456,12 @@ const OS = (() => {
     Object.assign(settings, {
       username: 'KidsUser',
       wallpaper: '0',
+      theme: 'light',
+      accentColor: '#5b8cff',
       timeOffset: 0,
       dateOverride: null,
     });
+    applyTheme();
     applyWallpaper(0);
     updateMenuUsername();
   }
@@ -453,6 +474,7 @@ const OS = (() => {
     showContextMenu, removeContextMenu,
     updateMenuUsername,
     getStorageUsage, factoryReset, STORAGE_KEYS, isStandalone,
+    applyTheme, ACCENT_COLORS,
     VERSION, UPDATE_URL,
   };
 })();
