@@ -1,0 +1,62 @@
+// KidsOS Service Worker — PWA offline support
+const CACHE_NAME = 'kidsOS-v1';
+
+const ASSETS = [
+  './',
+  './index.html',
+  './style.css',
+  './manifest.json',
+  './icons/icon.svg',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './js/os.js',
+  './js/apps/calculator.js',
+  './js/apps/notepad.js',
+  './js/apps/filemanager.js',
+  './js/apps/paint.js',
+  './js/apps/snake.js',
+  './js/apps/memory.js',
+  './js/apps/kidstagram.js',
+  './js/apps/chat.js',
+  './js/apps/minesweeper.js',
+  './js/apps/settings.js',
+];
+
+// Install: cache all app assets
+self.addEventListener('install', e => {
+  e.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(ASSETS))
+      .then(() => self.skipWaiting())
+  );
+});
+
+// Activate: clean up old caches
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+    ).then(() => self.clients.claim())
+  );
+});
+
+// Fetch: serve from cache, fall back to network, then update cache
+self.addEventListener('fetch', e => {
+  // Only handle same-origin GET requests
+  if (e.request.method !== 'GET') return;
+
+  e.respondWith(
+    caches.match(e.request).then(cached => {
+      // Return cached version immediately, but also fetch update in background
+      const fetchPromise = fetch(e.request).then(response => {
+        if (response && response.status === 200 && response.type === 'basic') {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone));
+        }
+        return response;
+      }).catch(() => cached); // If network fails, we already have cached
+
+      return cached || fetchPromise;
+    })
+  );
+});

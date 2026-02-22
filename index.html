@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>KidsOS</title>
+  <meta name="description" content="A fun educational OS simulator for kids to learn computing">
+  <meta name="theme-color" content="#1a1a2e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="KidsOS">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Desktop -->
+  <div id="desktop">
+    <!-- Desktop Icons -->
+    <div id="desktop-icons">
+      <div class="desktop-icon" onclick="OS.launch('filemanager')">
+        <div class="icon-img">📁</div>
+        <span>Files</span>
+      </div>
+      <div class="desktop-icon" onclick="OS.launch('notepad')">
+        <div class="icon-img">📝</div>
+        <span>Notepad</span>
+      </div>
+      <div class="desktop-icon" onclick="OS.launch('calculator')">
+        <div class="icon-img">🔢</div>
+        <span>Calculator</span>
+      </div>
+      <div class="desktop-icon" onclick="OS.launch('paint')">
+        <div class="icon-img">🎨</div>
+        <span>Paint</span>
+      </div>
+      <div class="desktop-icon" onclick="OS.launch('snake')">
+        <div class="icon-img">🐍</div>
+        <span>Snake</span>
+      </div>
+      <div class="desktop-icon" onclick="OS.launch('memory')">
+        <div class="icon-img">🃏</div>
+        <span>Memory</span>
+      </div>
+      <div class="desktop-icon" onclick="OS.launch('kidstagram')">
+        <div class="icon-img">📸</div>
+        <span>Kidstagram</span>
+      </div>
+      <div class="desktop-icon" onclick="OS.launch('chat')">
+        <div class="icon-img">💬</div>
+        <span>KidsChat</span>
+      </div>
+      <div class="desktop-icon" onclick="OS.launch('minesweeper')">
+        <div class="icon-img">💣</div>
+        <span>Minesweeper</span>
+      </div>
+      <div class="desktop-icon" onclick="OS.launch('settings')">
+        <div class="icon-img">⚙️</div>
+        <span>Settings</span>
+      </div>
+    </div>
+
+    <!-- Windows container -->
+    <div id="windows-container"></div>
+
+    <!-- Taskbar -->
+    <div id="taskbar">
+      <div id="taskbar-left">
+        <button id="app-menu-btn" onclick="OS.toggleAppMenu()">
+          <span>🐧</span> Apps
+        </button>
+      </div>
+      <div id="taskbar-center" id="taskbar-apps"></div>
+      <div id="taskbar-right">
+        <div id="taskbar-clock">
+          <span id="clock-time">00:00</span>
+          <span id="clock-date">Mon 01 Jan</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- App Menu (Start Menu) -->
+    <div id="app-menu" class="hidden">
+      <div class="app-menu-header">
+        <span id="menu-username">👤 User</span>
+      </div>
+      <div class="app-menu-grid">
+        <div class="menu-app-item" onclick="OS.launch('filemanager'); OS.toggleAppMenu()">
+          <span>📁</span> Files
+        </div>
+        <div class="menu-app-item" onclick="OS.launch('notepad'); OS.toggleAppMenu()">
+          <span>📝</span> Notepad
+        </div>
+        <div class="menu-app-item" onclick="OS.launch('calculator'); OS.toggleAppMenu()">
+          <span>🔢</span> Calculator
+        </div>
+        <div class="menu-app-item" onclick="OS.launch('paint'); OS.toggleAppMenu()">
+          <span>🎨</span> Paint
+        </div>
+        <div class="menu-app-item" onclick="OS.launch('snake'); OS.toggleAppMenu()">
+          <span>🐍</span> Snake
+        </div>
+        <div class="menu-app-item" onclick="OS.launch('memory'); OS.toggleAppMenu()">
+          <span>🃏</span> Memory
+        </div>
+        <div class="menu-app-item" onclick="OS.launch('kidstagram'); OS.toggleAppMenu()">
+          <span>📸</span> Kidstagram
+        </div>
+        <div class="menu-app-item" onclick="OS.launch('chat'); OS.toggleAppMenu()">
+          <span>💬</span> KidsChat
+        </div>
+        <div class="menu-app-item" onclick="OS.launch('minesweeper'); OS.toggleAppMenu()">
+          <span>💣</span> Minesweeper
+        </div>
+        <div class="menu-app-item" onclick="OS.launch('settings'); OS.toggleAppMenu()">
+          <span>⚙️</span> Settings
+        </div>
+      </div>
+      <div class="app-menu-footer">
+        <button onclick="OS.shutdown()">⏻ Shutdown</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Boot Screen -->
+  <div id="boot-screen">
+    <div id="boot-content">
+      <div id="boot-logo">🐧</div>
+      <div id="boot-title">KidsOS</div>
+      <div id="boot-subtitle">Learning Computing the Fun Way!</div>
+      <div id="boot-bar-wrap"><div id="boot-bar"></div></div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/os.js"></script>
+  <script src="js/apps/calculator.js"></script>
+  <script src="js/apps/notepad.js"></script>
+  <script src="js/apps/filemanager.js"></script>
+  <script src="js/apps/paint.js"></script>
+  <script src="js/apps/snake.js"></script>
+  <script src="js/apps/memory.js"></script>
+  <script src="js/apps/kidstagram.js"></script>
+  <script src="js/apps/chat.js"></script>
+  <script src="js/apps/minesweeper.js"></script>
+  <script src="js/apps/settings.js"></script>
+  <script>
+    window.addEventListener('load', () => OS.boot());
+    // Register PWA service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').then(reg => {
+        reg.addEventListener('updatefound', () => {
+          const newSW = reg.installing;
+          newSW.addEventListener('statechange', () => {
+            if (newSW.state === 'activated' && navigator.serviceWorker.controller) {
+              console.log('KidsOS updated — refresh for latest version');
+            }
+          });
+        });
+      });
+    }
+  </script>
+</body>
+</html>

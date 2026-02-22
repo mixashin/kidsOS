@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head><title>Generate KidsOS Icons</title></head>
+<body>
+<h2>KidsOS Icon Generator</h2>
+<p>Right-click each icon and "Save image as..." to save the PNG files into this <code>icons/</code> folder.</p>
+<h3>192x192</h3>
+<canvas id="c192" width="192" height="192"></canvas>
+<h3>512x512</h3>
+<canvas id="c512" width="512" height="512"></canvas>
+<script>
+function drawIcon(canvas) {
+  const s = canvas.width;
+  const ctx = canvas.getContext('2d');
+  const r = s * 0.1875; // corner radius
+
+  // Background gradient
+  const grad = ctx.createLinearGradient(0, 0, s, s);
+  grad.addColorStop(0, '#1a1a2e');
+  grad.addColorStop(0.5, '#16213e');
+  grad.addColorStop(1, '#0f3460');
+
+  // Rounded rect
+  ctx.beginPath();
+  ctx.moveTo(r, 0);
+  ctx.lineTo(s - r, 0); ctx.quadraticCurveTo(s, 0, s, r);
+  ctx.lineTo(s, s - r); ctx.quadraticCurveTo(s, s, s - r, s);
+  ctx.lineTo(r, s); ctx.quadraticCurveTo(0, s, 0, s - r);
+  ctx.lineTo(0, r); ctx.quadraticCurveTo(0, 0, r, 0);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  const cx = s / 2;
+
+  // Penguin body
+  ctx.beginPath();
+  ctx.ellipse(cx, s * 0.605, s * 0.195, s * 0.234, 0, 0, Math.PI * 2);
+  ctx.fillStyle = '#2a2a2a';
+  ctx.fill();
+
+  // Belly
+  ctx.beginPath();
+  ctx.ellipse(cx, s * 0.645, s * 0.127, s * 0.166, 0, 0, Math.PI * 2);
+  ctx.fillStyle = '#e8e8e8';
+  ctx.fill();
+
+  // Head
+  ctx.beginPath();
+  ctx.arc(cx, s * 0.39, s * 0.14, 0, Math.PI * 2);
+  ctx.fillStyle = '#2a2a2a';
+  ctx.fill();
+
+  // Eyes
+  ctx.fillStyle = 'white';
+  ctx.beginPath(); ctx.arc(cx - s * 0.047, s * 0.367, s * 0.027, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(cx + s * 0.047, s * 0.367, s * 0.027, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#1a1a2e';
+  ctx.beginPath(); ctx.arc(cx - s * 0.041, s * 0.363, s * 0.014, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(cx + s * 0.041, s * 0.363, s * 0.014, 0, Math.PI * 2); ctx.fill();
+
+  // Beak
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 0.023, s * 0.41);
+  ctx.lineTo(cx, s * 0.449);
+  ctx.lineTo(cx + s * 0.023, s * 0.41);
+  ctx.closePath();
+  ctx.fillStyle = '#f5a623';
+  ctx.fill();
+
+  // Feet
+  ctx.beginPath();
+  ctx.ellipse(cx - s * 0.059, s * 0.836, s * 0.055, s * 0.02, 0, 0, Math.PI * 2);
+  ctx.fillStyle = '#f5a623';
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(cx + s * 0.059, s * 0.836, s * 0.055, s * 0.02, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Label
+  ctx.fillStyle = '#5b8cff';
+  ctx.font = `700 ${s * 0.07}px system-ui, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.fillText('KidsOS', cx, s * 0.934);
+}
+
+drawIcon(document.getElementById('c192'));
+drawIcon(document.getElementById('c512'));
+
+// Auto-download both
+['c192','c512'].forEach(id => {
+  const canvas = document.getElementById(id);
+  const a = document.createElement('a');
+  a.download = `icon-${canvas.width}.png`;
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+});
+</script>
+</body>
+</html>
