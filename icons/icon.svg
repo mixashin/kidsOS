@@ -5,25 +5,57 @@
       <stop offset="50%" style="stop-color:#16213e"/>
       <stop offset="100%" style="stop-color:#0f3460"/>
     </linearGradient>
+    <clipPath id="screen-clip">
+      <rect x="106" y="100" width="300" height="200" rx="4"/>
+    </clipPath>
   </defs>
   <!-- Background -->
   <rect width="512" height="512" rx="96" fill="url(#bg)"/>
-  <!-- Penguin body -->
-  <ellipse cx="256" cy="310" rx="100" ry="120" fill="#2a2a2a"/>
-  <!-- Penguin belly -->
-  <ellipse cx="256" cy="330" rx="65" ry="85" fill="#e8e8e8"/>
-  <!-- Penguin head -->
-  <circle cx="256" cy="200" r="72" fill="#2a2a2a"/>
-  <!-- Eyes -->
-  <circle cx="232" cy="188" r="14" fill="white"/>
-  <circle cx="280" cy="188" r="14" fill="white"/>
-  <circle cx="235" cy="186" r="7" fill="#1a1a2e"/>
-  <circle cx="283" cy="186" r="7" fill="#1a1a2e"/>
-  <!-- Beak -->
-  <path d="M244 210 L256 230 L268 210 Z" fill="#f5a623"/>
-  <!-- Feet -->
-  <ellipse cx="226" cy="428" rx="28" ry="10" fill="#f5a623"/>
-  <ellipse cx="286" cy="428" rx="28" ry="10" fill="#f5a623"/>
+  <!-- Monitor body -->
+  <rect x="96" y="90" width="320" height="220" rx="14" fill="#1e1e30"/>
+  <rect x="96" y="90" width="320" height="220" rx="14" fill="none" stroke="#3a3a5c" stroke-width="3"/>
+  <!-- Screen area -->
+  <rect x="106" y="100" width="300" height="188" rx="4" fill="#0d1b33"/>
+  <!-- Desktop icons (3 rows of 3 colored squares) -->
+  <g clip-path="url(#screen-clip)">
+    <!-- Row 1 -->
+    <rect x="130" y="118" width="22" height="22" rx="4" fill="#4fc3f7"/>
+    <rect x="164" y="118" width="22" height="22" rx="4" fill="#81c784"/>
+    <rect x="198" y="118" width="22" height="22" rx="4" fill="#ffb74d"/>
+    <!-- Row 2 -->
+    <rect x="130" y="154" width="22" height="22" rx="4" fill="#e57373"/>
+    <rect x="164" y="154" width="22" height="22" rx="4" fill="#ba68c8"/>
+    <rect x="198" y="154" width="22" height="22" rx="4" fill="#fff176"/>
+    <!-- Row 3 -->
+    <rect x="130" y="190" width="22" height="22" rx="4" fill="#f48fb1"/>
+    <rect x="164" y="190" width="22" height="22" rx="4" fill="#4db6ac"/>
+    <rect x="198" y="190" width="22" height="22" rx="4" fill="#90a4ae"/>
+    <!-- Tiny icon labels (subtle dots below each icon) -->
+    <rect x="135" y="143" width="12" height="2" rx="1" fill="rgba(255,255,255,0.3)"/>
+    <rect x="169" y="143" width="12" height="2" rx="1" fill="rgba(255,255,255,0.3)"/>
+    <rect x="203" y="143" width="12" height="2" rx="1" fill="rgba(255,255,255,0.3)"/>
+    <rect x="135" y="179" width="12" height="2" rx="1" fill="rgba(255,255,255,0.3)"/>
+    <rect x="169" y="179" width="12" height="2" rx="1" fill="rgba(255,255,255,0.3)"/>
+    <rect x="203" y="179" width="12" height="2" rx="1" fill="rgba(255,255,255,0.3)"/>
+    <rect x="135" y="215" width="12" height="2" rx="1" fill="rgba(255,255,255,0.3)"/>
+    <rect x="169" y="215" width="12" height="2" rx="1" fill="rgba(255,255,255,0.3)"/>
+    <rect x="203" y="215" width="12" height="2" rx="1" fill="rgba(255,255,255,0.3)"/>
+    <!-- Taskbar at bottom of screen -->
+    <rect x="106" y="272" width="300" height="16" fill="#141428"/>
+    <!-- Taskbar start button -->
+    <rect x="110" y="275" width="20" height="10" rx="2" fill="#5b8cff"/>
+    <!-- Taskbar app indicators -->
+    <rect x="136" y="276" width="16" height="8" rx="2" fill="rgba(255,255,255,0.15)"/>
+    <rect x="156" y="276" width="16" height="8" rx="2" fill="rgba(255,255,255,0.15)"/>
+    <!-- Taskbar clock area -->
+    <rect x="374" y="276" width="28" height="8" rx="2" fill="rgba(255,255,255,0.1)"/>
+  </g>
+  <!-- Monitor stand -->
+  <rect x="226" y="312" width="60" height="30" rx="2" fill="#1e1e30"/>
+  <rect x="226" y="312" width="60" height="30" rx="2" fill="none" stroke="#3a3a5c" stroke-width="2"/>
+  <!-- Monitor base -->
+  <rect x="196" y="340" width="120" height="10" rx="5" fill="#1e1e30"/>
+  <rect x="196" y="340" width="120" height="10" rx="5" fill="none" stroke="#3a3a5c" stroke-width="2"/>
   <!-- Label -->
-  <text x="256" y="478" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="700" font-size="36" fill="#5b8cff">KidsOS</text>
+  <text x="256" y="400" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="700" font-size="42" fill="#5b8cff">KidsOS</text>
 </svg>

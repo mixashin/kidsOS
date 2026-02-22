@@ -2,7 +2,7 @@
 <html>
 <head><title>Generate KidsOS Icons</title></head>
 <body>
-<h2>KidsOS Icon Generator</h2>
+<h2>KidsOS Icon Generator — Mobile (PWA) Icons</h2>
 <p>Right-click each icon and "Save image as..." to save the PNG files into this <code>icons/</code> folder.</p>
 <h3>192x192</h3>
 <canvas id="c192" width="192" height="192"></canvas>
@@ -20,7 +20,7 @@ function drawIcon(canvas) {
   grad.addColorStop(0.5, '#16213e');
   grad.addColorStop(1, '#0f3460');
 
-  // Rounded rect
+  // Rounded rect background
   ctx.beginPath();
   ctx.moveTo(r, 0);
   ctx.lineTo(s - r, 0); ctx.quadraticCurveTo(s, 0, s, r);
@@ -33,55 +33,120 @@ function drawIcon(canvas) {
 
   const cx = s / 2;
 
-  // Penguin body
-  ctx.beginPath();
-  ctx.ellipse(cx, s * 0.605, s * 0.195, s * 0.234, 0, 0, Math.PI * 2);
-  ctx.fillStyle = '#2a2a2a';
-  ctx.fill();
+  // ---- Phone outline ----
+  const phoneW = s * 0.44;
+  const phoneH = s * 0.58;
+  const phoneX = cx - phoneW / 2;
+  const phoneY = s * 0.08;
+  const phoneR = s * 0.04;
 
-  // Belly
+  // Phone body
   ctx.beginPath();
-  ctx.ellipse(cx, s * 0.645, s * 0.127, s * 0.166, 0, 0, Math.PI * 2);
-  ctx.fillStyle = '#e8e8e8';
-  ctx.fill();
-
-  // Head
-  ctx.beginPath();
-  ctx.arc(cx, s * 0.39, s * 0.14, 0, Math.PI * 2);
-  ctx.fillStyle = '#2a2a2a';
-  ctx.fill();
-
-  // Eyes
-  ctx.fillStyle = 'white';
-  ctx.beginPath(); ctx.arc(cx - s * 0.047, s * 0.367, s * 0.027, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.arc(cx + s * 0.047, s * 0.367, s * 0.027, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = '#1a1a2e';
-  ctx.beginPath(); ctx.arc(cx - s * 0.041, s * 0.363, s * 0.014, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.arc(cx + s * 0.041, s * 0.363, s * 0.014, 0, Math.PI * 2); ctx.fill();
-
-  // Beak
-  ctx.beginPath();
-  ctx.moveTo(cx - s * 0.023, s * 0.41);
-  ctx.lineTo(cx, s * 0.449);
-  ctx.lineTo(cx + s * 0.023, s * 0.41);
+  ctx.moveTo(phoneX + phoneR, phoneY);
+  ctx.lineTo(phoneX + phoneW - phoneR, phoneY);
+  ctx.quadraticCurveTo(phoneX + phoneW, phoneY, phoneX + phoneW, phoneY + phoneR);
+  ctx.lineTo(phoneX + phoneW, phoneY + phoneH - phoneR);
+  ctx.quadraticCurveTo(phoneX + phoneW, phoneY + phoneH, phoneX + phoneW - phoneR, phoneY + phoneH);
+  ctx.lineTo(phoneX + phoneR, phoneY + phoneH);
+  ctx.quadraticCurveTo(phoneX, phoneY + phoneH, phoneX, phoneY + phoneH - phoneR);
+  ctx.lineTo(phoneX, phoneY + phoneR);
+  ctx.quadraticCurveTo(phoneX, phoneY, phoneX + phoneR, phoneY);
   ctx.closePath();
-  ctx.fillStyle = '#f5a623';
+  ctx.fillStyle = '#1e1e30';
+  ctx.fill();
+  ctx.strokeStyle = '#3a3a5c';
+  ctx.lineWidth = s * 0.005;
+  ctx.stroke();
+
+  // Phone screen
+  const screenMargin = s * 0.025;
+  const screenX = phoneX + screenMargin;
+  const screenY = phoneY + s * 0.04;
+  const screenW = phoneW - screenMargin * 2;
+  const screenH = phoneH - s * 0.07;
+  const screenR = s * 0.015;
+
+  ctx.beginPath();
+  ctx.moveTo(screenX + screenR, screenY);
+  ctx.lineTo(screenX + screenW - screenR, screenY);
+  ctx.quadraticCurveTo(screenX + screenW, screenY, screenX + screenW, screenY + screenR);
+  ctx.lineTo(screenX + screenW, screenY + screenH - screenR);
+  ctx.quadraticCurveTo(screenX + screenW, screenY + screenH, screenX + screenW - screenR, screenY + screenH);
+  ctx.lineTo(screenX + screenR, screenY + screenH);
+  ctx.quadraticCurveTo(screenX, screenY + screenH, screenX, screenY + screenH - screenR);
+  ctx.lineTo(screenX, screenY + screenR);
+  ctx.quadraticCurveTo(screenX, screenY, screenX + screenR, screenY);
+  ctx.closePath();
+  ctx.fillStyle = '#0d1b33';
   ctx.fill();
 
-  // Feet
-  ctx.beginPath();
-  ctx.ellipse(cx - s * 0.059, s * 0.836, s * 0.055, s * 0.02, 0, 0, Math.PI * 2);
-  ctx.fillStyle = '#f5a623';
-  ctx.fill();
-  ctx.beginPath();
-  ctx.ellipse(cx + s * 0.059, s * 0.836, s * 0.055, s * 0.02, 0, 0, Math.PI * 2);
-  ctx.fill();
+  // ---- 4-column grid of app icons inside phone screen ----
+  const cols = 4;
+  const rows = 4;
+  const gridPadX = screenW * 0.08;
+  const gridPadTop = screenH * 0.06;
+  const gridPadBot = screenH * 0.12; // leave room for taskbar
+  const cellW = (screenW - gridPadX * 2) / cols;
+  const cellH = (screenH - gridPadTop - gridPadBot) / rows;
+  const iconR = Math.min(cellW, cellH) * 0.32;
 
-  // Label
+  const appColors = [
+    '#4fc3f7', '#81c784', '#ffb74d', '#e57373',
+    '#ba68c8', '#fff176', '#f48fb1', '#4db6ac',
+    '#90a4ae', '#ff8a65', '#aed581', '#7986cb',
+    '#ce93d8', '#80deea', '#ffcc80', '#a1887f'
+  ];
+  const appEmojis = [
+    '\u{1F4C1}', '\u{1F522}', '\u{1F3A8}', '\u{1F40D}',
+    '\u{1F0CF}', '\u{1F4F7}', '\u{1F4AC}', '\u{1F4A3}',
+    '\u{1F4DD}', '\u{1F3AE}', '\u{2699}', '\u{1F3B5}',
+    '\u{1F4CA}', '\u{1F30D}', '\u{2B50}', '\u{1F512}'
+  ];
+
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const idx = row * cols + col;
+      const icx = screenX + gridPadX + cellW * col + cellW / 2;
+      const icy = screenY + gridPadTop + cellH * row + cellH * 0.4;
+
+      // Colored circle
+      ctx.beginPath();
+      ctx.arc(icx, icy, iconR, 0, Math.PI * 2);
+      ctx.fillStyle = appColors[idx];
+      ctx.fill();
+
+      // Emoji inside circle
+      ctx.fillStyle = 'white';
+      ctx.font = `${iconR * 1.1}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(appEmojis[idx], icx, icy + iconR * 0.05);
+    }
+  }
+
+  // ---- Taskbar at bottom of phone screen ----
+  const taskbarH = screenH * 0.08;
+  const taskbarY = screenY + screenH - taskbarH;
+  ctx.fillStyle = '#141428';
+  ctx.fillRect(screenX, taskbarY, screenW, taskbarH);
+
+  // Taskbar dots
+  const dotR = taskbarH * 0.2;
+  const dotY = taskbarY + taskbarH / 2;
+  const dotSpacing = screenW / 5;
+  for (let i = 1; i <= 4; i++) {
+    ctx.beginPath();
+    ctx.arc(screenX + dotSpacing * i, dotY, dotR, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.fill();
+  }
+
+  // ---- "KidsOS" label below phone ----
   ctx.fillStyle = '#5b8cff';
-  ctx.font = `700 ${s * 0.07}px system-ui, sans-serif`;
+  ctx.font = `700 ${s * 0.075}px system-ui, sans-serif`;
   ctx.textAlign = 'center';
-  ctx.fillText('KidsOS', cx, s * 0.934);
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText('KidsOS', cx, s * 0.82);
 }
 
 drawIcon(document.getElementById('c192'));
