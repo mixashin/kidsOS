@@ -329,7 +329,7 @@ button { font-family: var(--font); }
 }
 .notepad-toolbar input[type=color] { width: 32px; padding: 2px; }
 .notepad-toolbar button:hover { background: var(--hover-bg); }
-#notepad-area {
+#notepad-area, .notepad-ta {
   flex: 1; border: none; outline: none; resize: none;
   padding: 14px; font-size: 15px; line-height: 1.6;
   font-family: 'Consolas', monospace; background: var(--win-body-bg); color: var(--text-primary);

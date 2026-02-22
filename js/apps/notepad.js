@@ -39,7 +39,7 @@ OS.registerApp('notepad', {
       </div>
       <textarea class="notepad-ta" placeholder="Start typing here... ✏️"
                 oninput="NotepadApp.updateStatus(this.closest('.notepad-wrap'))"
-                style="flex:1;border:none;outline:none;resize:none;padding:14px;font-size:16px;line-height:1.6;font-family:'Consolas',monospace;background:#fffef7;"></textarea>
+                style="flex:1;border:none;outline:none;resize:none;padding:14px;font-size:16px;line-height:1.6;font-family:'Consolas',monospace;"></textarea>
       <div class="notepad-statusbar">
         <span class="np-status">0 characters · 0 words · 0 lines</span>
       </div>
