@@ -290,6 +290,7 @@ const SettingsApp = {
     statusEl.innerHTML = '🔍 Checking for updates...';
     checkBtn.disabled = true;
 
+    const self = this;
     const urls = [
       OS.UPDATE_URL + '/version.json?t=' + Date.now(),
       'https://mixashin.github.io/kidsOS/version.json?t=' + Date.now(),
@@ -301,14 +302,14 @@ const SettingsApp = {
         checkBtn.disabled = false;
         return;
       }
-      fetch(urls[i]).then(res => {
+      fetch(urls[i], { cache: 'no-store' }).then(res => {
         if (!res.ok) throw new Error('HTTP ' + res.status);
         return res.json();
       }).then(remote => {
         const local = OS.VERSION;
         const remoteVer = remote.version;
 
-        if (this._isNewer(remoteVer, local)) {
+        if (self._isNewer(remoteVer, local)) {
           statusEl.innerHTML = `✅ <b>Update available!</b><br>
             <span style="font-size:12px">Current: v${local} → New: v${remoteVer}</span>
             ${remote.build ? '<br><span style="font-size:12px;color:#888">Build: ' + remote.build + '</span>' : ''}`;
