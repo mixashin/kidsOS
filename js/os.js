@@ -1,10 +1,11 @@
 /* ===== KidsOS Core ===== */
 const OS = (() => {
-  const VERSION = '0.1.1';
+  const VERSION = '0.2.0';
   const UPDATE_URL = 'https://lena.mixorium.net';
 
   let zCounter = 100;
   let windowMap = {};     // id -> { el, taskbarBtn, app }
+  let focusHistory = [];  // ordered list of window ids, most recent last
   let settings = {
     username: 'KidsUser',
     wallpaper: '0',
@@ -114,7 +115,7 @@ const OS = (() => {
     // Taskbar button
     const btn = document.createElement('button');
     btn.className = 'taskbar-app-btn active';
-    btn.textContent = `${opts.icon||''} ${opts.title||'App'}`;
+    btn.innerHTML = `<span class="tbtn-icon">${opts.icon||''}</span><span class="tbtn-title">${opts.title||'App'}</span>`;
     btn.id = 'tbtn_' + id;
     btn.onclick = () => {
       if (win.classList.contains('minimized')) {
@@ -149,6 +150,9 @@ const OS = (() => {
     w.el.style.zIndex = ++zCounter;
     w.taskbarBtn.classList.add('active');
     w.taskbarBtn.classList.remove('minimized');
+    // Update focus history
+    focusHistory = focusHistory.filter(wid => wid !== id);
+    focusHistory.push(id);
   }
 
   function isWindowFocused(id) {
@@ -162,6 +166,11 @@ const OS = (() => {
     w.el.remove();
     w.taskbarBtn.remove();
     delete windowMap[id];
+    focusHistory = focusHistory.filter(wid => wid !== id);
+    // Auto-focus previous window in history
+    if (focusHistory.length > 0) {
+      focusWindow(focusHistory[focusHistory.length - 1]);
+    }
   }
 
   function minimizeWindow(id) {
@@ -197,6 +206,37 @@ const OS = (() => {
       w.el.classList.add('maximized');
       w.maximized = true;
     }
+  }
+
+  /* ---- Window Cycling ---- */
+  function cycleFocusForward() {
+    const ids = Object.keys(windowMap);
+    if (ids.length === 0) return;
+    if (ids.length === 1) {
+      if (windowMap[ids[0]].el.classList.contains('minimized')) restoreWindow(ids[0]);
+      else focusWindow(ids[0]);
+      return;
+    }
+    const currentIdx = ids.findIndex(wid => isWindowFocused(wid));
+    const nextIdx = (currentIdx + 1) % ids.length;
+    const nextId = ids[nextIdx];
+    if (windowMap[nextId].el.classList.contains('minimized')) restoreWindow(nextId);
+    else focusWindow(nextId);
+  }
+
+  function cycleFocusBack() {
+    const ids = Object.keys(windowMap);
+    if (ids.length === 0) return;
+    if (ids.length === 1) {
+      if (windowMap[ids[0]].el.classList.contains('minimized')) restoreWindow(ids[0]);
+      else focusWindow(ids[0]);
+      return;
+    }
+    const currentIdx = ids.findIndex(wid => isWindowFocused(wid));
+    const prevIdx = (currentIdx - 1 + ids.length) % ids.length;
+    const prevId = ids[prevIdx];
+    if (windowMap[prevId].el.classList.contains('minimized')) restoreWindow(prevId);
+    else focusWindow(prevId);
   }
 
   /* ---- Drag ---- */
@@ -395,6 +435,15 @@ const OS = (() => {
     if (m) m.remove();
   }
 
+  /* ---- Keyboard shortcuts ---- */
+  document.addEventListener('keydown', e => {
+    if (e.altKey && e.key === 'Tab') {
+      e.preventDefault();
+      if (e.shiftKey) cycleFocusBack();
+      else cycleFocusForward();
+    }
+  });
+
   /* ---- Close app menu on outside click ---- */
   document.addEventListener('click', e => {
     if (!e.target.closest('#app-menu') && !e.target.closest('#app-menu-btn')) {
@@ -439,6 +488,7 @@ const OS = (() => {
   return {
     boot, launch, registerApp,
     createWindow, closeWindow, minimizeWindow, restoreWindow, toggleMaximize, focusWindow,
+    cycleFocusForward, cycleFocusBack,
     toggleAppMenu, shutdown,
     saveSettings, loadSettings, getSettings, applyWallpaper, getWallpapers,
     showContextMenu, removeContextMenu,
