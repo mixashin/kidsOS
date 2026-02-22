@@ -55,8 +55,9 @@ self.addEventListener('message', e => {
 
 // Fetch: serve from cache, fall back to network, then update cache
 self.addEventListener('fetch', e => {
-  // Only handle same-origin GET requests
+  // Only handle same-origin GET requests over http(s)
   if (e.request.method !== 'GET') return;
+  if (!e.request.url.startsWith('http')) return;
 
   e.respondWith(
     caches.match(e.request).then(cached => {
