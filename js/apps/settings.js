@@ -336,25 +336,31 @@ const SettingsApp = {
   },
 
   applyUpdate() {
-    // Clear all caches and reload to get the latest version
-    if ('caches' in window) {
-      caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k)))).then(() => {
-        window.location.reload();
-      });
-    } else {
-      window.location.reload();
-    }
+    // Clear all caches, unregister SW, and hard-navigate to get the latest version
+    this._nukeAndReload();
   },
 
   forceReload() {
     if (!confirm('This will clear all cached app files and reload KidsOS.\nYour saved data (files, settings, chat) will NOT be affected.\n\nProceed?')) return;
-    if ('caches' in window) {
-      caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k)))).then(() => {
-        window.location.reload();
-      });
-    } else {
-      window.location.reload();
-    }
+    this._nukeAndReload();
+  },
+
+  _nukeAndReload() {
+    const hardNav = () => {
+      // Navigate with cache-buster to avoid any stale responses
+      const base = window.location.href.split('?')[0].split('#')[0];
+      window.location.replace(base + '?_update=' + Date.now());
+    };
+    Promise.all([
+      // Clear all CacheStorage caches
+      'caches' in window
+        ? caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))))
+        : Promise.resolve(),
+      // Unregister all service workers so old SW can't serve stale files on reload
+      'serviceWorker' in navigator
+        ? navigator.serviceWorker.getRegistrations().then(regs => Promise.all(regs.map(r => r.unregister())))
+        : Promise.resolve(),
+    ]).then(hardNav).catch(hardNav);
   },
 
   saveUsername() {
