@@ -1,6 +1,6 @@
 /* ===== KidsOS Core ===== */
 const OS = (() => {
-  const VERSION = '0.9.0';
+  const VERSION = '0.9.1';
   const UPDATE_URL = (typeof KIDSOS_CONFIG !== 'undefined' && KIDSOS_CONFIG.updateURL) || 'https://mixashin.github.io/kidsOS';
 
   let zCounter = 100;
@@ -19,7 +19,8 @@ const OS = (() => {
   /* ---- Standalone / PWA detection ---- */
   function isStandalone() {
     return window.navigator.standalone === true ||
-           window.matchMedia('(display-mode: standalone)').matches;
+           window.matchMedia('(display-mode: standalone)').matches ||
+           window.matchMedia('(display-mode: fullscreen)').matches;
   }
 
   /* ---- Boot ---- */
