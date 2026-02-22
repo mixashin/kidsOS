@@ -152,7 +152,7 @@ OS.registerApp('kidflix', {
     this.state = this.loadState();
     if (!this.state.liked) this.state.liked = [];
     if (!this.state.watched) this.state.watched = [];
-    this.winId = winId;
+    this.bodyId = 'win-body-' + winId;
     this.activeGenre = 'All';
     this.searchQuery = '';
     this.renderTabs();
@@ -160,10 +160,14 @@ OS.registerApp('kidflix', {
     this.bindEvents();
   },
 
+  getBody() {
+    return document.getElementById(this.bodyId);
+  },
+
   bindEvents() {
-    const win = document.getElementById(this.winId);
-    if (!win) return;
-    const search = win.querySelector('.kf-search');
+    const body = this.getBody();
+    if (!body) return;
+    const search = body.querySelector('.kf-search');
     if (search) {
       search.addEventListener('input', () => {
         this.searchQuery = search.value.toLowerCase();
@@ -173,9 +177,9 @@ OS.registerApp('kidflix', {
   },
 
   renderTabs() {
-    const win = document.getElementById(this.winId);
-    if (!win) return;
-    const tabs = win.querySelector('#kf-tabs');
+    const body = this.getBody();
+    if (!body) return;
+    const tabs = body.querySelector('#kf-tabs');
     if (!tabs) return;
     tabs.innerHTML = KF_GENRES.map(g =>
       `<button class="kf-tab${g === this.activeGenre ? ' kf-tab-active' : ''}" data-genre="${g}">${g}</button>`
@@ -199,9 +203,9 @@ OS.registerApp('kidflix', {
   },
 
   renderGrid() {
-    const win = document.getElementById(this.winId);
-    if (!win) return;
-    const content = win.querySelector('#kf-content');
+    const body = this.getBody();
+    if (!body) return;
+    const content = body.querySelector('#kf-content');
     if (!content) return;
     const movies = this.getFilteredMovies();
     const liked = this.state.liked;
@@ -235,9 +239,9 @@ OS.registerApp('kidflix', {
   },
 
   openPlayer(movieId) {
-    const win = document.getElementById(this.winId);
-    if (!win) return;
-    const content = win.querySelector('#kf-content');
+    const body = this.getBody();
+    if (!body) return;
+    const content = body.querySelector('#kf-content');
     if (!content) return;
     const m = KF_MOVIES.find(mv => mv.id === movieId);
     if (!m) return;
