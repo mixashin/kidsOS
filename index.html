@@ -13,7 +13,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=0.11.2">
 </head>
 <body>
   <!-- Desktop -->
@@ -191,28 +191,41 @@
   </div>
 
   <!-- Scripts -->
-  <script src="config.js"></script>
-  <script src="js/os.js"></script>
-  <script src="js/apps/calculator.js"></script>
-  <script src="js/apps/notepad.js"></script>
-  <script src="js/apps/filemanager.js"></script>
-  <script src="js/apps/paint.js"></script>
-  <script src="js/apps/snake.js"></script>
-  <script src="js/apps/memory.js"></script>
-  <script src="js/apps/kidstagram.js"></script>
-  <script src="js/apps/chat.js"></script>
-  <script src="js/apps/minesweeper.js"></script>
-  <script src="js/apps/ejob.js"></script>
-  <script src="js/apps/tinybank.js"></script>
-  <script src="js/apps/chorequest.js"></script>
-  <script src="js/apps/treasuremapper.js"></script>
-  <script src="js/apps/snackdash.js"></script>
-  <script src="js/apps/kidflix.js"></script>
-  <script src="js/apps/zoomer.js"></script>
-  <script src="js/apps/soundboard.js"></script>
-  <script src="js/apps/settings.js"></script>
+  <script src="config.js?v=0.11.2"></script>
+  <script src="js/os.js?v=0.11.2"></script>
+  <script src="js/apps/calculator.js?v=0.11.2"></script>
+  <script src="js/apps/notepad.js?v=0.11.2"></script>
+  <script src="js/apps/filemanager.js?v=0.11.2"></script>
+  <script src="js/apps/paint.js?v=0.11.2"></script>
+  <script src="js/apps/snake.js?v=0.11.2"></script>
+  <script src="js/apps/memory.js?v=0.11.2"></script>
+  <script src="js/apps/kidstagram.js?v=0.11.2"></script>
+  <script src="js/apps/chat.js?v=0.11.2"></script>
+  <script src="js/apps/minesweeper.js?v=0.11.2"></script>
+  <script src="js/apps/ejob.js?v=0.11.2"></script>
+  <script src="js/apps/tinybank.js?v=0.11.2"></script>
+  <script src="js/apps/chorequest.js?v=0.11.2"></script>
+  <script src="js/apps/treasuremapper.js?v=0.11.2"></script>
+  <script src="js/apps/snackdash.js?v=0.11.2"></script>
+  <script src="js/apps/kidflix.js?v=0.11.2"></script>
+  <script src="js/apps/zoomer.js?v=0.11.2"></script>
+  <script src="js/apps/soundboard.js?v=0.11.2"></script>
+  <script src="js/apps/settings.js?v=0.11.2"></script>
   <script>
     window.addEventListener('load', () => OS.boot());
+    // After update: clean URL param once SW is ready
+    if (location.search.includes('_update')) {
+      var _cleaned = false;
+      var _doClean = function() {
+        if (_cleaned) return;
+        _cleaned = true;
+        history.replaceState(null, '', location.pathname);
+      };
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.ready.then(_doClean);
+        setTimeout(_doClean, 8000);
+      } else { _doClean(); }
+    }
     // Register PWA service worker
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js').then(reg => {

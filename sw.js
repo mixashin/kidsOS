@@ -1,5 +1,5 @@
 // KidsOS Service Worker — PWA offline support
-const CACHE_NAME = 'kidsOS-v2';
+const CACHE_NAME = 'kidsOS-v3';
 
 const ASSETS = [
   './',
