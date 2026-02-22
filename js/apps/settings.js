@@ -244,6 +244,7 @@ const SettingsApp = {
       'kidsOS_chat': '💬 KidsChat',
       'kidsOS_snakeHi': '🐍 Snake High Score',
       'kidsOS_kidstagram': '📸 Kidstagram',
+      'kidsOS_tinyscanner': '🔍 TinyScanner',
     };
     const el = document.getElementById('storage-usage-list');
     if (!el) return;

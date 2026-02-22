@@ -26,6 +26,7 @@ const ASSETS = [
   './js/apps/kidflix.js',
   './js/apps/zoomer.js',
   './js/apps/soundboard.js',
+  './js/apps/tinyscanner.js',
   './js/apps/settings.js',
   './version.json',
 ];
