@@ -20,6 +20,7 @@ const ASSETS = [
   './js/apps/chat.js',
   './js/apps/minesweeper.js',
   './js/apps/settings.js',
+  './version.json',
 ];
 
 // Install: cache all app assets

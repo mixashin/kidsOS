@@ -1,5 +1,8 @@
 /* ===== KidsOS Core ===== */
 const OS = (() => {
+  const VERSION = '0.1.0';
+  const UPDATE_URL = 'https://lena.mixorium.net';
+
   let zCounter = 100;
   let windowMap = {};     // id -> { el, taskbarBtn, app }
   let settings = {
@@ -441,5 +444,6 @@ const OS = (() => {
     showContextMenu, removeContextMenu,
     updateMenuUsername,
     getStorageUsage, factoryReset, STORAGE_KEYS, isStandalone,
+    VERSION, UPDATE_URL,
   };
 })();

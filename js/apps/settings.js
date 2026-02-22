@@ -116,7 +116,7 @@ OS.registerApp('settings', {
             Check if a newer version of KidsOS is available. Requires an internet connection.
           </p>
           <div id="update-status" style="padding:12px;background:#f5f5f5;border-radius:8px;font-size:13px;color:#555;margin-bottom:12px">
-            Status: Not checked yet
+            Current version: v${OS.VERSION} — Not checked yet
           </div>
           <button class="settings-btn" id="update-check-btn" onclick="SettingsApp.checkForUpdate()">🔍 Check for Updates</button>
           <button class="settings-btn" id="update-apply-btn" onclick="SettingsApp.applyUpdate()" style="display:none;margin-left:8px;background:#4caf50">⬇️ Update Now</button>
@@ -138,7 +138,7 @@ OS.registerApp('settings', {
           <div style="font-size:48px;text-align:center">🐧</div>
           <div style="text-align:center">
             <strong style="font-size:22px">KidsOS</strong><br>
-            <span style="color:#666">Version 1.0.0</span>
+            <span style="color:#666">Version ${OS.VERSION}</span>
           </div>
           <div style="background:#f5f5f5;border-radius:8px;padding:14px;font-size:14px;color:#444;line-height:1.8">
             <b>KidsOS</b> is a fun, educational operating system simulator designed to help children learn how to use computers!<br><br>
@@ -252,64 +252,54 @@ const SettingsApp = {
     const checkBtn = document.getElementById('update-check-btn');
     if (!statusEl) return;
 
-    if (!('serviceWorker' in navigator)) {
-      statusEl.innerHTML = '⚠️ Service Worker not supported in this browser.';
-      return;
-    }
-
-    // file:// protocol doesn't support service workers
-    if (window.location.protocol === 'file:') {
-      statusEl.innerHTML = '⚠️ Updates require a web server.<br><span style="font-size:12px;color:#888">KidsOS is running from a local file. To enable updates, serve it via a web server (localhost or HTTPS).</span>';
-      return;
-    }
-
     statusEl.innerHTML = '🔍 Checking for updates...';
     checkBtn.disabled = true;
 
-    // Try to get existing registration, or register if missing
-    navigator.serviceWorker.getRegistration().then(reg => {
-      if (reg) return reg;
-      // No registration — try to register now
-      return navigator.serviceWorker.register('sw.js');
-    }).then(reg => {
-      // Force the SW to check for a new version on the server
-      return reg.update().then(() => {
-        if (reg.waiting) {
-          statusEl.innerHTML = '✅ <b>Update available!</b> A new version is ready to install.';
-          applyBtn.style.display = 'inline-block';
-        } else if (reg.installing) {
-          statusEl.innerHTML = '⬇️ Downloading update...';
-          reg.installing.addEventListener('statechange', function() {
-            if (this.state === 'installed') {
-              statusEl.innerHTML = '✅ <b>Update available!</b> A new version is ready to install.';
-              applyBtn.style.display = 'inline-block';
-            }
-          });
-        } else {
-          statusEl.innerHTML = '👍 KidsOS is up to date!';
-        }
-        checkBtn.disabled = false;
-      });
+    const remoteUrl = OS.UPDATE_URL + '/version.json?t=' + Date.now();
+
+    fetch(remoteUrl).then(res => {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    }).then(remote => {
+      const local = OS.VERSION;
+      const remoteVer = remote.version;
+
+      if (this._isNewer(remoteVer, local)) {
+        statusEl.innerHTML = `✅ <b>Update available!</b><br>
+          <span style="font-size:12px">Current: v${local} → New: v${remoteVer}</span>
+          ${remote.build ? '<br><span style="font-size:12px;color:#888">Build: ' + remote.build + '</span>' : ''}`;
+        applyBtn.style.display = 'inline-block';
+      } else {
+        statusEl.innerHTML = `👍 KidsOS is up to date! <span style="font-size:12px">(v${local})</span>`;
+        applyBtn.style.display = 'none';
+      }
+      checkBtn.disabled = false;
     }).catch(err => {
       statusEl.innerHTML = '❌ Could not check for updates. Are you online?';
       checkBtn.disabled = false;
     });
   },
 
+  // Compare semver strings: returns true if remote > local
+  _isNewer(remote, local) {
+    const r = remote.split('.').map(Number);
+    const l = local.split('.').map(Number);
+    for (let i = 0; i < 3; i++) {
+      if ((r[i] || 0) > (l[i] || 0)) return true;
+      if ((r[i] || 0) < (l[i] || 0)) return false;
+    }
+    return false;
+  },
+
   applyUpdate() {
-    navigator.serviceWorker.getRegistration().then(reg => {
-      if (reg && reg.waiting) {
-        // Tell the waiting SW to skip waiting and take over
-        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-      }
-    });
-    // Reload once the new SW activates
-    let refreshing = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (refreshing) return;
-      refreshing = true;
+    // Clear all caches and reload to get the latest version
+    if ('caches' in window) {
+      caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k)))).then(() => {
+        window.location.reload();
+      });
+    } else {
       window.location.reload();
-    });
+    }
   },
 
   forceReload() {
