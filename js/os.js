@@ -1,7 +1,7 @@
 /* ===== KidsOS Core ===== */
 const OS = (() => {
   const VERSION = '0.5.0';
-  const UPDATE_URL = 'https://lena.mixorium.net';
+  const UPDATE_URL = (typeof KIDSOS_CONFIG !== 'undefined' && KIDSOS_CONFIG.updateURL) || 'https://lena.mixorium.net';
 
   let zCounter = 100;
   let windowMap = {};     // id -> { el, taskbarBtn, app }
