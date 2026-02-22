@@ -1221,19 +1221,21 @@ button { font-family: var(--font); }
     bottom: calc(var(--taskbar-h) + var(--sab));
   }
 
-  /* Desktop icons — row wrap across top, cap height so they don't cover content */
+  /* Desktop icons — 4-column launcher grid filling the screen */
   #desktop-icons {
-    flex-direction: row;
-    flex-wrap: wrap;
-    top: calc(8px + var(--sat)); left: calc(8px + var(--sal)); right: calc(8px + var(--sar));
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    top: calc(16px + var(--sat)); left: calc(16px + var(--sal)); right: calc(16px + var(--sar));
     width: auto;
-    gap: 4px;
-    max-height: calc(100dvh - var(--taskbar-h) - var(--sat) - var(--sab) - 24px);
+    gap: 6px;
+    max-height: calc(100dvh - var(--taskbar-h) - var(--sat) - var(--sab) - 32px);
     overflow-y: auto;
+    justify-items: center;
+    align-content: start;
   }
-  .desktop-icon { width: 76px; padding: 6px 2px; }
-  .desktop-icon .icon-img { font-size: 30px; }
-  .desktop-icon span { font-size: 11px; }
+  .desktop-icon { width: 100%; max-width: 100px; padding: 10px 4px; }
+  .desktop-icon .icon-img { font-size: 38px; }
+  .desktop-icon span { font-size: 12px; margin-top: 6px; }
 
   /* Taskbar — icon-only app buttons on mobile */
   .tbtn-title { display: none; }
@@ -1241,7 +1243,7 @@ button { font-family: var(--font); }
   .taskbar-app-btn { padding: 4px 8px; min-width: 36px; max-width: 40px; text-align: center; }
   #taskbar-center { overflow-x: auto; scrollbar-width: none; }
   #taskbar-center::-webkit-scrollbar { display: none; }
-  #app-menu-btn { padding: 8px 16px; }
+  #app-menu-btn { padding: 10px 18px; font-size: 15px; }
 
   /* App menu — full width bottom sheet above fixed taskbar */
   #app-menu {
@@ -1252,11 +1254,18 @@ button { font-family: var(--font); }
     max-height: 80dvh; overflow-y: auto;
   }
 
+  /* App menu grid — 3 columns on tablet for bigger touch targets */
+  .app-menu-grid { grid-template-columns: repeat(3, 1fr); gap: 4px; }
+  .menu-app-item { padding: 14px 12px; font-size: 15px; }
+  .menu-app-item span { font-size: 24px; }
+
   /* Windows — no resize handle on touch */
   .win-resize { display: none; }
 
   /* Win controls — bigger touch targets */
-  .win-btn { width: 36px; height: 28px; font-size: 13px; }
+  .win-btn { width: 40px; height: 32px; font-size: 14px; }
+  .win-titlebar { height: 40px; }
+  .win-title { font-size: 14px; }
 
   /* Memory game */
   #memory-grid { grid-template-columns: repeat(4, 70px); gap: 8px; }
@@ -1274,13 +1283,16 @@ button { font-family: var(--font); }
   /* Minesweeper — scrollable grid */
   .ms-wrap { padding: 8px 6px; }
   .ms-grid-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  /* Taskbar clock — larger text */
+  #clock-time { font-size: 16px; }
+  #clock-date { font-size: 12px; }
 }
 
 /* ===== RESPONSIVE — MOBILE (≤768px) ===== */
 @media (max-width: 768px) {
-  .desktop-icon { width: 68px; }
-  .desktop-icon .icon-img { font-size: 26px; }
-  .desktop-icon span { font-size: 10px; }
+  .desktop-icon .icon-img { font-size: 34px; }
+  .desktop-icon span { font-size: 11px; }
 
   /* Boot screen */
   #boot-logo { font-size: 56px; }
@@ -1294,14 +1306,18 @@ button { font-family: var(--font); }
 
   /* KidsChat — narrower sidebar */
   .kc-sidebar { width: 120px; min-width: 120px; }
+
+  /* App menu — 2 columns on mobile */
+  .app-menu-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 /* ===== RESPONSIVE — SMALL PHONE (≤480px) ===== */
 @media (max-width: 480px) {
-  .desktop-icon { width: 60px; padding: 5px 1px; }
-  .desktop-icon .icon-img { font-size: 22px; }
-  .desktop-icon span { font-size: 9px; }
-  #desktop-icons { gap: 2px; }
+  /* Desktop icons — still 4-column grid but tighter */
+  #desktop-icons { gap: 2px; top: calc(10px + var(--sat)); left: calc(10px + var(--sal)); right: calc(10px + var(--sar)); }
+  .desktop-icon { padding: 8px 2px; }
+  .desktop-icon .icon-img { font-size: 30px; }
+  .desktop-icon span { font-size: 10px; }
 
   /* Memory game — tighter */
   #memory-grid { grid-template-columns: repeat(4, 54px); gap: 4px; }
@@ -1324,7 +1340,7 @@ button { font-family: var(--font); }
   /* Clock — time only */
   #clock-date { display: none; }
 
-  /* Calc buttons */
-  .calc-btn { font-size: 16px; }
-  .calc-display .calc-result { font-size: 26px; }
+  /* Calc buttons — larger touch targets */
+  .calc-btn { font-size: 18px; }
+  .calc-display .calc-result { font-size: 28px; }
 }
