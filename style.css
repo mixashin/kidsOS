@@ -104,15 +104,6 @@ html, body {
 }
 
 #taskbar-left { display: flex; align-items: center; }
-#taskbar-nav { display: flex; align-items: center; gap: 4px; }
-.taskbar-nav-btn {
-  width: 32px; height: 32px; border: 1px solid rgba(255,255,255,0.18);
-  border-radius: 6px; background: rgba(255,255,255,0.1); color: #fff;
-  font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center;
-  transition: background 0.15s;
-}
-.taskbar-nav-btn:hover { background: rgba(255,255,255,0.22); }
-.taskbar-nav-btn:active { background: rgba(91,140,255,0.35); }
 #taskbar-center { flex: 1; display: flex; align-items: center; gap: 6px; padding: 0 8px; overflow: hidden; }
 #taskbar-right { display: flex; align-items: center; }
 .tbtn-icon { margin-right: 4px; }
@@ -198,7 +189,7 @@ html, body {
   display: flex; flex-direction: column;
   overflow: hidden; transition: box-shadow 0.15s;
 }
-.window.focused { box-shadow: 0 12px 50px rgba(0,0,0,0.6), 0 0 0 2px var(--accent); z-index: 50 !important; }
+.window.focused { box-shadow: 0 12px 50px rgba(0,0,0,0.6), 0 0 0 2px var(--accent); }
 .window.minimized { display: none; }
 .window.maximized {
   top: 0 !important; left: 0 !important;
@@ -1008,9 +999,6 @@ button { font-family: var(--font); }
   #taskbar-center::-webkit-scrollbar { display: none; }
   #app-menu-btn { padding: 8px 16px; }
 
-  /* Nav buttons — touch-friendly */
-  .taskbar-nav-btn { width: 36px; height: 36px; font-size: 15px; }
-
   /* App menu — full width bottom sheet above fixed taskbar */
   #app-menu {
     position: fixed;
@@ -1081,9 +1069,6 @@ button { font-family: var(--font); }
 
   /* App menu — single column */
   .app-menu-grid { grid-template-columns: 1fr; }
-
-  /* Nav buttons — slightly smaller */
-  .taskbar-nav-btn { width: 32px; height: 32px; font-size: 13px; }
 
   /* Clock — time only */
   #clock-date { display: none; }

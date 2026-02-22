@@ -488,7 +488,6 @@ const OS = (() => {
   return {
     boot, launch, registerApp,
     createWindow, closeWindow, minimizeWindow, restoreWindow, toggleMaximize, focusWindow,
-    cycleFocusForward, cycleFocusBack,
     toggleAppMenu, shutdown,
     saveSettings, loadSettings, getSettings, applyWallpaper, getWallpapers,
     showContextMenu, removeContextMenu,
