@@ -1221,21 +1221,21 @@ button { font-family: var(--font); }
     bottom: calc(var(--taskbar-h) + var(--sab));
   }
 
-  /* Desktop icons — 4-column launcher grid filling the screen */
+  /* Desktop icons — 3-column launcher grid with large icons */
   #desktop-icons {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    top: calc(16px + var(--sat)); left: calc(16px + var(--sal)); right: calc(16px + var(--sar));
+    grid-template-columns: repeat(3, 1fr);
+    top: calc(20px + var(--sat)); left: calc(20px + var(--sal)); right: calc(20px + var(--sar));
     width: auto;
-    gap: 6px;
-    max-height: calc(100dvh - var(--taskbar-h) - var(--sat) - var(--sab) - 32px);
+    gap: 8px;
+    max-height: calc(100dvh - var(--taskbar-h) - var(--sat) - var(--sab) - 40px);
     overflow-y: auto;
     justify-items: center;
     align-content: start;
   }
-  .desktop-icon { width: 100%; max-width: 100px; padding: 10px 4px; }
-  .desktop-icon .icon-img { font-size: 38px; }
-  .desktop-icon span { font-size: 12px; margin-top: 6px; }
+  .desktop-icon { width: 100%; max-width: 140px; padding: 14px 6px; }
+  .desktop-icon .icon-img { font-size: 72px; }
+  .desktop-icon span { font-size: 15px; margin-top: 8px; }
 
   /* Taskbar — icon-only app buttons on mobile */
   .tbtn-title { display: none; }
@@ -1291,8 +1291,8 @@ button { font-family: var(--font); }
 
 /* ===== RESPONSIVE — MOBILE (≤768px) ===== */
 @media (max-width: 768px) {
-  .desktop-icon .icon-img { font-size: 34px; }
-  .desktop-icon span { font-size: 11px; }
+  .desktop-icon .icon-img { font-size: 60px; }
+  .desktop-icon span { font-size: 14px; }
 
   /* Boot screen */
   #boot-logo { font-size: 56px; }
@@ -1313,11 +1313,11 @@ button { font-family: var(--font); }
 
 /* ===== RESPONSIVE — SMALL PHONE (≤480px) ===== */
 @media (max-width: 480px) {
-  /* Desktop icons — still 4-column grid but tighter */
-  #desktop-icons { gap: 2px; top: calc(10px + var(--sat)); left: calc(10px + var(--sal)); right: calc(10px + var(--sar)); }
-  .desktop-icon { padding: 8px 2px; }
-  .desktop-icon .icon-img { font-size: 30px; }
-  .desktop-icon span { font-size: 10px; }
+  /* Desktop icons — 3-column grid, slightly smaller on small phones */
+  #desktop-icons { gap: 4px; top: calc(12px + var(--sat)); left: calc(12px + var(--sal)); right: calc(12px + var(--sar)); }
+  .desktop-icon { padding: 10px 2px; }
+  .desktop-icon .icon-img { font-size: 52px; }
+  .desktop-icon span { font-size: 12px; }
 
   /* Memory game — tighter */
   #memory-grid { grid-template-columns: repeat(4, 54px); gap: 4px; }
