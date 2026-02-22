@@ -190,7 +190,7 @@ const FM = (() => {
     if (item.ext === 'txt' || item.ext === 'md') {
       NotepadApp.openWithFile(currentPath, name, item.content || '');
     } else if (['png','jpg','jpeg','gif'].includes(item.ext)) {
-      OS.launch('paint');
+      PaintApp.openWithFile(currentPath, name, item.content || '');
     }
   }
 

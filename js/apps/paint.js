@@ -302,5 +302,26 @@ const PaintApp = (() => {
     ctx.putImageData(imageData, 0, 0);
   }
 
-  return { init, destroy, setTool, setColor, setColorFromPicker, setSize, clear, undo, saveToOS, download };
+  function openWithFile(path, name, content) {
+    OS.launch('paint');
+    setTimeout(() => {
+      if (!canvas || !ctx) return;
+      if (content && content.startsWith('data:')) {
+        const img = new Image();
+        img.onload = () => {
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0);
+          saveHistory();
+        };
+        img.src = content;
+      }
+      currentFile = { name };
+      const win = canvas.closest('.window');
+      const titleEl = win && win.querySelector('.win-title');
+      if (titleEl) titleEl.innerHTML = `<span class="win-title-icon">🎨</span> ${name}`;
+    }, 150);
+  }
+
+  return { init, destroy, setTool, setColor, setColorFromPicker, setSize, clear, undo, saveToOS, download, openWithFile };
 })();
