@@ -45,6 +45,20 @@
     { min: 15, label: '\u{1F31F} Legendary Boss' },
   ];
 
+  const AFFIRMATIONS = [
+    'GREAT JOB!', 'PERFECT!', 'AMAZING!', 'YOU ROCK!',
+    'NAILED IT!', 'SUPERSTAR!', 'BRILLIANT!', 'ON FIRE!',
+    'UNSTOPPABLE!', 'FLAWLESS!', 'LEGENDARY!', 'WOW!',
+  ];
+
+  const COMBO_AFFIRMATIONS = [
+    'YOU ARE THE BOSS!', 'MEGA COMBO!', 'INCREDIBLE!',
+    'KEEP GOING!', 'CRUSHING IT!', 'BEAST MODE!',
+    'TOO GOOD!', 'ABSOLUTELY WILD!',
+  ];
+
+  function randomPick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
   // Game state
   let state = 'idle';
   let emails = [];
@@ -141,10 +155,16 @@
     render();
     requestAnimationFrame(() => {
       const flash = document.getElementById('ej-sent-flash');
-      if (flash) { flash.classList.remove('ej-flash-anim'); void flash.offsetWidth; flash.classList.add('ej-flash-anim'); }
+      if (flash) {
+        flash.innerHTML = '\u2705 SENT!<br>' + randomPick(AFFIRMATIONS);
+        flash.classList.remove('ej-flash-anim'); void flash.offsetWidth; flash.classList.add('ej-flash-anim');
+      }
       if (combo > 1) {
         const pop = document.getElementById('ej-combo-pop');
-        if (pop) { pop.textContent = 'x' + combo + ' COMBO!'; pop.classList.remove('ej-pop-anim'); void pop.offsetWidth; pop.classList.add('ej-pop-anim'); }
+        if (pop) {
+          pop.innerHTML = '\u{1F525} x' + combo + ' COMBO!<br>' + randomPick(COMBO_AFFIRMATIONS);
+          pop.classList.remove('ej-pop-anim'); void pop.offsetWidth; pop.classList.add('ej-pop-anim');
+        }
       }
     });
   }
@@ -180,17 +200,32 @@
     }
 
     if (state === 'gameover') {
-      body.innerHTML = `<div class="ej-wrap"><div class="ej-gameover">
-        <div class="ej-go-rank">${getRank(emailsSent)}</div>
-        <div class="ej-go-title">Shift Over!</div>
-        <div class="ej-go-stats">
-          <div class="ej-go-stat"><span>📧 Emails Sent</span><strong>${emailsSent}</strong></div>
-          <div class="ej-go-stat"><span>⭐ Score</span><strong>${score}</strong></div>
-          <div class="ej-go-stat"><span>🔥 Best Combo</span><strong>x${bestCombo}</strong></div>
-          <div class="ej-go-stat"><span>🏆 High Score</span><strong>${hiScore}</strong></div>
-        </div>
-        <button class="ej-start-btn" onclick="window._ejobStart()">Play Again</button>
-      </div></div>`;
+      if (score === 0) {
+        body.innerHTML = `<div class="ej-wrap"><div class="ej-gameover">
+          <div class="ej-zero-win">😎</div>
+          <div class="ej-zero-title">AWESOME, YOU GAVE 0 CARES!</div>
+          <div class="ej-go-rank">🏖️ Professional Slacker</div>
+          <div class="ej-go-stats">
+            <div class="ej-go-stat"><span>📧 Emails Sent</span><strong>0</strong></div>
+            <div class="ej-go-stat"><span>⭐ Score</span><strong>0</strong></div>
+            <div class="ej-go-stat"><span>😴 Cares Given</span><strong>0</strong></div>
+            <div class="ej-go-stat"><span>🏆 High Score</span><strong>${hiScore}</strong></div>
+          </div>
+          <button class="ej-start-btn" onclick="window._ejobStart()">Try Again (or don't)</button>
+        </div></div>`;
+      } else {
+        body.innerHTML = `<div class="ej-wrap"><div class="ej-gameover">
+          <div class="ej-go-rank">${getRank(emailsSent)}</div>
+          <div class="ej-go-title">Shift Over!</div>
+          <div class="ej-go-stats">
+            <div class="ej-go-stat"><span>📧 Emails Sent</span><strong>${emailsSent}</strong></div>
+            <div class="ej-go-stat"><span>⭐ Score</span><strong>${score}</strong></div>
+            <div class="ej-go-stat"><span>🔥 Best Combo</span><strong>x${bestCombo}</strong></div>
+            <div class="ej-go-stat"><span>🏆 High Score</span><strong>${hiScore}</strong></div>
+          </div>
+          <button class="ej-start-btn" onclick="window._ejobStart()">Play Again</button>
+        </div></div>`;
+      }
       return;
     }
 
