@@ -41,6 +41,9 @@ OS.registerApp('settings', {
         <div class="settings-sidebar-item" onclick="SettingsApp.showPanel('storage', this)">
           💾 Storage
         </div>
+        <div class="settings-sidebar-item" onclick="SettingsApp.showPanel('updates', this)">
+          🔄 Updates
+        </div>
         <div class="settings-sidebar-item" onclick="SettingsApp.showPanel('about', this)">
           ℹ️ About
         </div>
@@ -102,6 +105,29 @@ OS.registerApp('settings', {
             This will erase <b>all</b> your saved data: files, settings, chat history, game scores, and Kidstagram data. This cannot be undone!
           </p>
           <button class="settings-btn settings-btn-danger" onclick="SettingsApp.factoryReset()">🗑️ Factory Reset</button>
+        </div>
+      </div>
+
+      <!-- Updates Panel -->
+      <div class="settings-panel" id="panel-updates">
+        <h2>🔄 Updates</h2>
+        <div class="settings-group">
+          <p style="font-size:13px;color:#666;margin-bottom:12px">
+            Check if a newer version of KidsOS is available. Requires an internet connection.
+          </p>
+          <div id="update-status" style="padding:12px;background:#f5f5f5;border-radius:8px;font-size:13px;color:#555;margin-bottom:12px">
+            Status: Not checked yet
+          </div>
+          <button class="settings-btn" id="update-check-btn" onclick="SettingsApp.checkForUpdate()">🔍 Check for Updates</button>
+          <button class="settings-btn" id="update-apply-btn" onclick="SettingsApp.applyUpdate()" style="display:none;margin-left:8px;background:#4caf50">⬇️ Update Now</button>
+        </div>
+        <hr style="border:none;border-top:1px solid #ddd;margin:16px 0">
+        <div class="settings-group">
+          <label>Force Reload</label>
+          <p style="font-size:13px;color:#666;margin-bottom:12px">
+            Clear all cached files and reload KidsOS. Use this if the app feels stuck on an old version.
+          </p>
+          <button class="settings-btn" style="background:#ff9800" onclick="SettingsApp.forceReload()">🔁 Force Reload</button>
         </div>
       </div>
 
@@ -218,6 +244,80 @@ const SettingsApp = {
       OS.closeWindow(id);
     });
     alert('✅ Factory reset complete!\nKidsOS has been restored to defaults.');
+  },
+
+  checkForUpdate() {
+    const statusEl = document.getElementById('update-status');
+    const applyBtn = document.getElementById('update-apply-btn');
+    const checkBtn = document.getElementById('update-check-btn');
+    if (!statusEl) return;
+
+    if (!('serviceWorker' in navigator)) {
+      statusEl.innerHTML = '⚠️ Service Worker not supported in this browser.';
+      return;
+    }
+
+    statusEl.innerHTML = '🔍 Checking for updates...';
+    checkBtn.disabled = true;
+
+    navigator.serviceWorker.getRegistration().then(reg => {
+      if (!reg) {
+        statusEl.innerHTML = '⚠️ No service worker registered. Not running as PWA.';
+        checkBtn.disabled = false;
+        return;
+      }
+
+      // Force the SW to check for a new version on the server
+      reg.update().then(() => {
+        if (reg.waiting) {
+          // A new SW is already waiting to activate
+          statusEl.innerHTML = '✅ <b>Update available!</b> A new version is ready to install.';
+          applyBtn.style.display = 'inline-block';
+        } else if (reg.installing) {
+          // New SW is installing right now — watch for it
+          statusEl.innerHTML = '⬇️ Downloading update...';
+          reg.installing.addEventListener('statechange', function() {
+            if (this.state === 'installed') {
+              statusEl.innerHTML = '✅ <b>Update available!</b> A new version is ready to install.';
+              applyBtn.style.display = 'inline-block';
+            }
+          });
+        } else {
+          statusEl.innerHTML = '👍 KidsOS is up to date!';
+        }
+        checkBtn.disabled = false;
+      }).catch(err => {
+        statusEl.innerHTML = '❌ Could not check for updates. Are you online?';
+        checkBtn.disabled = false;
+      });
+    });
+  },
+
+  applyUpdate() {
+    navigator.serviceWorker.getRegistration().then(reg => {
+      if (reg && reg.waiting) {
+        // Tell the waiting SW to skip waiting and take over
+        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+      }
+    });
+    // Reload once the new SW activates
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (refreshing) return;
+      refreshing = true;
+      window.location.reload();
+    });
+  },
+
+  forceReload() {
+    if (!confirm('This will clear all cached app files and reload KidsOS.\nYour saved data (files, settings, chat) will NOT be affected.\n\nProceed?')) return;
+    if ('caches' in window) {
+      caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k)))).then(() => {
+        window.location.reload();
+      });
+    } else {
+      window.location.reload();
+    }
   },
 
   saveUsername() {

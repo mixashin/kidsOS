@@ -40,6 +40,11 @@ self.addEventListener('activate', e => {
   );
 });
 
+// Listen for skip-waiting message from the app (used by Settings > Updates)
+self.addEventListener('message', e => {
+  if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
+});
+
 // Fetch: serve from cache, fall back to network, then update cache
 self.addEventListener('fetch', e => {
   // Only handle same-origin GET requests
