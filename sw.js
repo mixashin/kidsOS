@@ -30,15 +30,17 @@ const ASSETS = [
   './version.json',
 ];
 
-// Install: cache app assets (individually so one 404 doesn't block all)
+// Install: cache app assets with cache:'reload' to bypass browser HTTP cache
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE_NAME).then(cache =>
       Promise.all(
         ASSETS.map(url =>
-          cache.add(url).catch(err =>
-            console.warn('SW: failed to cache', url, err)
-          )
+          fetch(url, { cache: 'reload' })
+            .then(res => {
+              if (res && res.status === 200) return cache.put(url, res);
+            })
+            .catch(err => console.warn('SW: failed to cache', url, err))
         )
       )
     ).then(() => self.skipWaiting())

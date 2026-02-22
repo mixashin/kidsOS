@@ -346,21 +346,32 @@ const SettingsApp = {
   },
 
   _nukeAndReload() {
-    const hardNav = () => {
-      // Navigate with cache-buster to avoid any stale responses
-      const base = window.location.href.split('?')[0].split('#')[0];
-      window.location.replace(base + '?_update=' + Date.now());
-    };
+    // Collect all JS/CSS URLs loaded by the current page
+    const assets = new Set();
+    document.querySelectorAll('script[src]').forEach(s => assets.add(s.src));
+    document.querySelectorAll('link[rel="stylesheet"]').forEach(l => assets.add(l.href));
+    // Also add sw.js and manifest (not in DOM as script/link)
+    const base = window.location.href.split('?')[0].split('#')[0].replace(/\/[^/]*$/, '/');
+    assets.add(base + 'sw.js');
+    assets.add(base + 'manifest.json');
+    assets.add(base);
+
     Promise.all([
       // Clear all CacheStorage caches
       'caches' in window
         ? caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))))
         : Promise.resolve(),
-      // Unregister all service workers so old SW can't serve stale files on reload
+      // Unregister all service workers
       'serviceWorker' in navigator
         ? navigator.serviceWorker.getRegistrations().then(regs => Promise.all(regs.map(r => r.unregister())))
         : Promise.resolve(),
-    ]).then(hardNav).catch(hardNav);
+    ])
+    .then(() =>
+      // Re-fetch all assets with cache:'reload' to bust browser HTTP cache
+      Promise.all([...assets].map(url => fetch(url, { cache: 'reload' }).catch(() => {})))
+    )
+    .then(() => location.reload())
+    .catch(() => location.reload());
   },
 
   saveUsername() {
