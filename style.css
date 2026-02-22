@@ -446,12 +446,33 @@ button { font-family: var(--font); }
 .snake-score { color: #fff; font-size: 18px; font-weight: 700; }
 .snake-score span { color: #5b8cff; }
 #snake-canvas { border: 3px solid #5b8cff; border-radius: 6px; background: #0a0a1a; }
-.snake-instructions { color: #888; font-size: 13px; text-align: center; }
-.snake-btn {
+.snake-controls { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.snake-play-btn {
   padding: 8px 24px; background: #5b8cff; color: #fff;
   border: none; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: 600;
 }
-.snake-btn:hover { background: #7aa3ff; }
+.snake-play-btn:hover { background: #7aa3ff; }
+.snake-dpad {
+  display: grid; grid-template-columns: 50px 50px 50px; grid-template-rows: 50px 50px 50px;
+  gap: 4px; width: 158px; height: 158px;
+  background: radial-gradient(circle, #2a2a4e 60%, #1a1a2e 100%);
+  border-radius: 50%; padding: 4px; place-items: center;
+  border: 3px solid #3a3a6e; box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.snake-dpad-btn {
+  width: 46px; height: 46px; border: none; border-radius: 50%;
+  background: #5b8cff; color: #fff; font-size: 20px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.1s, transform 0.1s; user-select: none; -webkit-user-select: none;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+.snake-dpad-btn:hover { background: #7aa3ff; }
+.snake-dpad-btn:active { background: #4a7bef; transform: scale(0.9); }
+.snake-dpad-center { font-size: 22px; }
+.snake-dpad-up    { grid-column: 2; grid-row: 1; }
+.snake-dpad-left  { grid-column: 1; grid-row: 2; }
+.snake-dpad-right { grid-column: 3; grid-row: 2; }
+.snake-dpad-down  { grid-column: 2; grid-row: 3; }
 
 /* --- Memory Game --- */
 .memory-wrap { display: flex; flex-direction: column; align-items: center; height: 100%; padding: 16px; background: #1a1a2e; gap: 12px; }

@@ -23,13 +23,15 @@ OS.registerApp('snake', {
       <canvas id="snake-canvas" width="400" height="400"
               style="display:block;cursor:pointer;"
               onclick="SnakeApp.handleClick()"></canvas>
-      <div class="snake-instructions">Arrow Keys / WASD to move</div>
-      <div style="display:flex;gap:8px;justify-content:center;margin-top:4px">
-        <button class="snake-btn" onclick="SnakeApp.handleClick()">▶ Play / Restart</button>
-        <button class="snake-btn" onclick="SnakeApp.changeDir(0,-1)">▲</button>
-        <button class="snake-btn" onclick="SnakeApp.changeDir(-1,0)">◀</button>
-        <button class="snake-btn" onclick="SnakeApp.changeDir(0,1)">▼</button>
-        <button class="snake-btn" onclick="SnakeApp.changeDir(1,0)">▶</button>
+      <div class="snake-controls">
+        <button class="snake-btn snake-play-btn" onclick="SnakeApp.handleClick()">▶ Play / Restart</button>
+        <div class="snake-dpad">
+          <button class="snake-dpad-btn snake-dpad-up" ontouchstart="SnakeApp.changeDir(0,-1); event.preventDefault();" onclick="SnakeApp.changeDir(0,-1)">▲</button>
+          <button class="snake-dpad-btn snake-dpad-left" ontouchstart="SnakeApp.changeDir(-1,0); event.preventDefault();" onclick="SnakeApp.changeDir(-1,0)">◀</button>
+          <div class="snake-dpad-center">🐍</div>
+          <button class="snake-dpad-btn snake-dpad-right" ontouchstart="SnakeApp.changeDir(1,0); event.preventDefault();" onclick="SnakeApp.changeDir(1,0)">▶</button>
+          <button class="snake-dpad-btn snake-dpad-down" ontouchstart="SnakeApp.changeDir(0,1); event.preventDefault();" onclick="SnakeApp.changeDir(0,1)">▼</button>
+        </div>
       </div>
     </div>`;
   },
