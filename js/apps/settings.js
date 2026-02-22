@@ -290,29 +290,37 @@ const SettingsApp = {
     statusEl.innerHTML = '🔍 Checking for updates...';
     checkBtn.disabled = true;
 
-    const remoteUrl = OS.UPDATE_URL + '/version.json?t=' + Date.now();
+    const urls = [
+      OS.UPDATE_URL + '/version.json?t=' + Date.now(),
+      'https://mixashin.github.io/kidsOS/version.json?t=' + Date.now(),
+    ];
 
-    fetch(remoteUrl).then(res => {
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      return res.json();
-    }).then(remote => {
-      const local = OS.VERSION;
-      const remoteVer = remote.version;
-
-      if (this._isNewer(remoteVer, local)) {
-        statusEl.innerHTML = `✅ <b>Update available!</b><br>
-          <span style="font-size:12px">Current: v${local} → New: v${remoteVer}</span>
-          ${remote.build ? '<br><span style="font-size:12px;color:#888">Build: ' + remote.build + '</span>' : ''}`;
-        applyBtn.style.display = 'inline-block';
-      } else {
-        statusEl.innerHTML = `👍 KidsOS is up to date! <span style="font-size:12px">(v${local})</span>`;
-        applyBtn.style.display = 'none';
+    const tryFetch = (i) => {
+      if (i >= urls.length) {
+        statusEl.innerHTML = '❌ Could not check for updates. Are you online?';
+        checkBtn.disabled = false;
+        return;
       }
-      checkBtn.disabled = false;
-    }).catch(err => {
-      statusEl.innerHTML = '❌ Could not check for updates. Are you online?';
-      checkBtn.disabled = false;
-    });
+      fetch(urls[i]).then(res => {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      }).then(remote => {
+        const local = OS.VERSION;
+        const remoteVer = remote.version;
+
+        if (this._isNewer(remoteVer, local)) {
+          statusEl.innerHTML = `✅ <b>Update available!</b><br>
+            <span style="font-size:12px">Current: v${local} → New: v${remoteVer}</span>
+            ${remote.build ? '<br><span style="font-size:12px;color:#888">Build: ' + remote.build + '</span>' : ''}`;
+          applyBtn.style.display = 'inline-block';
+        } else {
+          statusEl.innerHTML = `👍 KidsOS is up to date! <span style="font-size:12px">(v${local})</span>`;
+          applyBtn.style.display = 'none';
+        }
+        checkBtn.disabled = false;
+      }).catch(() => tryFetch(i + 1));
+    };
+    tryFetch(0);
   },
 
   // Compare semver strings: returns true if remote > local
