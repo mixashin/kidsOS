@@ -1,6 +1,6 @@
 /* ===== KidsOS Core ===== */
 const OS = (() => {
-  const VERSION = '0.7.1';
+  const VERSION = '0.7.2';
   const UPDATE_URL = (typeof KIDSOS_CONFIG !== 'undefined' && KIDSOS_CONFIG.updateURL) || 'http://localhost:5555';
 
   let zCounter = 100;
@@ -51,15 +51,20 @@ const OS = (() => {
   }
 
   /* ---- Back Button Handling ---- */
+  function pushBackState() {
+    history.pushState({ kidsOS: true, depth: Date.now() }, '');
+  }
+
   function initBackButton() {
-    // Push initial state so we have something to go back from
-    history.replaceState({ kidsOS: true }, '');
+    // Seed two history entries so first back press stays in-app
+    history.replaceState({ kidsOS: true, depth: 0 }, '');
+    pushBackState();
 
     let lastBackTime = 0;
 
     window.addEventListener('popstate', (e) => {
-      // Always re-push state so back button keeps working
-      history.pushState({ kidsOS: true }, '');
+      // Re-push so back button keeps working next time
+      pushBackState();
 
       // Close app menu if open
       const menu = document.getElementById('app-menu');
@@ -87,8 +92,7 @@ const OS = (() => {
       if (!isMobile) {
         const now = Date.now();
         if (now - lastBackTime < 1500) {
-          // Double back on desktop — allow exit
-          history.back();
+          history.go(-(history.length));
           return;
         }
         lastBackTime = now;
