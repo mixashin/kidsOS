@@ -1,6 +1,6 @@
 /* ===== KidsOS Core ===== */
 const OS = (() => {
-  const VERSION = '0.7.3';
+  const VERSION = '0.8.0';
   const UPDATE_URL = (typeof KIDSOS_CONFIG !== 'undefined' && KIDSOS_CONFIG.updateURL) || 'http://localhost:5555';
 
   let zCounter = 100;
@@ -488,6 +488,7 @@ const OS = (() => {
     'kidsOS_snakeHi',
     'kidsOS_kidstagram',
     'kidsOS_snackdash',
+    'kidsOS_treasuremapper',
     'kidsOS_ejobHi',
   ];
 
