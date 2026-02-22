@@ -75,6 +75,7 @@
   let lastSendTime = 0;
   let winId = null;
   let keyHandler = null;
+  let overlay = null;
 
   function shuffle(arr) {
     const a = arr.slice();
@@ -153,20 +154,20 @@
     emailStartTime = Date.now();
 
     render();
-    requestAnimationFrame(() => {
-      const flash = document.getElementById('ej-sent-flash');
+    if (overlay) {
+      const flash = overlay.querySelector('.ej-sent-flash');
       if (flash) {
         flash.innerHTML = '\u2705 SENT!<br>' + randomPick(AFFIRMATIONS);
         flash.classList.remove('ej-flash-anim'); void flash.offsetWidth; flash.classList.add('ej-flash-anim');
       }
       if (combo > 1) {
-        const pop = document.getElementById('ej-combo-pop');
+        const pop = overlay.querySelector('.ej-combo-pop');
         if (pop) {
           pop.innerHTML = '\u{1F525} x' + combo + ' COMBO!<br>' + randomPick(COMBO_AFFIRMATIONS);
           pop.classList.remove('ej-pop-anim'); void pop.offsetWidth; pop.classList.add('ej-pop-anim');
         }
       }
-    });
+    }
   }
 
   function endGame() {
@@ -270,8 +271,6 @@
           </div>
           <div class="ej-progress-wrap"><div class="ej-progress-bar" style="width:${pct}%"></div></div>
           <div class="ej-progress-pct">${pct}%</div>
-          <div id="ej-sent-flash" class="ej-sent-flash">✅ SENT!</div>
-          <div id="ej-combo-pop" class="ej-combo-pop"></div>
         </div>
       </div>
       <div class="ej-tap-zone" onclick="window._ejobInput()" ontouchstart="window._ejobInput(); event.preventDefault();">⌨️ Mash any key to type!</div>
@@ -294,6 +293,15 @@
       state = 'idle';
       render();
 
+      // Persistent overlay for animations (survives render innerHTML rebuilds)
+      const win = document.getElementById('window_' + id);
+      if (win) {
+        overlay = document.createElement('div');
+        overlay.className = 'ej-overlay';
+        overlay.innerHTML = '<div class="ej-sent-flash"></div><div class="ej-combo-pop"></div>';
+        win.appendChild(overlay);
+      }
+
       keyHandler = (e) => {
         const win = document.getElementById('window_ejob');
         if (!win || !win.classList.contains('focused')) return;
@@ -306,6 +314,7 @@
     },
     onClose() {
       if (keyHandler) { document.removeEventListener('keydown', keyHandler); keyHandler = null; }
+      if (overlay) { overlay.remove(); overlay = null; }
       state = 'idle';
       clearInterval(timerInterval);
       timerInterval = null;
