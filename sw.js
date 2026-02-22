@@ -19,6 +19,7 @@ const ASSETS = [
   './js/apps/chat.js',
   './js/apps/minesweeper.js',
   './js/apps/ejob.js',
+  './js/apps/tinybank.js',
   './js/apps/chorequest.js',
   './js/apps/treasuremapper.js',
   './js/apps/snackdash.js',

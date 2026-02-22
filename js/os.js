@@ -1,6 +1,6 @@
 /* ===== KidsOS Core ===== */
 const OS = (() => {
-  const VERSION = '0.9.1';
+  const VERSION = '0.10.0';
   const UPDATE_URL = (typeof KIDSOS_CONFIG !== 'undefined' && KIDSOS_CONFIG.updateURL) || 'https://mixashin.github.io/kidsOS';
 
   let zCounter = 100;
@@ -492,6 +492,7 @@ const OS = (() => {
     'kidsOS_treasuremapper',
     'kidsOS_ejobHi',
     'kidsOS_chorequest',
+    'kidsOS_tinybank',
   ];
 
   function getStorageUsage() {
