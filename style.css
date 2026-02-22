@@ -1492,6 +1492,87 @@ button { font-family: var(--font); }
 .sd-empty-emoji { font-size: 48px; margin-bottom: 8px; }
 .sd-empty-sub { font-size: 13px; color: var(--text-muted); }
 
+/* ===== ChoreQuest ===== */
+.cq-wrap { display: flex; flex-direction: column; height: 100%; background: var(--win-body-bg); font-family: inherit; overflow-y: auto; }
+.cq-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #ef6c00; color: #fff; flex-shrink: 0; }
+.cq-title { font-weight: 700; font-size: 16px; }
+.cq-streak { font-size: 13px; font-weight: 600; background: rgba(255,255,255,.2); padding: 3px 10px; border-radius: 20px; }
+
+/* Progress */
+.cq-progress-wrap { padding: 10px 16px; flex-shrink: 0; }
+.cq-progress { height: 14px; background: var(--border-light); border-radius: 7px; overflow: hidden; }
+.cq-progress-bar { height: 100%; background: #ef6c00; border-radius: 7px; transition: width .4s ease; }
+.cq-progress-text { font-size: 12px; color: var(--text-muted); margin-top: 4px; text-align: right; }
+
+/* Sections */
+.cq-section { padding: 0 16px 8px; }
+.cq-section-title { font-weight: 700; font-size: 13px; color: #ef6c00; margin: 10px 0 6px; text-transform: uppercase; letter-spacing: .5px; }
+
+/* Chore cards */
+.cq-chore { background: var(--win-body-bg); border: 1.5px solid var(--border-light); border-radius: 10px; margin-bottom: 6px; padding: 8px 10px; transition: background .2s, border-color .2s; }
+.cq-chore-done { background: #e8f5e9; border-color: #a5d6a7; }
+[data-theme="dark"] .cq-chore-done { background: #1b3a1b; border-color: #2e7d32; }
+.cq-chore-main { display: flex; align-items: center; gap: 8px; }
+.cq-chore-emoji { font-size: 22px; flex-shrink: 0; }
+.cq-chore-info { flex: 1; min-width: 0; }
+.cq-chore-name { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.cq-chore-done .cq-chore-name { text-decoration: line-through; opacity: .7; }
+.cq-chore-hint { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.cq-chore-actions { flex-shrink: 0; }
+.cq-done-btn { background: #ef6c00; color: #fff; border: none; border-radius: 8px; padding: 6px 14px; font-size: 13px; font-weight: 700; cursor: pointer; }
+.cq-done-btn:hover { background: #e65100; }
+.cq-timer-btn { background: #ff9800; color: #fff; border: none; border-radius: 8px; padding: 6px 10px; font-size: 12px; font-weight: 600; cursor: pointer; }
+.cq-timer-btn:hover { background: #ef6c00; }
+.cq-check-mark { font-size: 20px; }
+.cq-hint-toggle { background: none; border: none; color: #ef6c00; font-size: 11px; cursor: pointer; padding: 2px 0 0; }
+.cq-hint-toggle:hover { text-decoration: underline; }
+
+/* Timer overlay */
+.cq-timer { background: linear-gradient(135deg, #fff3e0, #ffe0b2); border: 2px solid #ef6c00; border-radius: 14px; margin: 0 16px 10px; padding: 20px; text-align: center; animation: cq-pulse 1.5s ease-in-out infinite; }
+[data-theme="dark"] .cq-timer { background: linear-gradient(135deg, #3e2723, #4e342e); }
+.cq-timer-emoji { font-size: 36px; }
+.cq-timer-label { font-weight: 700; font-size: 16px; color: #ef6c00; margin: 4px 0; }
+.cq-timer-display { font-size: 48px; font-weight: 800; color: #e65100; font-variant-numeric: tabular-nums; }
+[data-theme="dark"] .cq-timer-display { color: #ffb74d; }
+.cq-timer-hint { font-size: 13px; color: var(--text-muted); margin: 4px 0 10px; }
+.cq-timer-cancel { background: none; border: 1px solid var(--text-muted); border-radius: 8px; padding: 4px 14px; font-size: 12px; color: var(--text-muted); cursor: pointer; }
+
+@keyframes cq-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239,108,0,.3); }
+  50% { box-shadow: 0 0 0 8px rgba(239,108,0,0); }
+}
+
+/* Victory screen */
+.cq-victory { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; padding: 20px; position: relative; overflow: hidden; }
+.cq-confetti { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; }
+.cq-confetti-piece { position: absolute; top: -30px; font-size: 22px; animation: cq-confetti-fall linear infinite; }
+@keyframes cq-confetti-fall {
+  0% { transform: translateY(-30px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(520px) rotate(360deg); opacity: 0; }
+}
+.cq-stamp { font-size: 28px; font-weight: 900; color: #ef6c00; animation: cq-stamp-pop .5s ease-out; position: relative; z-index: 1; }
+@keyframes cq-stamp-pop {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.3); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.cq-compliment { font-size: 16px; color: var(--text-primary); margin: 12px 0; font-weight: 600; position: relative; z-index: 1; }
+.cq-sticker-earned { background: #fff3e0; border-radius: 14px; padding: 14px 20px; margin: 10px 0; position: relative; z-index: 1; }
+[data-theme="dark"] .cq-sticker-earned { background: #3e2723; }
+.cq-sticker-earned-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+.cq-sticker-earned-icon { font-size: 40px; }
+.cq-sticker-earned-name { font-size: 14px; font-weight: 700; color: #ef6c00; margin-top: 4px; }
+.cq-victory-streak { font-size: 15px; font-weight: 600; color: var(--text-primary); margin: 8px 0; position: relative; z-index: 1; }
+.cq-victory-total { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; position: relative; z-index: 1; }
+.cq-victory-btn { background: #ef6c00; color: #fff; border: none; border-radius: 12px; padding: 12px 28px; font-size: 15px; font-weight: 700; cursor: pointer; position: relative; z-index: 1; }
+.cq-victory-btn:hover { background: #e65100; }
+
+/* Footer */
+.cq-footer { padding: 10px 16px 14px; text-align: center; flex-shrink: 0; }
+.cq-sticker-count { font-size: 13px; font-weight: 600; color: #ef6c00; }
+.cq-streak-msg { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+.cq-best-streak { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
 /* ===== Treasure Mapper ===== */
 .tm-wrap { display: flex; flex-direction: column; height: 100%; background: var(--win-body-bg); font-family: inherit; }
 .tm-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #2e7d32; color: #fff; flex-shrink: 0; }
