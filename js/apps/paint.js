@@ -76,7 +76,7 @@ const PaintApp = (() => {
     setTimeout(() => {
       canvas = document.getElementById('paint-canvas');
       if (!canvas) return;
-      ctx = canvas.getContext('2d');
+      ctx = canvas.getContext('2d', { willReadFrequently: true });
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       saveHistory();
