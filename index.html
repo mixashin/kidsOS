@@ -56,6 +56,10 @@
         <div class="icon-img">💣</div>
         <span>Minesweeper</span>
       </div>
+      <div class="desktop-icon" onclick="OS.launch('ejob')">
+        <div class="icon-img">💼</div>
+        <span>eJob</span>
+      </div>
       <div class="desktop-icon" onclick="OS.launch('settings')">
         <div class="icon-img">⚙️</div>
         <span>Settings</span>
@@ -114,6 +118,9 @@
         <div class="menu-app-item" onclick="OS.launch('minesweeper'); OS.toggleAppMenu()">
           <span>💣</span> Minesweeper
         </div>
+        <div class="menu-app-item" onclick="OS.launch('ejob'); OS.toggleAppMenu()">
+          <span>💼</span> eJob
+        </div>
         <div class="menu-app-item" onclick="OS.launch('settings'); OS.toggleAppMenu()">
           <span>⚙️</span> Settings
         </div>
@@ -145,6 +152,7 @@
   <script src="js/apps/kidstagram.js"></script>
   <script src="js/apps/chat.js"></script>
   <script src="js/apps/minesweeper.js"></script>
+  <script src="js/apps/ejob.js"></script>
   <script src="js/apps/settings.js"></script>
   <script>
     window.addEventListener('load', () => OS.boot());

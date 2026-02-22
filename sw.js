@@ -19,6 +19,7 @@ const ASSETS = [
   './js/apps/kidstagram.js',
   './js/apps/chat.js',
   './js/apps/minesweeper.js',
+  './js/apps/ejob.js',
   './js/apps/settings.js',
   './version.json',
 ];
