@@ -257,24 +257,27 @@ const SettingsApp = {
       return;
     }
 
+    // file:// protocol doesn't support service workers
+    if (window.location.protocol === 'file:') {
+      statusEl.innerHTML = '⚠️ Updates require a web server.<br><span style="font-size:12px;color:#888">KidsOS is running from a local file. To enable updates, serve it via a web server (localhost or HTTPS).</span>';
+      return;
+    }
+
     statusEl.innerHTML = '🔍 Checking for updates...';
     checkBtn.disabled = true;
 
+    // Try to get existing registration, or register if missing
     navigator.serviceWorker.getRegistration().then(reg => {
-      if (!reg) {
-        statusEl.innerHTML = '⚠️ No service worker registered. Not running as PWA.';
-        checkBtn.disabled = false;
-        return;
-      }
-
+      if (reg) return reg;
+      // No registration — try to register now
+      return navigator.serviceWorker.register('sw.js');
+    }).then(reg => {
       // Force the SW to check for a new version on the server
-      reg.update().then(() => {
+      return reg.update().then(() => {
         if (reg.waiting) {
-          // A new SW is already waiting to activate
           statusEl.innerHTML = '✅ <b>Update available!</b> A new version is ready to install.';
           applyBtn.style.display = 'inline-block';
         } else if (reg.installing) {
-          // New SW is installing right now — watch for it
           statusEl.innerHTML = '⬇️ Downloading update...';
           reg.installing.addEventListener('statechange', function() {
             if (this.state === 'installed') {
@@ -286,10 +289,10 @@ const SettingsApp = {
           statusEl.innerHTML = '👍 KidsOS is up to date!';
         }
         checkBtn.disabled = false;
-      }).catch(err => {
-        statusEl.innerHTML = '❌ Could not check for updates. Are you online?';
-        checkBtn.disabled = false;
       });
+    }).catch(err => {
+      statusEl.innerHTML = '❌ Could not check for updates. Are you online?';
+      checkBtn.disabled = false;
     });
   },
 
