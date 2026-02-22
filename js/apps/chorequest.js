@@ -289,7 +289,7 @@
     getWindowOpts() {
       return {
         id: 'chorequest-' + Date.now(),
-        title: '✅ ChoreQuest',
+        title: 'ChoreQuest',
         icon: '✅',
         width: 400,
         height: 520,
