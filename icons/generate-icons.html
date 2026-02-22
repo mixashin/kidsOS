@@ -33,120 +33,126 @@ function drawIcon(canvas) {
 
   const cx = s / 2;
 
-  // ---- Phone outline ----
-  const phoneW = s * 0.44;
-  const phoneH = s * 0.58;
-  const phoneX = cx - phoneW / 2;
-  const phoneY = s * 0.08;
-  const phoneR = s * 0.04;
-
-  // Phone body
-  ctx.beginPath();
-  ctx.moveTo(phoneX + phoneR, phoneY);
-  ctx.lineTo(phoneX + phoneW - phoneR, phoneY);
-  ctx.quadraticCurveTo(phoneX + phoneW, phoneY, phoneX + phoneW, phoneY + phoneR);
-  ctx.lineTo(phoneX + phoneW, phoneY + phoneH - phoneR);
-  ctx.quadraticCurveTo(phoneX + phoneW, phoneY + phoneH, phoneX + phoneW - phoneR, phoneY + phoneH);
-  ctx.lineTo(phoneX + phoneR, phoneY + phoneH);
-  ctx.quadraticCurveTo(phoneX, phoneY + phoneH, phoneX, phoneY + phoneH - phoneR);
-  ctx.lineTo(phoneX, phoneY + phoneR);
-  ctx.quadraticCurveTo(phoneX, phoneY, phoneX + phoneR, phoneY);
-  ctx.closePath();
-  ctx.fillStyle = '#1e1e30';
-  ctx.fill();
-  ctx.strokeStyle = '#3a3a5c';
-  ctx.lineWidth = s * 0.005;
-  ctx.stroke();
-
-  // Phone screen
-  const screenMargin = s * 0.025;
-  const screenX = phoneX + screenMargin;
-  const screenY = phoneY + s * 0.04;
-  const screenW = phoneW - screenMargin * 2;
-  const screenH = phoneH - s * 0.07;
-  const screenR = s * 0.015;
-
-  ctx.beginPath();
-  ctx.moveTo(screenX + screenR, screenY);
-  ctx.lineTo(screenX + screenW - screenR, screenY);
-  ctx.quadraticCurveTo(screenX + screenW, screenY, screenX + screenW, screenY + screenR);
-  ctx.lineTo(screenX + screenW, screenY + screenH - screenR);
-  ctx.quadraticCurveTo(screenX + screenW, screenY + screenH, screenX + screenW - screenR, screenY + screenH);
-  ctx.lineTo(screenX + screenR, screenY + screenH);
-  ctx.quadraticCurveTo(screenX, screenY + screenH, screenX, screenY + screenH - screenR);
-  ctx.lineTo(screenX, screenY + screenR);
-  ctx.quadraticCurveTo(screenX, screenY, screenX + screenR, screenY);
-  ctx.closePath();
-  ctx.fillStyle = '#0d1b33';
-  ctx.fill();
-
-  // ---- 4-column grid of app icons inside phone screen ----
-  const cols = 4;
-  const rows = 4;
-  const gridPadX = screenW * 0.08;
-  const gridPadTop = screenH * 0.06;
-  const gridPadBot = screenH * 0.12; // leave room for taskbar
-  const cellW = (screenW - gridPadX * 2) / cols;
-  const cellH = (screenH - gridPadTop - gridPadBot) / rows;
-  const iconR = Math.min(cellW, cellH) * 0.32;
-
-  const appColors = [
-    '#4fc3f7', '#81c784', '#ffb74d', '#e57373',
-    '#ba68c8', '#fff176', '#f48fb1', '#4db6ac',
-    '#90a4ae', '#ff8a65', '#aed581', '#7986cb',
-    '#ce93d8', '#80deea', '#ffcc80', '#a1887f'
-  ];
-  const appEmojis = [
-    '\u{1F4C1}', '\u{1F522}', '\u{1F3A8}', '\u{1F40D}',
-    '\u{1F0CF}', '\u{1F4F7}', '\u{1F4AC}', '\u{1F4A3}',
-    '\u{1F4DD}', '\u{1F3AE}', '\u{2699}', '\u{1F3B5}',
-    '\u{1F4CA}', '\u{1F30D}', '\u{2B50}', '\u{1F512}'
-  ];
-
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      const idx = row * cols + col;
-      const icx = screenX + gridPadX + cellW * col + cellW / 2;
-      const icy = screenY + gridPadTop + cellH * row + cellH * 0.4;
-
-      // Colored circle
-      ctx.beginPath();
-      ctx.arc(icx, icy, iconR, 0, Math.PI * 2);
-      ctx.fillStyle = appColors[idx];
-      ctx.fill();
-
-      // Emoji inside circle
-      ctx.fillStyle = 'white';
-      ctx.font = `${iconR * 1.1}px sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(appEmojis[idx], icx, icy + iconR * 0.05);
-    }
+  // Helper: draw a rounded rect path
+  function roundRect(x, y, w, h, rad) {
+    ctx.beginPath();
+    ctx.moveTo(x + rad, y);
+    ctx.lineTo(x + w - rad, y); ctx.quadraticCurveTo(x + w, y, x + w, y + rad);
+    ctx.lineTo(x + w, y + h - rad); ctx.quadraticCurveTo(x + w, y + h, x + w - rad, y + h);
+    ctx.lineTo(x + rad, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - rad);
+    ctx.lineTo(x, y + rad); ctx.quadraticCurveTo(x, y, x + rad, y);
+    ctx.closePath();
   }
 
-  // ---- Taskbar at bottom of phone screen ----
-  const taskbarH = screenH * 0.08;
-  const taskbarY = screenY + screenH - taskbarH;
-  ctx.fillStyle = '#141428';
-  ctx.fillRect(screenX, taskbarY, screenW, taskbarH);
+  // ---- Launcher-style layout (like a real home screen) ----
+  const pad = s * 0.06;          // outer padding
+  const cols = 4;
 
-  // Taskbar dots
-  const dotR = taskbarH * 0.2;
-  const dotY = taskbarY + taskbarH / 2;
-  const dotSpacing = screenW / 5;
-  for (let i = 1; i <= 4; i++) {
+  // App icon definitions — matching actual KidsOS apps
+  const apps = [
+    { color: '#4fc3f7', emoji: '\u{1F4C1}', label: 'Files'   },
+    { color: '#81c784', emoji: '\u{1F4DD}', label: 'Notepad'  },
+    { color: '#ffb74d', emoji: '\u{1F5A9}', label: 'Calc'     },
+    { color: '#e57373', emoji: '\u{1F3A8}', label: 'Paint'    },
+    { color: '#ba68c8', emoji: '\u{1F40D}', label: 'Snake'    },
+    { color: '#4db6ac', emoji: '\u{1F0CF}', label: 'Memory'   },
+    { color: '#f48fb1', emoji: '\u{1F4F7}', label: 'Kdstgrm'  },
+    { color: '#7986cb', emoji: '\u{1F4AC}', label: 'Chat'     },
+    { color: '#ff8a65', emoji: '\u{1F4A3}', label: 'Mines'    },
+    { color: '#aed581', emoji: '\u{2699}',  label: 'Settings' },
+    { color: '#fff176', emoji: '\u{1F4E7}', label: 'eJob'     },
+    { color: '#80deea', emoji: '\u{2B50}',  label: 'More'     },
+  ];
+
+  // Grid area: top portion for 3 rows of 4 icons
+  const gridRows = 3;
+  const gridTop = pad + s * 0.02;
+  const gridW = s - pad * 2;
+  const cellW = gridW / cols;
+  const iconSize = cellW * 0.6;
+  const iconRad = iconSize * 0.22;  // rounded-square radius
+  const cellH = s * 0.22;
+
+  // Draw main grid (3 rows x 4 cols)
+  for (let i = 0; i < apps.length; i++) {
+    const row = Math.floor(i / cols);
+    const col = i % cols;
+    const app = apps[i];
+
+    const icx = pad + cellW * col + cellW / 2;
+    const icy = gridTop + cellH * row + cellH * 0.38;
+
+    // Rounded-square icon background
+    roundRect(icx - iconSize / 2, icy - iconSize / 2, iconSize, iconSize, iconRad);
+    ctx.fillStyle = app.color;
+    ctx.fill();
+
+    // Emoji
+    ctx.fillStyle = 'white';
+    ctx.font = `${iconSize * 0.52}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(app.emoji, icx, icy + iconSize * 0.03);
+
+    // Label below icon
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.font = `600 ${s * 0.028}px system-ui, sans-serif`;
+    ctx.textBaseline = 'top';
+    ctx.fillText(app.label, icx, icy + iconSize / 2 + s * 0.01);
+  }
+
+  // ---- Dock at bottom (like iOS dock) ----
+  const dockH = s * 0.18;
+  const dockY = s - pad - dockH;
+
+  // Dock background (frosted glass effect)
+  roundRect(pad * 0.8, dockY, s - pad * 1.6, dockH, s * 0.04);
+  ctx.fillStyle = 'rgba(255,255,255,0.08)';
+  ctx.fill();
+
+  // Page dots above dock
+  const dotsY = dockY - s * 0.025;
+  const dotR = s * 0.005;
+  for (let i = 0; i < 3; i++) {
     ctx.beginPath();
-    ctx.arc(screenX + dotSpacing * i, dotY, dotR, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.arc(cx + (i - 1) * s * 0.025, dotsY, dotR, 0, Math.PI * 2);
+    ctx.fillStyle = i === 0 ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.25)';
     ctx.fill();
   }
 
-  // ---- "KidsOS" label below phone ----
+  // Dock icons (4 most-used apps)
+  const dockApps = [
+    { color: '#4fc3f7', emoji: '\u{1F4C1}' },
+    { color: '#e57373', emoji: '\u{1F3A8}' },
+    { color: '#f48fb1', emoji: '\u{1F4F7}' },
+    { color: '#7986cb', emoji: '\u{1F4AC}' },
+  ];
+  const dockCellW = (s - pad * 2) / 4;
+  const dockIconSize = iconSize * 0.9;
+  const dockIconRad = dockIconSize * 0.22;
+  const dockIconY = dockY + dockH / 2;
+
+  for (let i = 0; i < dockApps.length; i++) {
+    const app = dockApps[i];
+    const dx = pad + dockCellW * i + dockCellW / 2;
+
+    roundRect(dx - dockIconSize / 2, dockIconY - dockIconSize / 2, dockIconSize, dockIconSize, dockIconRad);
+    ctx.fillStyle = app.color;
+    ctx.fill();
+
+    ctx.fillStyle = 'white';
+    ctx.font = `${dockIconSize * 0.52}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(app.emoji, dx, dockIconY + dockIconSize * 0.03);
+  }
+
+  // ---- "KidsOS" small label at top (like a status bar brand) ----
   ctx.fillStyle = '#5b8cff';
-  ctx.font = `700 ${s * 0.075}px system-ui, sans-serif`;
+  ctx.font = `700 ${s * 0.05}px system-ui, sans-serif`;
   ctx.textAlign = 'center';
-  ctx.textBaseline = 'alphabetic';
-  ctx.fillText('KidsOS', cx, s * 0.82);
+  ctx.textBaseline = 'top';
+  ctx.fillText('KidsOS', cx, s * 0.015);
 }
 
 drawIcon(document.getElementById('c192'));
