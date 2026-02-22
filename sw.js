@@ -7,8 +7,6 @@ const ASSETS = [
   './style.css',
   './manifest.json',
   './icons/icon.svg',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
   './js/os.js',
   './js/apps/calculator.js',
   './js/apps/notepad.js',
