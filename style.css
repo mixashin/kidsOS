@@ -408,7 +408,7 @@ button { font-family: var(--font); }
   width: 34px; height: 34px; border: 2px solid transparent;
   border-radius: 6px; background: var(--input-bg); cursor: pointer;
   font-size: 16px; display: flex; align-items: center; justify-content: center;
-  transition: all 0.15s;
+  transition: all 0.15s; color: var(--text-primary);
 }
 .paint-tool-btn:hover { background: var(--hover-bg); }
 .paint-tool-btn.active { border-color: var(--accent); background: var(--hover-bg); }
