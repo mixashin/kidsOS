@@ -1,7 +1,7 @@
 /* ===== KidsOS Core ===== */
 const OS = (() => {
-  const VERSION = '0.8.1';
-  const UPDATE_URL = (typeof KIDSOS_CONFIG !== 'undefined' && KIDSOS_CONFIG.updateURL) || 'http://localhost:5555';
+  const VERSION = '0.8.2';
+  const UPDATE_URL = (typeof KIDSOS_CONFIG !== 'undefined' && KIDSOS_CONFIG.updateURL) || 'https://mixashin.github.io/kidsOS';
 
   let zCounter = 100;
   let windowMap = {};     // id -> { el, taskbarBtn, app }
