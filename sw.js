@@ -1,5 +1,5 @@
 // KidsOS Service Worker — PWA offline support
-const CACHE_NAME = 'kidsOS-v1';
+const CACHE_NAME = 'kidsOS-v2';
 
 const ASSETS = [
   './',
@@ -24,12 +24,18 @@ const ASSETS = [
   './version.json',
 ];
 
-// Install: cache all app assets
+// Install: cache app assets (individually so one 404 doesn't block all)
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(ASSETS))
-      .then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then(cache =>
+      Promise.all(
+        ASSETS.map(url =>
+          cache.add(url).catch(err =>
+            console.warn('SW: failed to cache', url, err)
+          )
+        )
+      )
+    ).then(() => self.skipWaiting())
   );
 });
 
