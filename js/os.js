@@ -1,6 +1,6 @@
 /* ===== KidsOS Core ===== */
 const OS = (() => {
-  const VERSION = '0.1.0';
+  const VERSION = '0.1.1';
   const UPDATE_URL = 'https://lena.mixorium.net';
 
   let zCounter = 100;
