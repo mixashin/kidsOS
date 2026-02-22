@@ -453,26 +453,33 @@ button { font-family: var(--font); }
 }
 .snake-play-btn:hover { background: #7aa3ff; }
 .snake-dpad {
-  display: grid; grid-template-columns: 50px 50px 50px; grid-template-rows: 50px 50px 50px;
-  gap: 4px; width: 158px; height: 158px;
-  background: radial-gradient(circle, #2a2a4e 60%, #1a1a2e 100%);
-  border-radius: 50%; padding: 4px; place-items: center;
-  border: 3px solid #3a3a6e; box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  display: grid; grid-template-columns: 44px 44px 44px; grid-template-rows: 44px 44px 44px;
+  gap: 3px; width: 140px; height: 140px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 50%; place-items: center;
+  border: 2px solid rgba(91,140,255,0.25);
 }
 .snake-dpad-btn {
-  width: 46px; height: 46px; border: none; border-radius: 50%;
-  background: #5b8cff; color: #fff; font-size: 20px; cursor: pointer;
+  width: 40px; height: 40px; border: none; border-radius: 50%;
+  background: rgba(91,140,255,0.15); cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: background 0.1s, transform 0.1s; user-select: none; -webkit-user-select: none;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  position: relative;
 }
-.snake-dpad-btn:hover { background: #7aa3ff; }
-.snake-dpad-btn:active { background: #4a7bef; transform: scale(0.9); }
-.snake-dpad-center { font-size: 22px; }
+.snake-dpad-btn::after {
+  content: ''; display: block; width: 12px; height: 12px;
+  border-right: 2.5px solid #8ab4ff; border-bottom: 2.5px solid #8ab4ff;
+}
+.snake-dpad-btn:hover { background: rgba(91,140,255,0.3); }
+.snake-dpad-btn:active { background: rgba(91,140,255,0.5); transform: scale(0.88); }
 .snake-dpad-up    { grid-column: 2; grid-row: 1; }
 .snake-dpad-left  { grid-column: 1; grid-row: 2; }
 .snake-dpad-right { grid-column: 3; grid-row: 2; }
 .snake-dpad-down  { grid-column: 2; grid-row: 3; }
+.snake-dpad-up::after    { transform: rotate(-135deg) translateY(-1px); }
+.snake-dpad-right::after { transform: rotate(-45deg) translateX(-1px); }
+.snake-dpad-down::after  { transform: rotate(45deg) translateY(1px); }
+.snake-dpad-left::after  { transform: rotate(135deg) translateX(1px); }
 
 /* --- Memory Game --- */
 .memory-wrap { display: flex; flex-direction: column; align-items: center; height: 100%; padding: 16px; background: #1a1a2e; gap: 12px; }
