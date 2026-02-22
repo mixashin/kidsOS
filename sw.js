@@ -24,6 +24,7 @@ const ASSETS = [
   './js/apps/treasuremapper.js',
   './js/apps/snackdash.js',
   './js/apps/kidflix.js',
+  './js/apps/zoomer.js',
   './js/apps/soundboard.js',
   './js/apps/settings.js',
   './version.json',
