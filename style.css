@@ -2210,18 +2210,17 @@ button { font-family: var(--font); }
 [data-theme="light"] .update-popup-note { color: #90a4ae; }
 
 /* ===== Breakout ===== */
-.bo-wrap { display: flex; flex-direction: column; align-items: center; background: #1a1a2e; height: 100%; padding: 6px; box-sizing: border-box; }
-.bo-score { color: #e0e0e0; font: 600 15px/1 sans-serif; padding: 6px 0 8px; text-align: center; width: 100%; letter-spacing: .5px; }
-.bo-score span { color: #5b8cff; font-weight: 700; }
-#bo-canvas { background: #1a1a2e; border-radius: 6px; max-width: 100%; touch-action: none; }
-.bo-controls { display: flex; justify-content: center; padding: 8px 0 2px; }
-.bo-play-btn { background: #5b8cff; color: #fff; border: none; border-radius: 8px; padding: 8px 28px; font: 600 15px sans-serif; cursor: pointer; transition: background .15s; }
+.bo-wrap { display: flex; flex-direction: column; background: #1a1a2e; height: 100%; overflow: hidden; }
+.bo-hud { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 5px 10px; color: #b0bec5; font: 600 13px/1 sans-serif; flex-shrink: 0; }
+.bo-hud b { color: #5b8cff; }
+.bo-play-btn { background: #5b8cff; color: #fff; border: none; border-radius: 6px; padding: 4px 14px; font: 600 13px sans-serif; cursor: pointer; margin-left: 4px; transition: background .15s; }
 .bo-play-btn:hover { background: #3a6ee8; }
 .bo-play-btn:active { background: #2a56c6; }
+#bo-canvas { flex: 1; width: 100%; min-height: 0; background: #1a1a2e; touch-action: none; }
 
 [data-theme="light"] .bo-wrap { background: #e8eaf6; }
-[data-theme="light"] .bo-score { color: #37474f; }
-[data-theme="light"] .bo-score span { color: #1565c0; }
+[data-theme="light"] .bo-hud { color: #546e7a; }
+[data-theme="light"] .bo-hud b { color: #1565c0; }
 [data-theme="light"] #bo-canvas { background: #e8eaf6; }
 
 /* ===== RESPONSIVE — TABLET (≤1024px) ===== */
