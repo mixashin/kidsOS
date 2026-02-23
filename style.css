@@ -1798,7 +1798,25 @@ button { font-family: var(--font); }
 .cq-timer-display { font-size: 48px; font-weight: 800; color: #e65100; font-variant-numeric: tabular-nums; }
 [data-theme="dark"] .cq-timer-display { color: #ffb74d; }
 .cq-timer-hint { font-size: 13px; color: var(--text-muted); margin: 4px 0 10px; }
+.cq-early-btn { background: #4caf50; color: #fff; border: none; border-radius: 8px; padding: 8px 22px; font: 700 15px sans-serif; cursor: pointer; margin-bottom: 8px; animation: cq-early-glow 1.2s ease infinite alternate; }
+.cq-early-btn:active { transform: scale(.95); }
+@keyframes cq-early-glow { 0%{box-shadow:0 0 6px rgba(76,175,80,.4)} 100%{box-shadow:0 0 18px rgba(76,175,80,.7)} }
 .cq-timer-cancel { background: none; border: 1px solid var(--text-muted); border-radius: 8px; padding: 4px 14px; font-size: 12px; color: var(--text-muted); cursor: pointer; }
+
+/* Awesome early-finish popup */
+.cq-awesome-overlay { position: absolute; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.45); backdrop-filter: blur(3px); transition: opacity .4s; }
+.cq-awesome-overlay.cq-awesome-fade { opacity: 0; }
+.cq-awesome-popup { text-align: center; padding: 28px 32px 22px; }
+.cq-awesome-emoji { font-size: 64px; animation: cq-awesome-bounce .6s ease; }
+.cq-awesome-title { font: 900 32px/1.1 sans-serif; color: #ff6d00; text-shadow: 0 2px 16px rgba(255,109,0,.5); margin: 6px 0; animation: cq-awesome-scale .5s .1s ease both; }
+.cq-awesome-msg { font: 600 15px/1.4 sans-serif; color: #fff; margin: 4px 0 10px; animation: cq-awesome-scale .5s .2s ease both; }
+.cq-awesome-sub { font: 900 22px/1 sans-serif; color: #ffd600; text-shadow: 0 0 20px rgba(255,214,0,.6); letter-spacing: 2px; animation: cq-awesome-pulse 1s .4s ease infinite alternate; }
+@keyframes cq-awesome-bounce { 0%{transform:scale(0) rotate(-20deg)} 50%{transform:scale(1.3) rotate(5deg)} 100%{transform:scale(1) rotate(0)} }
+@keyframes cq-awesome-scale { 0%{transform:scale(0);opacity:0} 100%{transform:scale(1);opacity:1} }
+@keyframes cq-awesome-pulse { 0%{transform:scale(1)} 100%{transform:scale(1.1)} }
+[data-theme="light"] .cq-awesome-overlay { background: rgba(255,255,255,.55); }
+[data-theme="light"] .cq-awesome-msg { color: #37474f; }
+[data-theme="light"] .cq-awesome-sub { color: #e65100; text-shadow: 0 0 16px rgba(230,81,0,.3); }
 
 @keyframes cq-pulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(239,108,0,.3); }

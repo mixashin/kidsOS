@@ -26,6 +26,17 @@
     'Give yourself a round of applause. Seriously.',
   ];
 
+  const EARLY_FINISH = [
+    { emoji: '⚡', title: 'SPEED DEMON!', msg: 'You finished so fast the clock is jealous!' },
+    { emoji: '🦸', title: 'SUPER KID!', msg: 'Faster than a speeding vacuum cleaner!' },
+    { emoji: '🏎️', title: 'TURBO TIDY!', msg: 'That room never stood a chance!' },
+    { emoji: '🌪️', title: 'TIDY TORNADO!', msg: 'You blew through that like a cleaning hurricane!' },
+    { emoji: '🚀', title: 'ROCKET CLEANER!', msg: 'Houston, the room is spotless!' },
+    { emoji: '💎', title: 'DIAMOND HANDS!', msg: 'You held nothing back. Pure tidying power!' },
+    { emoji: '👑', title: 'ROYALLY FAST!', msg: 'The King/Queen of Quick Cleaning!' },
+    { emoji: '🎯', title: 'BULLSEYE!', msg: 'Clean room. Record time. Nailed it.' },
+  ];
+
   const STICKERS = [
     { id: 'tooth',   emoji: '🦷', name: 'Tooth Hero' },
     { id: 'bed',     emoji: '🛏️', name: 'Bed Boss' },
@@ -113,6 +124,37 @@
     }, 1000);
   }
 
+  function finishEarly() {
+    if (!timerActive || !timerChoreId) return;
+    const choreId = timerChoreId;
+    stopTimer();
+    markDone(choreId);
+    showAwesomePopup();
+  }
+
+  function showAwesomePopup() {
+    const msg = EARLY_FINISH[Math.floor(Math.random() * EARLY_FINISH.length)];
+    const container = document.getElementById('cq-app');
+    if (!container) return;
+
+    const popup = document.createElement('div');
+    popup.className = 'cq-awesome-overlay';
+    popup.innerHTML = `
+      <div class="cq-awesome-popup cq-awesome-anim">
+        <div class="cq-awesome-emoji">${msg.emoji}</div>
+        <div class="cq-awesome-title">${msg.title}</div>
+        <div class="cq-awesome-msg">${msg.msg}</div>
+        <div class="cq-awesome-sub">YOU ARE AWESOME!</div>
+      </div>`;
+    container.appendChild(popup);
+
+    // Auto-dismiss after 2.5s
+    setTimeout(() => {
+      popup.classList.add('cq-awesome-fade');
+      setTimeout(() => popup.remove(), 400);
+    }, 2500);
+  }
+
   function stopTimer() {
     clearInterval(timerInterval);
     timerInterval = null;
@@ -198,6 +240,7 @@
         <div class="cq-timer-label">Tidy Time!</div>
         <div class="cq-timer-display" id="cq-timer-display">${formatTime(timerSeconds)}</div>
         <div class="cq-timer-hint">Clean up before the clock runs out!</div>
+        <button class="cq-early-btn" onclick="window._cqFinishEarly()">✨ Done Early!</button>
         <button class="cq-timer-cancel" onclick="window._cqCancelTimer()">Cancel</button>
       </div>`;
     }
@@ -281,6 +324,7 @@
   window._cqHint = (id) => toggleHint(id);
   window._cqStartTimer = (id) => startTimer(id);
   window._cqCancelTimer = () => { stopTimer(); render(); };
+  window._cqFinishEarly = () => finishEarly();
   window._cqBackToToday = () => { screen = 'today'; render(); };
 
   /* ---- App Registration ---- */
