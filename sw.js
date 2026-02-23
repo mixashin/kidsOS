@@ -30,6 +30,7 @@ const ASSETS = [
   './js/apps/sillyskies.js',
   './js/apps/breakout.js',
   './js/apps/captaincardio.js',
+  './js/apps/pebbles.js',
   './js/apps/settings.js',
   './version.json',
 ];
