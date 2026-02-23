@@ -2266,8 +2266,9 @@ button { font-family: var(--font); }
 
 /* ===== RESPONSIVE — MOBILE (≤768px) ===== */
 @media (max-width: 768px) {
-  .desktop-icon .icon-img { font-size: 60px; }
-  .desktop-icon span { font-size: 14px; }
+  #desktop-icons { grid-template-columns: repeat(4, 1fr); }
+  .desktop-icon .icon-img { font-size: 52px; }
+  .desktop-icon span { font-size: 12px; }
 
   /* Boot screen */
   #boot-logo { font-size: 56px; }
@@ -2294,7 +2295,7 @@ button { font-family: var(--font); }
 /* ===== RESPONSIVE — SMALL PHONE (≤480px) ===== */
 @media (max-width: 480px) {
   /* Desktop icons — 4-column grid, slightly smaller on small phones */
-  #desktop-icons { gap: 4px; top: calc(12px + var(--sat)); left: calc(12px + var(--sal)); right: calc(12px + var(--sar)); }
+  #desktop-icons { grid-template-columns: repeat(4, 1fr); gap: 4px; top: calc(12px + var(--sat)); left: calc(12px + var(--sal)); right: calc(12px + var(--sar)); }
   .desktop-icon { padding: 8px 2px; }
   .desktop-icon .icon-img { font-size: 44px; }
   .desktop-icon span { font-size: 11px; }
