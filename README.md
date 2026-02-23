@@ -4,7 +4,7 @@ A fun browser-based OS simulator for kids learning to use computers. Built with 
 
 <img src="media/screenshot1.jpg" alt="KidsOS Screenshot 1" width="400"> <img src="media/screenshot2.jpg" alt="KidsOS Screenshot 2" width="400">
 
-<video src="media/demo.mp4" controls width="600"></video>
+[![Demo Video](media/screenshot2.jpg)](https://github.com/mixashin/kidsOS/blob/main/media/demo.mp4)
 
 ## Features
 
