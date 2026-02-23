@@ -29,6 +29,7 @@ const ASSETS = [
   './js/apps/tinyscanner.js',
   './js/apps/sillyskies.js',
   './js/apps/breakout.js',
+  './js/apps/captaincardio.js',
   './js/apps/settings.js',
   './version.json',
 ];
