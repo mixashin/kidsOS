@@ -27,6 +27,7 @@ const ASSETS = [
   './js/apps/zoomer.js',
   './js/apps/soundboard.js',
   './js/apps/tinyscanner.js',
+  './js/apps/sillyskies.js',
   './js/apps/breakout.js',
   './js/apps/settings.js',
   './version.json',

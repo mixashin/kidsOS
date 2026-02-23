@@ -2250,6 +2250,125 @@ button { font-family: var(--font); }
 [data-theme="light"] .bo-hud b { color: #1565c0; }
 [data-theme="light"] #bo-canvas { background: #e8eaf6; }
 
+/* ===== SillySkies ===== */
+.ss-wrap { display: flex; flex-direction: column; height: 100%; background: #fff8e1; overflow-y: auto; font-family: sans-serif; }
+.ss-header { display: flex; align-items: center; gap: 8px; padding: 10px 14px; font: 700 15px/1.2 sans-serif; color: #e65100; background: linear-gradient(135deg, #fff8e1, #ffe0b2); border-bottom: 2px solid #ffcc80; flex-shrink: 0; }
+.ss-header-icon { font-size: 20px; }
+.ss-back { background: none; border: none; font-size: 20px; cursor: pointer; padding: 0 4px; line-height: 1; }
+
+/* Place selector */
+.ss-places { display: flex; gap: 6px; padding: 10px 14px; flex-wrap: wrap; }
+.ss-place-btn { background: #fff; border: 2px solid #ffcc80; border-radius: 20px; padding: 6px 12px; font: 600 12px sans-serif; cursor: pointer; transition: all .15s; }
+.ss-place-btn.ss-active { background: #ff9800; color: #fff; border-color: #ff9800; }
+.ss-place-btn:hover { background: #ffe0b2; }
+.ss-place-btn.ss-active:hover { background: #fb8c00; }
+
+/* Today card */
+.ss-today-card { text-align: center; padding: 10px 14px 14px; }
+.ss-weather-icon { font-size: 56px; cursor: pointer; display: inline-block; line-height: 1.2; }
+.ss-weather-name { font: 700 20px sans-serif; color: #e65100; margin: 4px 0; }
+.ss-temp { font: 700 28px sans-serif; color: #ff6d00; }
+.ss-feels { font: 13px sans-serif; color: #8d6e63; margin: 4px 0; }
+.ss-warning { display: inline-block; background: #fff3e0; border: 1px solid #ffab40; border-radius: 8px; padding: 4px 10px; font: 600 12px sans-serif; color: #e65100; margin-top: 6px; }
+
+/* Stats row */
+.ss-stats { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
+.ss-stat { background: #fff; border: 1px solid #ffe0b2; border-radius: 8px; padding: 6px 10px; font: 12px sans-serif; color: #5d4037; }
+
+/* Buttons */
+.ss-actions { display: flex; gap: 8px; padding: 8px 14px; justify-content: center; }
+.ss-btn { border: none; border-radius: 10px; padding: 10px 18px; font: 600 13px sans-serif; cursor: pointer; transition: all .15s; }
+.ss-btn-primary { background: #ff9800; color: #fff; }
+.ss-btn-primary:hover { background: #fb8c00; }
+.ss-btn-secondary { background: #42a5f5; color: #fff; }
+.ss-btn-secondary:hover { background: #1e88e5; }
+.ss-nav-row { display: flex; justify-content: center; padding: 0 14px 12px; }
+.ss-nav-btn { background: none; border: 2px dashed #ffcc80; border-radius: 10px; padding: 8px 16px; font: 600 13px sans-serif; color: #e65100; cursor: pointer; transition: all .15s; }
+.ss-nav-btn:hover { background: #fff3e0; }
+
+/* Forecast list */
+.ss-forecast-list { padding: 8px 14px; display: flex; flex-direction: column; gap: 6px; }
+.ss-forecast-card { display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid #ffe0b2; border-radius: 10px; padding: 10px 12px; cursor: pointer; transition: all .15s; }
+.ss-forecast-card:hover { background: #fff3e0; transform: translateX(3px); }
+.ss-fc-day { font: 700 13px sans-serif; color: #e65100; min-width: 70px; }
+.ss-fc-icon { font-size: 28px; flex-shrink: 0; }
+.ss-fc-info { flex: 1; min-width: 0; }
+.ss-fc-name { font: 600 13px sans-serif; color: #333; }
+.ss-fc-temp { font: 700 14px sans-serif; color: #ff6d00; }
+.ss-fc-feels { font: 11px sans-serif; color: #8d6e63; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ss-fc-badge { font-size: 16px; flex-shrink: 0; }
+
+/* Day details */
+.ss-day-hero { text-align: center; padding: 14px; }
+.ss-detail-section { padding: 6px 14px 8px; }
+.ss-section-title { font: 700 13px sans-serif; color: #e65100; margin-bottom: 4px; }
+.ss-joke { font: 13px sans-serif; color: #5d4037; background: #fff; border-left: 3px solid #ffcc80; padding: 6px 10px; margin: 4px 0; border-radius: 0 6px 6px 0; }
+.ss-wear { font: 600 13px sans-serif; color: #ff6d00; background: #fff; border-radius: 8px; padding: 8px 10px; }
+.ss-bring-list { background: #fff; border-radius: 8px; padding: 8px 10px; }
+.ss-bring-item { font: 13px sans-serif; color: #5d4037; padding: 2px 0; }
+
+/* Mixer */
+.ss-mixer { padding: 10px 14px; }
+.ss-mixer-group { margin-bottom: 12px; }
+.ss-mixer-label { font: 700 13px sans-serif; color: #e65100; margin-bottom: 6px; }
+.ss-mixer-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.ss-pill { background: #fff; border: 2px solid #ffe0b2; border-radius: 16px; padding: 6px 12px; font: 12px sans-serif; cursor: pointer; transition: all .15s; }
+.ss-pill.ss-active { background: #ff9800; color: #fff; border-color: #ff9800; }
+.ss-pill:hover { background: #ffe0b2; }
+.ss-pill.ss-active:hover { background: #fb8c00; }
+.ss-generate-btn { width: 100%; margin-top: 4px; font-size: 15px; padding: 12px; }
+
+/* Mix result */
+.ss-mix-result { margin-top: 12px; background: #fff; border: 2px solid #ffcc80; border-radius: 12px; padding: 14px; text-align: center; }
+.ss-mix-result-name { font: 700 18px sans-serif; color: #e65100; margin-bottom: 6px; }
+.ss-mix-result-lines { font: 13px sans-serif; color: #5d4037; margin-bottom: 10px; }
+.ss-mix-result-lines div { margin: 3px 0; }
+
+/* Silliness meter */
+.ss-silliness { display: flex; align-items: center; gap: 8px; justify-content: center; font: 600 12px sans-serif; color: #8d6e63; }
+.ss-meter { width: 100px; height: 12px; background: #ffe0b2; border-radius: 6px; overflow: hidden; }
+.ss-meter-fill { height: 100%; background: linear-gradient(90deg, #ffcc80, #ff9800, #ff6d00); border-radius: 6px; transition: width .3s; }
+.ss-meter-label { font: 700 13px sans-serif; color: #ff6d00; }
+
+/* Animations */
+@keyframes ss-bounce { 0%,100% { transform: scale(1); } 30% { transform: scale(1.3); } 60% { transform: scale(0.9); } }
+@keyframes ss-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+.ss-bounce { animation: ss-bounce .4s ease; }
+.ss-float { animation: ss-float 2s ease-in-out infinite; }
+
+/* Dark theme */
+[data-theme="dark"] .ss-wrap { background: #2a1f00; }
+[data-theme="dark"] .ss-header { background: linear-gradient(135deg, #3e2c00, #4a3200); color: #ffcc80; border-color: #5d4037; }
+[data-theme="dark"] .ss-place-btn { background: #3e2c00; color: #ffe0b2; border-color: #5d4037; }
+[data-theme="dark"] .ss-place-btn.ss-active { background: #e65100; border-color: #e65100; color: #fff; }
+[data-theme="dark"] .ss-place-btn:hover { background: #4a3200; }
+[data-theme="dark"] .ss-today-card { color: #ffe0b2; }
+[data-theme="dark"] .ss-weather-name { color: #ffcc80; }
+[data-theme="dark"] .ss-temp { color: #ffab40; }
+[data-theme="dark"] .ss-feels { color: #a1887f; }
+[data-theme="dark"] .ss-warning { background: #3e2c00; border-color: #8d6e63; color: #ffcc80; }
+[data-theme="dark"] .ss-stat { background: #3e2c00; border-color: #5d4037; color: #bcaaa4; }
+[data-theme="dark"] .ss-forecast-card { background: #3e2c00; border-color: #5d4037; }
+[data-theme="dark"] .ss-forecast-card:hover { background: #4a3200; }
+[data-theme="dark"] .ss-fc-name { color: #ffe0b2; }
+[data-theme="dark"] .ss-fc-feels { color: #a1887f; }
+[data-theme="dark"] .ss-joke { background: #3e2c00; color: #bcaaa4; border-color: #8d6e63; }
+[data-theme="dark"] .ss-wear { background: #3e2c00; color: #ffab40; }
+[data-theme="dark"] .ss-bring-list { background: #3e2c00; }
+[data-theme="dark"] .ss-bring-item { color: #bcaaa4; }
+[data-theme="dark"] .ss-back { color: #ffcc80; }
+[data-theme="dark"] .ss-pill { background: #3e2c00; color: #ffe0b2; border-color: #5d4037; }
+[data-theme="dark"] .ss-pill.ss-active { background: #e65100; border-color: #e65100; color: #fff; }
+[data-theme="dark"] .ss-pill:hover { background: #4a3200; }
+[data-theme="dark"] .ss-mix-result { background: #3e2c00; border-color: #8d6e63; }
+[data-theme="dark"] .ss-mix-result-name { color: #ffcc80; }
+[data-theme="dark"] .ss-mix-result-lines { color: #bcaaa4; }
+[data-theme="dark"] .ss-silliness { color: #a1887f; }
+[data-theme="dark"] .ss-meter { background: #5d4037; }
+[data-theme="dark"] .ss-nav-btn { border-color: #5d4037; color: #ffcc80; }
+[data-theme="dark"] .ss-nav-btn:hover { background: #3e2c00; }
+[data-theme="dark"] .ss-section-title { color: #ffcc80; }
+
 /* ===== RESPONSIVE — TABLET (≤1024px) ===== */
 @media (max-width: 1024px) {
   :root { --taskbar-h: 56px; }
