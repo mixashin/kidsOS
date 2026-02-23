@@ -229,32 +229,47 @@
     '\u{1F3AD} REVIEW: Sir Overly Dramatic rated all places "MAGNIFICENT."',
   ];
 
-  /* ---- Map Drawing ---- */
+  /* ---- Map Drawing — Pirate Treasure Map Style ---- */
   const MAP_THEMES = {
-    indoor: {
-      bg: '#f5e6d3', roadColor: '#d4a574', roadBg: '#efe0d0',
-      buildings: ['#e57373', '#64b5f6', '#81c784', '#ffb74d', '#ba68c8', '#4dd0e1'],
-      landmarks: ['\u{1F6CB}\uFE0F', '\u{1F4FA}', '\u{1F9F8}', '\u{1F6CF}\uFE0F', '\u{1F3E0}', '\u{1F6AA}'],
+    indoor: { // Captain's Cabin
+      parchment: '#e8d5b7', parchmentDark: 'rgba(100,70,30,0.15)',
+      inkColor: '#3e2723', inkLight: 'rgba(62,39,35,0.25)',
+      trailColor: '#6d4c2a', trailTraveled: '#3e2723',
+      accentColor: '#c9a94e', waterColor: null,
+      decorations: ['\u{1F5DD}\uFE0F', '\u{1F56F}\uFE0F', '\u{1F4DC}', '\u{1F3F4}\u200D\u2620\uFE0F', '\u{1F4B0}', '\u2694\uFE0F'],
+      mapLabels: ["Captain's Quarters", 'Rum Cellar', "Crow's Nest", 'Treasure Hold', 'The Brig', 'Map Room'],
     },
-    outdoor: {
-      bg: '#c8e6c9', roadColor: '#8d6e63', roadBg: '#a5d6a7',
-      buildings: ['#66bb6a', '#43a047', '#aed581', '#dce775', '#81c784', '#4caf50'],
-      landmarks: ['\u{1F333}', '\u{1F33A}', '\u{1F33F}', '\u{1F41B}', '\u2600\uFE0F', '\u{1F3E1}'],
+    outdoor: { // Jungle Island
+      parchment: '#e2d5b3', parchmentDark: 'rgba(90,70,20,0.18)',
+      inkColor: '#33291a', inkLight: 'rgba(51,41,26,0.25)',
+      trailColor: '#7a5c30', trailTraveled: '#4a3520',
+      accentColor: '#c9a94e', waterColor: 'rgba(70,130,140,0.12)',
+      decorations: ['\u{1F99C}', '\u{1F334}', '\u{1F412}', '\u{1F5E1}\uFE0F', '\u{1F480}', '\u{1F3DD}\uFE0F'],
+      mapLabels: ['Skull Rock', 'Monkey Bay', "Dead Man's Cove", 'Parrot Ridge', 'Shipwreck Shore', 'Jungle Trail'],
     },
-    kitchen: {
-      bg: '#fff9c4', roadColor: '#f9a825', roadBg: '#fff59d',
-      buildings: ['#ffcc80', '#ff8a65', '#a1887f', '#ffe082', '#ffab91', '#ce93d8'],
-      landmarks: ['\u{1F9CA}', '\u{1F373}', '\u{1F36A}', '\u{1F37D}\uFE0F', '\u{1F9C1}', '\u{1F952}'],
+    kitchen: { // Galley & Provisions
+      parchment: '#ede0c4', parchmentDark: 'rgba(110,80,30,0.12)',
+      inkColor: '#3e2c15', inkLight: 'rgba(62,44,21,0.22)',
+      trailColor: '#8a6530', trailTraveled: '#4a3520',
+      accentColor: '#d4a843', waterColor: null,
+      decorations: ['\u{1F356}', '\u{1FA99}', '\u{1F37A}', '\u{1F5DD}\uFE0F', '\u{1F400}', '\u{1FA9D}'],
+      mapLabels: ['The Galley', 'Provision Store', 'Grog Barrel', "Cook's Corner", 'Spice Hold', 'Mess Deck'],
     },
-    water: {
-      bg: '#bbdefb', roadColor: '#1565c0', roadBg: '#90caf9',
-      buildings: ['#4fc3f7', '#29b6f6', '#81d4fa', '#80deea', '#4dd0e1', '#26c6da'],
-      landmarks: ['\u{1F6C1}', '\u{1F30A}', '\u{1FAE7}', '\u{1F9FC}', '\u{1F420}', '\u{1F6A2}'],
+    water: { // The High Seas
+      parchment: '#ddd5c0', parchmentDark: 'rgba(80,70,40,0.18)',
+      inkColor: '#2c3e50', inkLight: 'rgba(44,62,80,0.2)',
+      trailColor: '#5d4e37', trailTraveled: '#2c1f10',
+      accentColor: '#c9a94e', waterColor: 'rgba(50,120,150,0.10)',
+      decorations: ['\u{1F419}', '\u2693', '\u{1F988}', '\u{1F3F4}\u200D\u2620\uFE0F', '\u{1F9DC}\u200D\u2640\uFE0F', '\u{1F30A}'],
+      mapLabels: ["Kraken's Deep", 'Siren Strait', "Davy Jones' Locker", 'Mermaid Lagoon', 'Storm Passage', 'Coral Reef'],
     },
-    garage: {
-      bg: '#cfd8dc', roadColor: '#546e7a', roadBg: '#b0bec5',
-      buildings: ['#78909c', '#90a4ae', '#607d8b', '#b0bec5', '#455a64', '#37474f'],
-      landmarks: ['\u{1F527}', '\u{1F6B2}', '\u{1F4E6}', '\u{1F578}\uFE0F', '\u{1F526}', '\u{1F529}'],
+    garage: { // The Shipyard
+      parchment: '#d8cfc0', parchmentDark: 'rgba(70,60,40,0.18)',
+      inkColor: '#37474f', inkLight: 'rgba(55,71,79,0.22)',
+      trailColor: '#5d4e37', trailTraveled: '#2c1f10',
+      accentColor: '#b8943d', waterColor: null,
+      decorations: ['\u2693', '\u{1F527}', '\u26F5', '\u{1FA9D}', '\u{1F529}', '\u{1F3F4}\u200D\u2620\uFE0F'],
+      mapLabels: ['Dry Dock', 'Anchor Bay', "Rigger's Loft", 'Cannon Forge', 'Sail Maker', 'Hull Repair'],
     },
   };
 
@@ -265,6 +280,268 @@
     return function() { h = (h * 16807) % 2147483647; return (h - 1) / 2147483646; };
   }
 
+  /* -- Helper: parchment background -- */
+  function drawParchmentBg(ctx, W, H, theme, rand) {
+    // Base fill
+    ctx.fillStyle = theme.parchment;
+    ctx.fillRect(0, 0, W, H);
+    // Radial vignette (darker edges)
+    const grd = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.2, W / 2, H / 2, Math.max(W, H) * 0.7);
+    grd.addColorStop(0, 'rgba(0,0,0,0)');
+    grd.addColorStop(1, theme.parchmentDark);
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, 0, W, H);
+    // Noise grain
+    for (let i = 0; i < 200; i++) {
+      ctx.fillStyle = `rgba(80,50,20,${(0.02 + rand() * 0.06).toFixed(3)})`;
+      ctx.beginPath();
+      ctx.arc(rand() * W, rand() * H, 0.5 + rand() * 1.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    // Coffee stains
+    const stains = 3 + Math.floor(rand() * 3);
+    for (let i = 0; i < stains; i++) {
+      ctx.beginPath();
+      ctx.arc(20 + rand() * (W - 40), 20 + rand() * (H - 40), 10 + rand() * 25, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(120,80,30,${(0.04 + rand() * 0.06).toFixed(3)})`;
+      ctx.fill();
+    }
+    // Fold creases
+    ctx.strokeStyle = 'rgba(100,70,30,0.08)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, H * (0.4 + rand() * 0.2));
+    ctx.lineTo(W, H * (0.4 + rand() * 0.2) + (rand() - 0.5) * 4);
+    ctx.stroke();
+    if (rand() > 0.5) {
+      ctx.beginPath();
+      const cx = W * (0.4 + rand() * 0.2);
+      ctx.moveTo(cx, 0);
+      ctx.lineTo(cx + (rand() - 0.5) * 4, H);
+      ctx.stroke();
+    }
+  }
+
+  /* -- Helper: torn / scorched edges -- */
+  function drawTornEdges(ctx, W, H, rand) {
+    const jag = 5, step = 7, margin = 3;
+    const top = [], right = [], bottom = [], left = [];
+    for (let x = 0; x <= W; x += step) top.push({ x, y: margin + rand() * jag });
+    for (let y = 0; y <= H; y += step) right.push({ x: W - margin - rand() * jag, y });
+    for (let x = W; x >= 0; x -= step) bottom.push({ x, y: H - margin - rand() * jag });
+    for (let y = H; y >= 0; y -= step) left.push({ x: margin + rand() * jag, y });
+    const pts = [...top, ...right, ...bottom, ...left];
+
+    // Clip content to jagged shape
+    ctx.save();
+    ctx.globalCompositeOperation = 'destination-in';
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+    ctx.closePath();
+    ctx.fillStyle = '#000';
+    ctx.fill();
+    ctx.restore();
+
+    // Scorched stroke along edge
+    ctx.strokeStyle = 'rgba(80,50,20,0.35)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+    ctx.closePath();
+    ctx.stroke();
+  }
+
+  /* -- Helper: compass rose -- */
+  function drawCompassRose(ctx, cx, cy, r, theme) {
+    // Outer circle
+    ctx.strokeStyle = theme.inkColor;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.stroke();
+    // Inner circle
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * 0.3, 0, Math.PI * 2);
+    ctx.stroke();
+    // Cardinal points
+    const dirs = [
+      { a: -Math.PI / 2, l: 'N', fill: true },
+      { a: Math.PI / 2,  l: 'S', fill: false },
+      { a: 0,            l: 'E', fill: false },
+      { a: Math.PI,      l: 'W', fill: false },
+    ];
+    for (const d of dirs) {
+      const tip = { x: cx + Math.cos(d.a) * r * 0.85, y: cy + Math.sin(d.a) * r * 0.85 };
+      const perp = d.a + Math.PI / 2;
+      const b1 = { x: cx + Math.cos(perp) * r * 0.15, y: cy + Math.sin(perp) * r * 0.15 };
+      const b2 = { x: cx - Math.cos(perp) * r * 0.15, y: cy - Math.sin(perp) * r * 0.15 };
+      ctx.beginPath();
+      ctx.moveTo(tip.x, tip.y);
+      ctx.lineTo(b1.x, b1.y);
+      ctx.lineTo(b2.x, b2.y);
+      ctx.closePath();
+      if (d.fill) { ctx.fillStyle = theme.inkColor; ctx.fill(); }
+      else { ctx.strokeStyle = theme.inkColor; ctx.lineWidth = 1; ctx.stroke(); }
+      // Label
+      const ld = r * 1.2;
+      ctx.font = `bold ${Math.max(7, Math.round(r * 0.35))}px serif`;
+      ctx.fillStyle = theme.inkColor;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(d.l, cx + Math.cos(d.a) * ld, cy + Math.sin(d.a) * ld);
+    }
+    // Gold center dot
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * 0.12, 0, Math.PI * 2);
+    ctx.fillStyle = theme.accentColor;
+    ctx.fill();
+  }
+
+  /* -- Helper: terrain features -- */
+  function drawTerrainFeatures(ctx, W, H, theme, rand) {
+    // Faint dotted lat/lon grid
+    ctx.strokeStyle = theme.inkLight;
+    ctx.lineWidth = 0.5;
+    ctx.setLineDash([2, 12]);
+    for (let x = 50; x < W; x += 50) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+    for (let y = 50; y < H; y += 50) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+    ctx.setLineDash([]);
+    // Water patches (water / outdoor themes)
+    if (theme.waterColor) {
+      const wc = 2 + Math.floor(rand() * 2);
+      for (let i = 0; i < wc; i++) {
+        const wx = rand() * W, wy = rand() * H;
+        ctx.fillStyle = theme.waterColor;
+        ctx.beginPath();
+        ctx.moveTo(wx, wy);
+        ctx.bezierCurveTo(wx + 20 + rand() * 30, wy - 10 - rand() * 15,
+          wx + 40 + rand() * 20, wy + 10 + rand() * 15,
+          wx + 10 + rand() * 10, wy + 5 + rand() * 10);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+    // Mountain symbols (small ^)
+    ctx.strokeStyle = theme.inkLight;
+    ctx.lineWidth = 1;
+    const mc = 3 + Math.floor(rand() * 4);
+    for (let i = 0; i < mc; i++) {
+      const mx = 30 + rand() * (W - 60), my = 30 + rand() * (H - 60), ms = 4 + rand() * 4;
+      ctx.beginPath();
+      ctx.moveTo(mx - ms, my + ms * 0.6);
+      ctx.lineTo(mx, my - ms * 0.6);
+      ctx.lineTo(mx + ms, my + ms * 0.6);
+      ctx.stroke();
+    }
+    // Tree dot clusters
+    ctx.fillStyle = theme.inkLight;
+    const tc = 2 + Math.floor(rand() * 3);
+    for (let i = 0; i < tc; i++) {
+      const tx = 30 + rand() * (W - 60), ty = 30 + rand() * (H - 60);
+      const dots = 3 + Math.floor(rand() * 3);
+      for (let j = 0; j < dots; j++) {
+        ctx.beginPath();
+        ctx.arc(tx + (rand() - 0.5) * 8, ty + (rand() - 0.5) * 8, 1.5 + rand() * 1.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  }
+
+  /* -- Helper: map labels -- */
+  function drawMapLabels(ctx, W, H, theme, rand) {
+    ctx.font = 'italic 8px serif';
+    ctx.fillStyle = theme.inkLight;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const count = Math.min(theme.mapLabels.length, 4 + Math.floor(rand() * 3));
+    for (let i = 0; i < count; i++) {
+      const lx = 40 + rand() * (W - 80), ly = 30 + rand() * (H - 60);
+      ctx.save();
+      ctx.translate(lx, ly);
+      ctx.rotate((rand() - 0.5) * 0.3);
+      ctx.fillText(theme.mapLabels[i], 0, 0);
+      ctx.restore();
+    }
+  }
+
+  /* -- Helper: decorations -- */
+  function drawDecorations(ctx, W, H, theme, rand) {
+    ctx.font = '14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const dc = 4 + Math.floor(rand() * 3);
+    for (let i = 0; i < dc; i++) {
+      ctx.globalAlpha = 0.5 + rand() * 0.3;
+      ctx.fillText(theme.decorations[i % theme.decorations.length], 20 + rand() * (W - 40), 20 + rand() * (H - 40));
+    }
+    ctx.globalAlpha = 1;
+    // Skull watermark (bottom-left)
+    ctx.globalAlpha = 0.07;
+    ctx.font = '36px sans-serif';
+    ctx.fillText('\u2620', 28, H - 28);
+    ctx.globalAlpha = 1;
+    // "Here be dragons" on water/outdoor themes
+    if (theme.waterColor) {
+      ctx.save();
+      ctx.font = 'italic 7px serif';
+      ctx.fillStyle = theme.inkLight;
+      ctx.globalAlpha = 0.4;
+      const hx = W * (0.15 + rand() * 0.3), hy = H * (0.7 + rand() * 0.2);
+      ctx.translate(hx, hy);
+      ctx.rotate(-0.1 + rand() * 0.2);
+      ctx.fillText('Here be dragons', 0, 0);
+      ctx.restore();
+    }
+  }
+
+  /* -- Helper: red X marks the spot -- */
+  function drawXMark(ctx, x, y, size) {
+    ctx.strokeStyle = '#b71c1c';
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(x - size, y - size); ctx.lineTo(x + size, y + size); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x + size, y - size); ctx.lineTo(x - size, y + size); ctx.stroke();
+    // Dashed circle
+    ctx.strokeStyle = 'rgba(183,28,28,0.4)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.arc(x, y, size * 1.8, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.lineCap = 'butt';
+  }
+
+  /* -- Helper: "You" pirate flag marker -- */
+  function drawYouMarker(ctx, x, y, theme) {
+    // Flagpole
+    ctx.strokeStyle = theme.inkColor;
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y - 20); ctx.stroke();
+    // Flag
+    ctx.fillStyle = '#c62828';
+    ctx.beginPath();
+    ctx.moveTo(x, y - 20);
+    ctx.lineTo(x + 12, y - 16);
+    ctx.lineTo(x, y - 12);
+    ctx.closePath();
+    ctx.fill();
+    // Tiny skull on flag
+    ctx.font = '6px sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('\u2620', x + 5, y - 16);
+    // Pin dot
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, Math.PI * 2);
+    ctx.fillStyle = theme.inkColor;
+    ctx.fill();
+  }
+
+  /* -- Main map renderer -- */
   function drawMap(canvas, placeId, mapStyle, progress) {
     const ctx = canvas.getContext('2d');
     const W = canvas.width;
@@ -272,113 +549,82 @@
     const theme = MAP_THEMES[mapStyle] || MAP_THEMES.indoor;
     const rand = seedRand(placeId);
 
-    // Background
-    ctx.fillStyle = theme.bg;
-    ctx.fillRect(0, 0, W, H);
+    // 1. Parchment background
+    drawParchmentBg(ctx, W, H, theme, rand);
 
-    // Grid roads
-    ctx.strokeStyle = theme.roadColor;
-    ctx.lineWidth = 2;
-    const gridSpacing = 50;
-    for (let x = gridSpacing; x < W; x += gridSpacing) {
-      const wobble = (rand() - 0.5) * 8;
-      ctx.beginPath();
-      ctx.moveTo(x + wobble, 0);
-      ctx.lineTo(x - wobble, H);
-      ctx.stroke();
-    }
-    for (let y = gridSpacing; y < H; y += gridSpacing) {
-      const wobble = (rand() - 0.5) * 8;
-      ctx.beginPath();
-      ctx.moveTo(0, y + wobble);
-      ctx.lineTo(W, y - wobble);
-      ctx.stroke();
-    }
+    // 2. Terrain features
+    drawTerrainFeatures(ctx, W, H, theme, rand);
 
-    // Buildings (colored rectangles in grid cells)
-    for (let i = 0; i < 20; i++) {
-      const gx = Math.floor(rand() * (W / gridSpacing)) * gridSpacing + 8;
-      const gy = Math.floor(rand() * (H / gridSpacing)) * gridSpacing + 8;
-      const bw = 14 + rand() * 22;
-      const bh = 14 + rand() * 22;
-      ctx.fillStyle = theme.buildings[Math.floor(rand() * theme.buildings.length)];
-      ctx.fillRect(gx, gy, bw, bh);
-      // Roof/shadow
-      ctx.fillStyle = 'rgba(0,0,0,0.1)';
-      ctx.fillRect(gx, gy, bw, 3);
-    }
+    // 3. Map labels
+    drawMapLabels(ctx, W, H, theme, rand);
 
-    // Landmark emoji scattered
-    ctx.font = '18px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    for (let i = 0; i < 6; i++) {
-      const lx = 20 + rand() * (W - 40);
-      const ly = 20 + rand() * (H - 40);
-      ctx.fillText(theme.landmarks[i % theme.landmarks.length], lx, ly);
-    }
+    // 4. Decorations
+    drawDecorations(ctx, W, H, theme, rand);
 
-    // Route path (curved line from bottom-left to top-right area)
+    // 5. Compass rose (top-right)
+    drawCompassRose(ctx, W - 32, 32, 18, theme);
+
+    // 6. Route path (bottom-left → top-right)
     const pathPoints = [];
     const numPts = 7;
     for (let i = 0; i < numPts; i++) {
       const t = i / (numPts - 1);
-      const px = 30 + t * (W - 60) + (rand() - 0.5) * 40;
-      const py = H - 30 - t * (H - 60) + (rand() - 0.5) * 30;
-      pathPoints.push({ x: px, y: py });
+      pathPoints.push({
+        x: 30 + t * (W - 80) + (rand() - 0.5) * 40,
+        y: H - 30 - t * (H - 60) + (rand() - 0.5) * 30,
+      });
     }
 
-    // Draw path line
-    ctx.strokeStyle = '#1565c0';
-    ctx.lineWidth = 4;
-    ctx.setLineDash([8, 6]);
+    // Untraveled dotted trail
+    ctx.strokeStyle = theme.trailColor;
+    ctx.lineWidth = 3;
+    ctx.setLineDash([3, 8]);
     ctx.beginPath();
     ctx.moveTo(pathPoints[0].x, pathPoints[0].y);
-    for (let i = 1; i < pathPoints.length; i++) {
-      ctx.lineTo(pathPoints[i].x, pathPoints[i].y);
-    }
+    for (let i = 1; i < pathPoints.length; i++) ctx.lineTo(pathPoints[i].x, pathPoints[i].y);
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Traveled portion (solid blue)
+    // Waypoint crosses (+) along trail
+    ctx.strokeStyle = theme.trailColor;
+    ctx.lineWidth = 1;
+    for (let i = 1; i < pathPoints.length - 1; i++) {
+      const p = pathPoints[i];
+      ctx.beginPath(); ctx.moveTo(p.x - 3, p.y); ctx.lineTo(p.x + 3, p.y); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(p.x, p.y - 3); ctx.lineTo(p.x, p.y + 3); ctx.stroke();
+    }
+
+    // Traveled solid trail
     const travIdx = Math.floor(progress * (pathPoints.length - 1));
     if (travIdx > 0) {
-      ctx.strokeStyle = '#0d47a1';
-      ctx.lineWidth = 4;
+      ctx.strokeStyle = theme.trailTraveled;
+      ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.moveTo(pathPoints[0].x, pathPoints[0].y);
-      for (let i = 1; i <= travIdx; i++) {
-        ctx.lineTo(pathPoints[i].x, pathPoints[i].y);
-      }
+      for (let i = 1; i <= travIdx; i++) ctx.lineTo(pathPoints[i].x, pathPoints[i].y);
       ctx.stroke();
     }
 
-    // Destination marker (flag at end)
+    // 7. X marks the spot (destination)
     const dest = pathPoints[pathPoints.length - 1];
-    ctx.font = '24px sans-serif';
-    ctx.fillText('\u{1F3C1}', dest.x, dest.y);
+    drawXMark(ctx, dest.x, dest.y, 8);
 
-    // "You" marker at current position
+    // 8. "You" pirate flag marker
     const curIdx = Math.min(travIdx, pathPoints.length - 1);
-    const cur = pathPoints[curIdx];
-    // Blue circle
-    ctx.beginPath();
-    ctx.arc(cur.x, cur.y, 12, 0, Math.PI * 2);
-    ctx.fillStyle = '#1565c0';
-    ctx.fill();
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-    // Pulse ring
-    ctx.beginPath();
-    ctx.arc(cur.x, cur.y, 18, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(21,101,192,0.3)';
-    ctx.lineWidth = 2;
-    ctx.stroke();
+    drawYouMarker(ctx, pathPoints[curIdx].x, pathPoints[curIdx].y, theme);
 
-    // Start marker
-    ctx.font = '16px sans-serif';
-    ctx.fillText('\u{1F4CD}', pathPoints[0].x, pathPoints[0].y - 16);
+    // 9. Start marker — anchor + "START"
+    const start = pathPoints[0];
+    ctx.font = '14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('\u2693', start.x, start.y - 14);
+    ctx.font = 'bold 6px serif';
+    ctx.fillStyle = theme.inkColor;
+    ctx.fillText('START', start.x, start.y + 10);
+
+    // 10. Torn edges (drawn last)
+    drawTornEdges(ctx, W, H, rand);
   }
 
   /* ---- Helpers ---- */
