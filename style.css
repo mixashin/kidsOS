@@ -2193,10 +2193,10 @@ button { font-family: var(--font); }
     bottom: calc(var(--taskbar-h) + var(--sab));
   }
 
-  /* Desktop icons — 3-column launcher grid with large icons */
+  /* Desktop icons — 4-column launcher grid with large icons */
   #desktop-icons {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     top: calc(20px + var(--sat)); left: calc(20px + var(--sal)); right: calc(20px + var(--sar));
     width: auto;
     gap: 8px;
@@ -2206,8 +2206,8 @@ button { font-family: var(--font); }
     align-content: start;
   }
   .desktop-icon { width: 100%; max-width: 140px; padding: 14px 6px; }
-  .desktop-icon .icon-img { font-size: 72px; }
-  .desktop-icon span { font-size: 15px; margin-top: 8px; }
+  .desktop-icon .icon-img { font-size: 60px; }
+  .desktop-icon span { font-size: 13px; margin-top: 6px; }
 
   /* Taskbar — icon-only app buttons on mobile */
   .tbtn-title { display: none; }
@@ -2293,11 +2293,11 @@ button { font-family: var(--font); }
 
 /* ===== RESPONSIVE — SMALL PHONE (≤480px) ===== */
 @media (max-width: 480px) {
-  /* Desktop icons — 3-column grid, slightly smaller on small phones */
+  /* Desktop icons — 4-column grid, slightly smaller on small phones */
   #desktop-icons { gap: 4px; top: calc(12px + var(--sat)); left: calc(12px + var(--sal)); right: calc(12px + var(--sar)); }
-  .desktop-icon { padding: 10px 2px; }
-  .desktop-icon .icon-img { font-size: 52px; }
-  .desktop-icon span { font-size: 12px; }
+  .desktop-icon { padding: 8px 2px; }
+  .desktop-icon .icon-img { font-size: 44px; }
+  .desktop-icon span { font-size: 11px; }
 
   /* Memory game — tighter */
   #memory-grid { grid-template-columns: repeat(4, 54px); gap: 4px; }
