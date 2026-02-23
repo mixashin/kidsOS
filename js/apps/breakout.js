@@ -43,8 +43,10 @@ const BreakoutApp = (() => {
   const PADDLE_Y = H - 30;
 
   // Ball
-  const BALL_R = 7;
-  const INIT_SPEED = 4.5;
+  const BALL_R = 6;
+  const INIT_SPEED = 4;
+  const MAX_SPEED = 7;
+  const MIN_DY = 1.5; // prevent nearly-horizontal bouncing
 
   // Bricks
   const BRICK_ROWS = 5;
@@ -58,7 +60,7 @@ const BreakoutApp = (() => {
   const ROW_COLORS = ['#ff4757', '#ff6348', '#ffa502', '#2ed573', '#1e90ff'];
 
   let canvas, ctx;
-  let state = 'idle'; // 'idle' | 'playing' | 'won' | 'dead'
+  let state = 'idle'; // 'idle' | 'serving' | 'playing' | 'won' | 'dead'
   let paddleX;
   let ballX, ballY, ballDX, ballDY, speed;
   let bricks; // 2D array of { alive }
@@ -100,7 +102,7 @@ const BreakoutApp = (() => {
       _onCanvasClick = () => {
         if (state === 'idle' || state === 'won' || state === 'dead') {
           startGame();
-        } else if (state === 'playing' && !animFrame) {
+        } else if (state === 'serving') {
           launchBall();
         }
       };
@@ -130,6 +132,8 @@ const BreakoutApp = (() => {
   function handleClick() {
     if (state === 'idle' || state === 'won' || state === 'dead') {
       startGame();
+    } else if (state === 'serving') {
+      launchBall();
     }
   }
 
@@ -142,9 +146,8 @@ const BreakoutApp = (() => {
     speed = INIT_SPEED;
     paddleX = (W - PADDLE_W) / 2;
     initBricks();
-    resetBall();
+    serve();
     updateUI();
-    state = 'playing';
     loop();
   }
 
@@ -158,23 +161,25 @@ const BreakoutApp = (() => {
     }
   }
 
-  function resetBall() {
-    ballX = W / 2;
-    ballY = PADDLE_Y - BALL_R - 1;
-    // Random angle upward between -60 and -120 degrees
-    const angle = -(Math.PI / 3 + Math.random() * Math.PI / 3);
-    ballDX = speed * Math.cos(angle);
-    ballDY = speed * Math.sin(angle);
+  // Ball sits on paddle, waiting for click to launch
+  function serve() {
+    state = 'serving';
+    ballDX = 0;
+    ballDY = 0;
   }
 
   function launchBall() {
-    // Not used separately — ball launches on startGame/resetBall
+    // Launch with slight random horizontal offset, always upward
+    const offset = (Math.random() - 0.5) * 0.6; // small random angle
+    ballDX = speed * Math.sin(offset);
+    ballDY = -speed * Math.cos(offset);
+    state = 'playing';
   }
 
   /* ---- Main loop ---- */
 
   function loop() {
-    if (state !== 'playing') return;
+    if (state !== 'playing' && state !== 'serving') return;
     update();
     draw();
     animFrame = requestAnimationFrame(loop);
@@ -188,94 +193,151 @@ const BreakoutApp = (() => {
   }
 
   function update() {
-    ballX += ballDX;
-    ballY += ballDY;
-
-    // Wall collisions (left/right)
-    if (ballX - BALL_R <= 0) {
-      ballX = BALL_R;
-      ballDX = Math.abs(ballDX);
-    } else if (ballX + BALL_R >= W) {
-      ballX = W - BALL_R;
-      ballDX = -Math.abs(ballDX);
+    // In serving state, ball tracks paddle
+    if (state === 'serving') {
+      ballX = paddleX + PADDLE_W / 2;
+      ballY = PADDLE_Y - BALL_R - 1;
+      return;
     }
 
-    // Top wall
-    if (ballY - BALL_R <= 0) {
-      ballY = BALL_R;
-      ballDY = Math.abs(ballDY);
-    }
+    // Sub-step to prevent tunneling through bricks/paddle
+    const steps = Math.max(1, Math.ceil(speed / BALL_R));
+    const stepDX = ballDX / steps;
+    const stepDY = ballDY / steps;
 
-    // Paddle collision
-    if (ballDY > 0 &&
-        ballY + BALL_R >= PADDLE_Y &&
-        ballY + BALL_R <= PADDLE_Y + PADDLE_H + 4 &&
-        ballX >= paddleX &&
-        ballX <= paddleX + PADDLE_W) {
-      ballY = PADDLE_Y - BALL_R;
-      // Angle depends on where ball hits paddle (-60° to -120°)
-      const hit = (ballX - paddleX) / PADDLE_W; // 0..1
-      const angle = -(Math.PI / 6 + hit * (2 * Math.PI / 3)); // -30° to -150°
-      ballDX = speed * Math.cos(angle);
-      ballDY = speed * Math.sin(angle);
-    }
+    for (let s = 0; s < steps; s++) {
+      ballX += stepDX;
+      ballY += stepDY;
 
-    // Ball fell below paddle
-    if (ballY - BALL_R > H) {
-      lives--;
-      updateUI();
-      if (lives <= 0) {
-        endGame(false);
+      // --- Wall collisions ---
+      if (ballX - BALL_R <= 0) {
+        ballX = BALL_R;
+        ballDX = Math.abs(ballDX);
+      } else if (ballX + BALL_R >= W) {
+        ballX = W - BALL_R;
+        ballDX = -Math.abs(ballDX);
+      }
+      if (ballY - BALL_R <= 0) {
+        ballY = BALL_R;
+        ballDY = Math.abs(ballDY);
+      }
+
+      // --- Paddle collision ---
+      if (ballDY > 0 &&
+          ballY + BALL_R >= PADDLE_Y &&
+          ballY + BALL_R <= PADDLE_Y + PADDLE_H + 2 &&
+          ballX + BALL_R > paddleX &&
+          ballX - BALL_R < paddleX + PADDLE_W) {
+        ballY = PADDLE_Y - BALL_R;
+
+        // Classic Breakout: hit position on paddle controls angle
+        // -1 = left edge, 0 = center, +1 = right edge
+        const center = paddleX + PADDLE_W / 2;
+        let hit = (ballX - center) / (PADDLE_W / 2);
+        hit = Math.max(-1, Math.min(1, hit));
+
+        // Max deflection 60° from vertical; center = straight up
+        const maxAngle = Math.PI / 3;
+        const angle = hit * maxAngle;
+        ballDX = speed * Math.sin(angle);  // left edge → negative, right edge → positive
+        ballDY = -speed * Math.cos(angle); // always upward
+      }
+
+      // --- Ball fell below paddle ---
+      if (ballY - BALL_R > H) {
+        lives--;
+        updateUI();
+        if (lives <= 0) {
+          endGame(false);
+          return;
+        }
+        serve();
         return;
       }
-      resetBall();
-    }
 
-    // Brick collisions
+      // --- Brick collisions ---
+      if (checkBrickCollisions()) {
+        // If game won, stop
+        if (state === 'won') return;
+      }
+    }
+  }
+
+  function checkBrickCollisions() {
+    let hit = false;
     for (let r = 0; r < BRICK_ROWS; r++) {
       for (let c = 0; c < BRICK_COLS; c++) {
         const b = bricks[r][c];
         if (!b.alive) continue;
+
         const bx = BRICK_LEFT + c * (BRICK_W + BRICK_PAD);
         const by = BRICK_TOP + r * (BRICK_H + BRICK_PAD);
 
-        if (ballX + BALL_R > bx &&
-            ballX - BALL_R < bx + BRICK_W &&
-            ballY + BALL_R > by &&
-            ballY - BALL_R < by + BRICK_H) {
+        // AABB vs circle collision
+        // Find closest point on brick to ball center
+        const closestX = Math.max(bx, Math.min(ballX, bx + BRICK_W));
+        const closestY = Math.max(by, Math.min(ballY, by + BRICK_H));
+        const dx = ballX - closestX;
+        const dy = ballY - closestY;
+
+        if (dx * dx + dy * dy < BALL_R * BALL_R) {
           b.alive = false;
           score += 10;
+          hit = true;
+
           // Speed up slightly
-          speed = Math.min(9, speed + 0.03);
-          const mag = Math.sqrt(ballDX * ballDX + ballDY * ballDY);
-          ballDX = (ballDX / mag) * speed;
-          ballDY = (ballDY / mag) * speed;
+          speed = Math.min(MAX_SPEED, speed + 0.04);
 
-          // Determine bounce direction
-          const overlapLeft = (ballX + BALL_R) - bx;
-          const overlapRight = (bx + BRICK_W) - (ballX - BALL_R);
-          const overlapTop = (ballY + BALL_R) - by;
-          const overlapBottom = (by + BRICK_H) - (ballY - BALL_R);
-          const minOverlap = Math.min(overlapLeft, overlapRight, overlapTop, overlapBottom);
+          // Determine which face was hit for bounce direction
+          // Use ball's previous position (before this sub-step) relative to brick
+          const prevX = ballX - ballDX / Math.max(1, Math.ceil(speed / BALL_R));
+          const prevY = ballY - ballDY / Math.max(1, Math.ceil(speed / BALL_R));
 
-          if (minOverlap === overlapLeft || minOverlap === overlapRight) {
+          const fromLeft   = prevX < bx;
+          const fromRight  = prevX > bx + BRICK_W;
+          const fromTop    = prevY < by;
+          const fromBottom = prevY > by + BRICK_H;
+
+          if (fromLeft || fromRight) {
             ballDX = -ballDX;
-          } else {
+            // Push ball out
+            ballX = fromLeft ? bx - BALL_R : bx + BRICK_W + BALL_R;
+          } else if (fromTop || fromBottom) {
             ballDY = -ballDY;
+            ballY = fromTop ? by - BALL_R : by + BRICK_H + BALL_R;
+          } else {
+            // Corner hit — reverse both
+            ballDX = -ballDX;
+            ballDY = -ballDY;
+          }
+
+          // Re-normalize speed after bounce
+          const mag = Math.sqrt(ballDX * ballDX + ballDY * ballDY);
+          if (mag > 0) {
+            ballDX = (ballDX / mag) * speed;
+            ballDY = (ballDY / mag) * speed;
+          }
+
+          // Enforce minimum vertical speed to prevent horizontal loops
+          if (Math.abs(ballDY) < MIN_DY) {
+            ballDY = ballDY < 0 ? -MIN_DY : MIN_DY;
+            const hMag = Math.sqrt(speed * speed - MIN_DY * MIN_DY);
+            ballDX = ballDX < 0 ? -hMag : hMag;
           }
 
           updateUI();
 
-          // Check win
           if (allBricksCleared()) {
             endGame(true);
-            return;
+            return true;
           }
-          // Only destroy one brick per frame
-          return;
+
+          // Only one brick per sub-step
+          return true;
         }
       }
     }
+    return hit;
   }
 
   function allBricksCleared() {
@@ -305,13 +367,20 @@ const BreakoutApp = (() => {
   /* ---- Drawing ---- */
 
   function draw() {
-    // Background
     ctx.fillStyle = '#1a1a2e';
     ctx.fillRect(0, 0, W, H);
-
     drawBricks();
     drawPaddle();
     drawBall();
+
+    // Serving hint
+    if (state === 'serving') {
+      ctx.fillStyle = 'rgba(255,255,255,0.7)';
+      ctx.font = '16px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('Click to launch!', W / 2, PADDLE_Y - 40);
+    }
   }
 
   function drawBricks() {
@@ -334,7 +403,6 @@ const BreakoutApp = (() => {
     ctx.fillStyle = '#5b8cff';
     roundRect(paddleX, PADDLE_Y, PADDLE_W, PADDLE_H, 6);
     ctx.fill();
-    // Shine
     ctx.fillStyle = 'rgba(255,255,255,0.25)';
     ctx.fillRect(paddleX + 4, PADDLE_Y + 2, PADDLE_W - 8, 3);
   }
@@ -344,7 +412,6 @@ const BreakoutApp = (() => {
     ctx.arc(ballX, ballY, BALL_R, 0, Math.PI * 2);
     ctx.fillStyle = '#fff';
     ctx.fill();
-    // Shine
     ctx.beginPath();
     ctx.arc(ballX - 2, ballY - 2, BALL_R * 0.35, 0, Math.PI * 2);
     ctx.fillStyle = 'rgba(255,255,255,0.5)';
