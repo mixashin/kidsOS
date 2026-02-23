@@ -1,16 +1,47 @@
 /* ===== ChoreQuest — Daily Checklist App ===== */
 (() => {
-  /* ---- Data Constants ---- */
-  const CHORES = [
-    { id: 'brush-am',  emoji: '🪥', name: 'Brush teeth (morning)', hint: '2 minutes, all corners!', group: 'Morning' },
-    { id: 'wash-face', emoji: '🧼', name: 'Wash face',             hint: 'Splash splash, nice and fresh!', group: 'Morning' },
-    { id: 'make-bed',  emoji: '🛏️', name: 'Make bed',              hint: 'Blanket flat-ish. Good enough.', group: 'Morning' },
-    { id: 'dressed',   emoji: '👕', name: 'Get dressed',           hint: 'Matching socks = bonus points.', group: 'Morning' },
-    { id: 'pack-bag',  emoji: '🎒', name: 'Pack school bag',       hint: 'Books, lunch, homework — triple check!', group: 'Morning' },
-    { id: 'homework',  emoji: '📚', name: 'Homework',              hint: 'Brain power: activated!', group: 'After School' },
-    { id: 'tidy-toys', emoji: '🧸', name: 'Tidy toys (5 min)',     hint: 'Set the timer, beat the clock!', group: 'After School', timer: 300 },
-    { id: 'brush-pm',  emoji: '🪥', name: 'Brush teeth (evening)', hint: 'Yes, again. Teeth need friends.', group: 'Evening' },
-    { id: 'pajamas',   emoji: '🌙', name: 'Pajamas + bedtime routine', hint: 'PJs on, story time, zzz.', group: 'Evening' },
+  /* ---- Chore Catalog (30 chores) ---- */
+  const ALL_CHORES = [
+    // Morning
+    { id: 'brush-am',    emoji: '🪥', name: 'Brush teeth (morning)', hint: '2 minutes, all corners!', group: 'Morning' },
+    { id: 'wash-face',   emoji: '🧼', name: 'Wash face',             hint: 'Splash splash, nice and fresh!', group: 'Morning' },
+    { id: 'make-bed',    emoji: '🛏️', name: 'Make bed',              hint: 'Blanket flat-ish. Good enough.', group: 'Morning' },
+    { id: 'dressed',     emoji: '👕', name: 'Get dressed',           hint: 'Matching socks = bonus points.', group: 'Morning' },
+    { id: 'pack-bag',    emoji: '🎒', name: 'Pack school bag',       hint: 'Books, lunch, homework — triple check!', group: 'Morning' },
+    { id: 'breakfast',   emoji: '🥣', name: 'Eat breakfast',         hint: 'Fuel up! Big day ahead.', group: 'Morning' },
+    { id: 'comb-hair',   emoji: '💇', name: 'Brush/comb hair',       hint: 'Tame that bedhead!', group: 'Morning' },
+    { id: 'shoes-on',    emoji: '👟', name: 'Put on shoes',          hint: 'Left on left, right on right!', group: 'Morning' },
+    { id: 'vitamins',    emoji: '💊', name: 'Take vitamins',         hint: 'Power-up pill activated!', group: 'Morning' },
+    { id: 'feed-pet-am', emoji: '🐾', name: 'Feed pet (morning)',    hint: 'Furry friend is counting on you!', group: 'Morning' },
+    // After School
+    { id: 'homework',    emoji: '📚', name: 'Homework',              hint: 'Brain power: activated!', group: 'After School' },
+    { id: 'tidy-toys',   emoji: '🧸', name: 'Tidy toys (5 min)',     hint: 'Set the timer, beat the clock!', group: 'After School', timer: 300 },
+    { id: 'read-15',     emoji: '📖', name: 'Read for 15 minutes',   hint: 'Adventure time for your brain!', group: 'After School' },
+    { id: 'instrument',  emoji: '🎵', name: 'Practice instrument',   hint: '15 minutes of making noise…er, music!', group: 'After School' },
+    { id: 'unpack-bag',  emoji: '🎒', name: 'Unpack school bag',     hint: "Empty it out, don't let crumbs grow.", group: 'After School' },
+    { id: 'shoes-coat',  emoji: '🧥', name: 'Put away shoes & coat', hint: 'Hooks and racks are lonely, feed them!', group: 'After School' },
+    { id: 'set-table',   emoji: '🍽️', name: 'Help set the table',   hint: 'Forks on the left, knives on the right!', group: 'After School' },
+    { id: 'water-plants',emoji: '🌱', name: 'Water plants',          hint: "They're thirsty and can't get a drink alone!", group: 'After School' },
+    { id: 'feed-pet-pm', emoji: '🐾', name: 'Feed pet (afternoon)',  hint: 'Second meal of the day for your buddy!', group: 'After School' },
+    { id: 'pick-clothes',emoji: '👔', name: 'Pick up clothes from floor', hint: 'The floor is not a wardrobe!', group: 'After School' },
+    // Evening
+    { id: 'brush-pm',    emoji: '🪥', name: 'Brush teeth (evening)', hint: 'Yes, again. Teeth need friends.', group: 'Evening' },
+    { id: 'pajamas',     emoji: '🌙', name: 'Pajamas + bedtime routine', hint: 'PJs on, story time, zzz.', group: 'Evening' },
+    { id: 'clear-table', emoji: '🍽️', name: 'Help clear the table', hint: 'Dishes to the sink, champ!', group: 'Evening' },
+    { id: 'shower',      emoji: '🚿', name: 'Take a bath/shower',    hint: 'Soap + water = superhero clean!', group: 'Evening' },
+    { id: 'laundry',     emoji: '🧺', name: 'Put dirty clothes in laundry', hint: "Don't let the laundry monster grow!", group: 'Evening' },
+    { id: 'tidy-room',   emoji: '🧹', name: 'Tidy room (10 min)',    hint: 'Quick cleanup blitz! You got this!', group: 'Evening', timer: 600 },
+    { id: 'pack-tmrw',   emoji: '🎒', name: 'Pack bag for tomorrow', hint: 'Future you says thanks!', group: 'Evening' },
+    { id: 'clothes-tmrw',emoji: '👕', name: 'Lay out clothes for tomorrow', hint: 'Morning you will be so grateful!', group: 'Evening' },
+    { id: 'goodnight',   emoji: '🤗', name: 'Say goodnight to family', hint: 'Hugs, high-fives, or fist bumps count!', group: 'Evening' },
+    { id: 'read-bed',    emoji: '📖', name: 'Read before bed',       hint: 'The best way to drift off to dreamland.', group: 'Evening' },
+  ];
+
+  // Original 9 chore IDs — default active set
+  const DEFAULT_ACTIVE = [
+    'brush-am', 'wash-face', 'make-bed', 'dressed', 'pack-bag',
+    'homework', 'tidy-toys',
+    'brush-pm', 'pajamas',
   ];
 
   const COMPLIMENTS = [
@@ -52,14 +83,20 @@
   const GROUPS = ['Morning', 'After School', 'Evening'];
 
   /* ---- State ---- */
-  let screen = 'today';      // 'today' | 'victory'
-  let data = null;            // persisted data
+  let screen = 'today';      // 'today' | 'edit' | 'victory'
+  let data = null;
   let timerActive = false;
   let timerChoreId = null;
   let timerSeconds = 0;
   let timerInterval = null;
-  let expandedHints = {};     // choreId -> bool
+  let expandedHints = {};
   let winId = null;
+
+  /* ---- Helpers ---- */
+  function getActiveChores() {
+    const ids = data.activeChores || DEFAULT_ACTIVE;
+    return ALL_CHORES.filter(c => ids.includes(c.id));
+  }
 
   /* ---- Persistence ---- */
   function loadData() {
@@ -85,14 +122,21 @@
         bestStreak: 0,
         stickers: [],
         totalDaysCompleted: 0,
+        activeChores: DEFAULT_ACTIVE.slice(),
       };
       saveData();
       return;
     }
     data = saved;
+    // Migrate: add activeChores if missing (existing users keep original 9)
+    if (!data.activeChores) {
+      data.activeChores = DEFAULT_ACTIVE.slice();
+      saveData();
+    }
     // Daily reset check
     if (data.lastResetDate !== today) {
-      const allDoneYesterday = data.checkedItems.length >= CHORES.length;
+      const active = getActiveChores();
+      const allDoneYesterday = active.length > 0 && data.checkedItems.length >= active.length;
       if (allDoneYesterday) {
         data.streak++;
         if (data.streak > data.bestStreak) data.bestStreak = data.streak;
@@ -107,7 +151,7 @@
 
   /* ---- Timer ---- */
   function startTimer(choreId) {
-    const chore = CHORES.find(c => c.id === choreId);
+    const chore = ALL_CHORES.find(c => c.id === choreId);
     if (!chore || !chore.timer) return;
     timerActive = true;
     timerChoreId = choreId;
@@ -148,7 +192,6 @@
       </div>`;
     container.appendChild(popup);
 
-    // Auto-dismiss after 2.5s
     setTimeout(() => {
       popup.classList.add('cq-awesome-fade');
       setTimeout(() => popup.remove(), 400);
@@ -184,9 +227,9 @@
       data.checkedItems.push(choreId);
       saveData();
     }
-    // Check if all done
-    if (data.checkedItems.length >= CHORES.length) {
-      // Award sticker
+    const active = getActiveChores();
+    const doneActive = active.filter(c => data.checkedItems.includes(c.id));
+    if (doneActive.length >= active.length && active.length > 0) {
       const dayIndex = data.totalDaysCompleted % STICKERS.length;
       const sticker = STICKERS[dayIndex];
       if (!data.stickers.includes(sticker.id)) {
@@ -204,28 +247,47 @@
     render();
   }
 
+  function toggleChore(choreId) {
+    const idx = data.activeChores.indexOf(choreId);
+    if (idx >= 0) {
+      data.activeChores.splice(idx, 1);
+      // Also remove from checked if it was checked today
+      const ci = data.checkedItems.indexOf(choreId);
+      if (ci >= 0) data.checkedItems.splice(ci, 1);
+    } else {
+      data.activeChores.push(choreId);
+    }
+    saveData();
+    render();
+  }
+
   /* ---- Render ---- */
   function render() {
     const container = document.getElementById('cq-app');
     if (!container) return;
     if (screen === 'victory') {
       container.innerHTML = renderVictory();
+    } else if (screen === 'edit') {
+      container.innerHTML = renderEdit();
     } else {
       container.innerHTML = renderToday();
     }
   }
 
   function renderToday() {
-    const doneCount = data.checkedItems.length;
-    const total = CHORES.length;
-    const pct = Math.round((doneCount / total) * 100);
+    const active = getActiveChores();
+    const doneCount = active.filter(c => data.checkedItems.includes(c.id)).length;
+    const total = active.length;
+    const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
 
     let html = `<div class="cq-header">
       <div class="cq-title">✅ Today's Quest List</div>
-      ${data.streak > 0 ? `<div class="cq-streak">🔥 ${data.streak} day${data.streak > 1 ? 's' : ''}</div>` : ''}
+      <div class="cq-header-right">
+        ${data.streak > 0 ? `<div class="cq-streak">🔥 ${data.streak} day${data.streak > 1 ? 's' : ''}</div>` : ''}
+        <button class="cq-edit-btn" onclick="window._cqEditChores()" title="Edit chores">✏️</button>
+      </div>
     </div>`;
 
-    // Progress bar
     html += `<div class="cq-progress-wrap">
       <div class="cq-progress">
         <div class="cq-progress-bar" style="width:${pct}%"></div>
@@ -233,7 +295,16 @@
       <div class="cq-progress-text">${doneCount}/${total} done</div>
     </div>`;
 
-    // Timer overlay
+    if (total === 0) {
+      html += `<div class="cq-empty">
+        <div class="cq-empty-emoji">📋</div>
+        <div class="cq-empty-text">No chores selected yet!</div>
+        <button class="cq-done-btn" style="margin-top:10px" onclick="window._cqEditChores()">✏️ Pick your chores</button>
+      </div>`;
+      html += renderFooter();
+      return html;
+    }
+
     if (timerActive) {
       html += `<div class="cq-timer">
         <div class="cq-timer-emoji">🧸</div>
@@ -245,9 +316,9 @@
       </div>`;
     }
 
-    // Chore groups
     for (const group of GROUPS) {
-      const chores = CHORES.filter(c => c.group === group);
+      const chores = active.filter(c => c.group === group);
+      if (chores.length === 0) continue;
       html += `<div class="cq-section">
         <div class="cq-section-title">${group === 'Morning' ? '🌅' : group === 'After School' ? '🏠' : '🌙'} ${group}</div>`;
       for (const chore of chores) {
@@ -275,12 +346,49 @@
       html += `</div>`;
     }
 
-    // Footer with sticker count
-    html += `<div class="cq-footer">
+    html += renderFooter();
+    return html;
+  }
+
+  function renderFooter() {
+    return `<div class="cq-footer">
       <div class="cq-sticker-count">🏆 Stickers earned: ${data.stickers.length}/${STICKERS.length}</div>
       ${data.streak === 0 && data.totalDaysCompleted > 0 ? `<div class="cq-streak-msg">No worries. Today is a fresh start! 🌅</div>` : ''}
       ${data.streak > 0 ? `<div class="cq-streak-msg">🔥 ${data.streak} day${data.streak > 1 ? 's' : ''} in a row! Keep it going!</div>` : ''}
       ${data.bestStreak > 0 ? `<div class="cq-best-streak">Best streak: ${data.bestStreak} day${data.bestStreak > 1 ? 's' : ''}</div>` : ''}
+    </div>`;
+  }
+
+  function renderEdit() {
+    const activeSet = new Set(data.activeChores);
+    let html = `<div class="cq-header">
+      <div class="cq-title">✏️ Edit My Chores</div>
+      <div class="cq-header-right">
+        <button class="cq-edit-done-btn" onclick="window._cqEditDone()">Done</button>
+      </div>
+    </div>`;
+
+    html += `<div class="cq-edit-info">Pick which chores appear on your daily list. You have <b>${activeSet.size}</b> selected.</div>`;
+
+    for (const group of GROUPS) {
+      const chores = ALL_CHORES.filter(c => c.group === group);
+      html += `<div class="cq-section">
+        <div class="cq-section-title">${group === 'Morning' ? '🌅' : group === 'After School' ? '🏠' : '🌙'} ${group}</div>`;
+      for (const chore of chores) {
+        const on = activeSet.has(chore.id);
+        html += `<div class="cq-edit-row ${on ? 'cq-edit-on' : ''}" onclick="window._cqToggleChore('${chore.id}')">
+          <span class="cq-chore-emoji">${chore.emoji}</span>
+          <div class="cq-edit-name">${chore.name}${chore.timer ? ' ⏱️' : ''}</div>
+          <div class="cq-toggle ${on ? 'cq-toggle-on' : ''}">
+            <div class="cq-toggle-knob"></div>
+          </div>
+        </div>`;
+      }
+      html += `</div>`;
+    }
+
+    html += `<div class="cq-footer" style="padding-bottom:18px">
+      <button class="cq-edit-reset-btn" onclick="window._cqResetChores()">↩️ Reset to defaults</button>
     </div>`;
 
     return html;
@@ -291,7 +399,6 @@
     const stickerIdx = (data.totalDaysCompleted - 1) % STICKERS.length;
     const sticker = STICKERS[stickerIdx];
 
-    // Generate confetti emojis
     const confettiEmojis = ['🎉', '⭐', '🏆', '✅', '🎊', '💪', '🌟', '🦸'];
     let confettiHTML = '';
     for (let i = 0; i < 20; i++) {
@@ -326,6 +433,14 @@
   window._cqCancelTimer = () => { stopTimer(); render(); };
   window._cqFinishEarly = () => finishEarly();
   window._cqBackToToday = () => { screen = 'today'; render(); };
+  window._cqEditChores = () => { screen = 'edit'; render(); };
+  window._cqEditDone = () => { screen = 'today'; render(); };
+  window._cqToggleChore = (id) => toggleChore(id);
+  window._cqResetChores = () => {
+    data.activeChores = DEFAULT_ACTIVE.slice();
+    saveData();
+    render();
+  };
 
   /* ---- App Registration ---- */
   OS.registerApp('chorequest', {

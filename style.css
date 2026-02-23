@@ -1759,7 +1759,33 @@ button { font-family: var(--font); }
 .cq-wrap { display: flex; flex-direction: column; height: 100%; background: var(--win-body-bg); font-family: inherit; overflow-y: auto; }
 .cq-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #ef6c00; color: #fff; flex-shrink: 0; }
 .cq-title { font-weight: 700; font-size: 16px; }
+.cq-header-right { display: flex; align-items: center; gap: 8px; }
 .cq-streak { font-size: 13px; font-weight: 600; background: rgba(255,255,255,.2); padding: 3px 10px; border-radius: 20px; }
+.cq-edit-btn { background: rgba(255,255,255,.2); border: none; border-radius: 8px; padding: 4px 8px; font-size: 16px; cursor: pointer; line-height: 1; }
+.cq-edit-btn:hover { background: rgba(255,255,255,.35); }
+.cq-edit-done-btn { background: #fff; color: #ef6c00; border: none; border-radius: 8px; padding: 5px 14px; font: 700 13px sans-serif; cursor: pointer; }
+.cq-edit-done-btn:hover { background: #ffe0b2; }
+
+/* Empty state */
+.cq-empty { text-align: center; padding: 40px 20px; }
+.cq-empty-emoji { font-size: 48px; margin-bottom: 8px; }
+.cq-empty-text { font-size: 15px; color: var(--text-muted); font-weight: 600; }
+
+/* Edit screen */
+.cq-edit-info { padding: 10px 16px; font-size: 13px; color: var(--text-secondary); background: var(--surface-bg); }
+.cq-edit-info b { color: #ef6c00; }
+.cq-edit-row { display: flex; align-items: center; gap: 10px; padding: 9px 12px; margin: 0 16px 4px; border-radius: 10px; border: 1.5px solid var(--border-light); cursor: pointer; transition: background .15s, border-color .15s; }
+.cq-edit-row:hover { background: var(--surface-bg); }
+.cq-edit-row.cq-edit-on { border-color: #a5d6a7; background: #e8f5e9; }
+[data-theme="dark"] .cq-edit-row.cq-edit-on { background: rgba(76,175,80,.12); border-color: rgba(76,175,80,.3); }
+.cq-edit-name { flex: 1; font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.cq-toggle { width: 40px; height: 22px; border-radius: 11px; background: #ccc; position: relative; flex-shrink: 0; transition: background .2s; }
+.cq-toggle-on { background: #4caf50; }
+.cq-toggle-knob { position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: left .2s; }
+.cq-toggle-on .cq-toggle-knob { left: 20px; }
+[data-theme="dark"] .cq-toggle { background: #555; }
+.cq-edit-reset-btn { background: none; border: 1px solid var(--text-muted); border-radius: 8px; padding: 6px 16px; font-size: 13px; color: var(--text-muted); cursor: pointer; }
+.cq-edit-reset-btn:hover { background: var(--surface-bg); }
 
 /* Progress */
 .cq-progress-wrap { padding: 10px 16px; flex-shrink: 0; }
