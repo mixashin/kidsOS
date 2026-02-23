@@ -492,7 +492,7 @@
       };
     },
     getHTML() { return render(); },
-    onOpen() { loadCollection(); },
+    onOpen() { loadCollection(); startCamera(); },
     onClose() {
       stopCamera();
       if (scanInterval) { clearInterval(scanInterval); scanInterval = null; }
