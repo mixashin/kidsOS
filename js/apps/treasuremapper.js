@@ -273,10 +273,11 @@
     },
   };
 
-  // Seeded random from string
+  // Seeded random from string (Park-Miller LCG, needs positive non-zero seed)
   function seedRand(str) {
     let h = 0;
     for (let i = 0; i < str.length; i++) h = ((h << 5) - h + str.charCodeAt(i)) | 0;
+    h = (h & 0x7fffffff) || 1;
     return function() { h = (h * 16807) % 2147483647; return (h - 1) / 2147483646; };
   }
 
