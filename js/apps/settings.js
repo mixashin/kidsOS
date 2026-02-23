@@ -310,7 +310,7 @@ const SettingsApp = {
         const local = OS.VERSION;
         const remoteVer = remote.version;
 
-        if (self._isNewer(remoteVer, local)) {
+        if (OS._isNewer(remoteVer, local)) {
           statusEl.innerHTML = `✅ <b>Update available!</b><br>
             <span style="font-size:12px">Current: v${local} → New: v${remoteVer}</span>
             ${remote.build ? '<br><span style="font-size:12px;color:#888">Build: ' + remote.build + '</span>' : ''}`;
@@ -325,44 +325,13 @@ const SettingsApp = {
     tryFetch(0);
   },
 
-  // Compare semver strings: returns true if remote > local
-  _isNewer(remote, local) {
-    const r = remote.split('.').map(Number);
-    const l = local.split('.').map(Number);
-    for (let i = 0; i < 3; i++) {
-      if ((r[i] || 0) > (l[i] || 0)) return true;
-      if ((r[i] || 0) < (l[i] || 0)) return false;
-    }
-    return false;
-  },
-
   applyUpdate() {
-    // Clear all caches, unregister SW, and hard-navigate to get the latest version
-    this._nukeAndReload();
+    OS._nukeAndReload();
   },
 
   forceReload() {
     if (!confirm('This will clear all cached app files and reload KidsOS.\nYour saved data (files, settings, chat) will NOT be affected.\n\nProceed?')) return;
-    this._nukeAndReload();
-  },
-
-  _nukeAndReload() {
-    const hardNav = () => {
-      // Navigate with cache-buster so the server returns fresh index.html
-      // (which has versioned ?v= URLs on all CSS/JS, forcing fresh fetches)
-      const base = window.location.href.split('?')[0].split('#')[0];
-      window.location.replace(base + '?_update=' + Date.now());
-    };
-    Promise.all([
-      // Clear all CacheStorage caches
-      'caches' in window
-        ? caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))))
-        : Promise.resolve(),
-      // Unregister all service workers so old SW can't serve stale files
-      'serviceWorker' in navigator
-        ? navigator.serviceWorker.getRegistrations().then(regs => Promise.all(regs.map(r => r.unregister())))
-        : Promise.resolve(),
-    ]).then(hardNav).catch(hardNav);
+    OS._nukeAndReload();
   },
 
   saveUsername() {

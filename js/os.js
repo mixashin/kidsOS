@@ -1,6 +1,6 @@
 /* ===== KidsOS Core ===== */
 const OS = (() => {
-  const VERSION = '0.14.0';
+  const VERSION = '0.15.0';
   const UPDATE_URL = (typeof KIDSOS_CONFIG !== 'undefined' && KIDSOS_CONFIG.updateURL) || 'https://mixashin.github.io/kidsOS';
 
   let zCounter = 100;
@@ -49,6 +49,106 @@ const OS = (() => {
 
     startClock();
     initBackButton();
+
+    // Auto-check for updates a few seconds after boot
+    setTimeout(checkBootUpdate, 4000);
+  }
+
+  /* ---- Boot Update Check ---- */
+  const UPDATE_MESSAGES = [
+    { title: '🐧 Penguin Express Delivery!', body: 'A shiny new version of KidsOS just waddled in! Update now before the penguin gets tired!' },
+    { title: '🚀 Houston, We Have an Update!', body: 'Mission Control has detected a newer version of KidsOS orbiting nearby. Initiate download sequence?' },
+    { title: '🍪 Fresh Cookies from the Oven!', body: 'A fresh batch of KidsOS improvements just came out of the oven. Grab them while they\'re warm!' },
+    { title: '🦄 Unicorn Update Available!', body: 'A magical unicorn galloped by and dropped off a new version of KidsOS. Don\'t let the sparkles fade!' },
+    { title: '🎁 Surprise Package!', body: 'The KidsOS elves have been working overtime! A brand new update is wrapped up and ready for you!' },
+    { title: '🧙 Wizard Update Detected!', body: 'The update wizard has conjured a new spell — er, version! Wave your wand (click the button) to apply it!' },
+    { title: '🐸 Ribbit! New Version!', body: 'A little frog just hopped in with a new KidsOS update on its back. Kiss the button to transform your OS!' },
+    { title: '🎸 Rock & Roll Update!', body: 'KidsOS just dropped a new album — wait, we mean VERSION. Turn it up to 11 and update now!' },
+  ];
+
+  function checkBootUpdate() {
+    // Skip if we just came from an update reload
+    if (location.search.includes('_update')) return;
+
+    const urls = [
+      UPDATE_URL + '/version.json?t=' + Date.now(),
+      'https://mixashin.github.io/kidsOS/version.json?t=' + Date.now(),
+    ];
+
+    const tryFetch = (i) => {
+      if (i >= urls.length) return; // silently fail — not critical
+      fetch(urls[i], { cache: 'no-store' }).then(res => {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      }).then(remote => {
+        if (_isNewer(remote.version, VERSION)) {
+          showUpdatePopup(remote.version, remote.build);
+        }
+      }).catch(() => tryFetch(i + 1));
+    };
+    tryFetch(0);
+  }
+
+  function _isNewer(remote, local) {
+    const r = remote.split('.').map(Number);
+    const l = local.split('.').map(Number);
+    for (let i = 0; i < 3; i++) {
+      if ((r[i] || 0) > (l[i] || 0)) return true;
+      if ((r[i] || 0) < (l[i] || 0)) return false;
+    }
+    return false;
+  }
+
+  function showUpdatePopup(newVer, build) {
+    // Pick a random funny message
+    const msg = UPDATE_MESSAGES[Math.floor(Math.random() * UPDATE_MESSAGES.length)];
+
+    const overlay = document.createElement('div');
+    overlay.className = 'update-popup-overlay';
+    overlay.innerHTML = `
+      <div class="update-popup">
+        <div class="update-popup-icon">🐧</div>
+        <div class="update-popup-title">${msg.title}</div>
+        <div class="update-popup-body">${msg.body}</div>
+        <div class="update-popup-version">v${VERSION} → v${newVer}${build ? ' (build ' + build + ')' : ''}</div>
+        <div class="update-popup-buttons">
+          <button class="update-popup-btn update-popup-later" id="update-later-btn">Later</button>
+          <button class="update-popup-btn update-popup-go" id="update-go-btn">🚀 Update Now!</button>
+        </div>
+        <div class="update-popup-note">Your files & data won't be touched!</div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    // Animate in
+    requestAnimationFrame(() => overlay.classList.add('visible'));
+
+    document.getElementById('update-later-btn').onclick = () => {
+      overlay.classList.remove('visible');
+      setTimeout(() => overlay.remove(), 300);
+    };
+
+    document.getElementById('update-go-btn').onclick = () => {
+      const btn = document.getElementById('update-go-btn');
+      btn.textContent = '⏳ Updating...';
+      btn.disabled = true;
+      _nukeAndReload();
+    };
+  }
+
+  function _nukeAndReload() {
+    const hardNav = () => {
+      const base = window.location.href.split('?')[0].split('#')[0];
+      window.location.replace(base + '?_update=' + Date.now());
+    };
+    Promise.all([
+      'caches' in window
+        ? caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))))
+        : Promise.resolve(),
+      'serviceWorker' in navigator
+        ? navigator.serviceWorker.getRegistrations().then(regs => Promise.all(regs.map(r => r.unregister())))
+        : Promise.resolve(),
+    ]).then(hardNav).catch(hardNav);
   }
 
   /* ---- Back Button Handling ---- */
@@ -534,6 +634,6 @@ const OS = (() => {
     updateMenuUsername,
     getStorageUsage, factoryReset, STORAGE_KEYS, isStandalone,
     applyTheme, ACCENT_COLORS,
-    VERSION, UPDATE_URL,
+    VERSION, UPDATE_URL, _isNewer, _nukeAndReload,
   };
 })();
