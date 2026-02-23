@@ -2058,16 +2058,19 @@ button { font-family: var(--font); }
 .ts-has-photo .ts-badge-earned,
 .ts-has-photo .ts-serious-header,
 .ts-has-photo .ts-serious-footer { position: relative; z-index: 1; }
-.ts-has-photo .ts-result-header { background: rgba(0,0,0,.5); padding: 8px 16px; border-radius: 8px; }
-.ts-has-photo .ts-result-text { background: rgba(10,18,30,.8); border-color: rgba(0,188,212,.35); }
-.ts-has-photo .ts-result-text.ts-rare { background: rgba(10,18,30,.8); }
-.ts-has-photo .ts-result-text.ts-mystery-text { background: rgba(10,18,30,.8); }
-.ts-has-photo .ts-result-text.ts-serious { background: rgba(10,18,30,.8); }
-.ts-has-photo .ts-part { background: rgba(10,18,30,.8); border-color: rgba(0,188,212,.3); }
-.ts-has-photo .ts-badge-earned { background: rgba(10,18,30,.8); }
-.ts-has-photo .ts-scan-info { background: rgba(10,18,30,.7); padding: 16px; border-radius: 12px; }
-.ts-has-photo .ts-serious-header { background: rgba(0,0,0,.5); padding: 6px 14px; border-radius: 8px; }
-.ts-has-photo .ts-serious-footer { background: rgba(0,0,0,.5); padding: 4px 12px; border-radius: 6px; }
+.ts-has-photo .ts-result-header { background: rgba(0,0,0,.7); padding: 8px 16px; border-radius: 8px; color: #fff; }
+.ts-has-photo .ts-result-text { background: rgba(5,10,20,.92); border-color: rgba(0,188,212,.4); color: #fff; }
+.ts-has-photo .ts-result-text.ts-rare { background: rgba(5,10,20,.92); color: #ffe082; }
+.ts-has-photo .ts-result-text.ts-mystery-text { background: rgba(5,10,20,.92); color: #e1bee7; }
+.ts-has-photo .ts-result-text.ts-serious { background: rgba(5,10,20,.92); color: #ffcc80; }
+.ts-has-photo .ts-part { background: rgba(5,10,20,.92); border-color: rgba(0,188,212,.35); color: #fff; }
+.ts-has-photo .ts-badge-earned { background: rgba(5,10,20,.92); color: #ffe082; }
+.ts-has-photo .ts-scan-info { background: rgba(5,10,20,.85); padding: 16px; border-radius: 12px; }
+.ts-has-photo .ts-beep { color: #fff; }
+.ts-has-photo .ts-status { color: #e0e0e0; }
+.ts-has-photo .ts-progress-label { color: #bdbdbd; }
+.ts-has-photo .ts-serious-header { background: rgba(0,0,0,.7); padding: 6px 14px; border-radius: 8px; color: #ffcc80; }
+.ts-has-photo .ts-serious-footer { background: rgba(0,0,0,.7); padding: 4px 12px; border-radius: 6px; color: #e0e0e0; }
 .ts-crosshair { width: 120px; height: 120px; border: 3px solid #00bcd4; border-radius: 50%; position: relative; animation: ts-pulse 2s ease-in-out infinite; }
 .ts-crosshair::before, .ts-crosshair::after { content: ''; position: absolute; background: #00bcd4; }
 .ts-crosshair::before { width: 2px; height: 30px; top: 50%; left: 50%; transform: translate(-50%, -50%); }
