@@ -343,7 +343,7 @@
         ${resultHTML}
         ${badgeHTML}
         <div class="ts-result-actions">
-          <button class="ts-btn ts-btn-primary" onclick="window._tsScan()">🔍 SCAN AGAIN</button>
+          <button class="ts-btn ts-btn-primary" onclick="window._tsBack()">🔍 SCAN AGAIN</button>
           <button class="ts-btn ts-btn-save" onclick="window._tsSave()">📦 Save</button>
           <button class="ts-btn ts-btn-sticker" onclick="window._tsSticker()">🏷️ Sticker</button>
         </div>
@@ -365,7 +365,7 @@
           <div class="ts-sticker-footer">Certified by TinyScanner™</div>
         </div>
         <div class="ts-result-actions">
-          <button class="ts-btn ts-btn-primary" onclick="window._tsScan()">🔍 SCAN AGAIN</button>
+          <button class="ts-btn ts-btn-primary" onclick="window._tsBack()">🔍 SCAN AGAIN</button>
           <button class="ts-btn ts-btn-save" onclick="window._tsBack()">⬅️ Back</button>
         </div>
       </div>

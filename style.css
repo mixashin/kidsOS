@@ -2048,7 +2048,7 @@ button { font-family: var(--font); }
 #ts-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
 .ts-hud { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; z-index: 1; }
 .ts-has-photo { background-size: cover; background-position: center; }
-.ts-photo-overlay { position: absolute; inset: 0; background: rgba(0,0,0,.55); z-index: 0; }
+.ts-photo-overlay { position: absolute; inset: 0; background: rgba(0,0,0,.6); z-index: 0; }
 .ts-has-photo .ts-scan-anim,
 .ts-has-photo .ts-scan-info,
 .ts-has-photo .ts-result-header,
@@ -2058,6 +2058,16 @@ button { font-family: var(--font); }
 .ts-has-photo .ts-badge-earned,
 .ts-has-photo .ts-serious-header,
 .ts-has-photo .ts-serious-footer { position: relative; z-index: 1; }
+.ts-has-photo .ts-result-header { background: rgba(0,0,0,.5); padding: 8px 16px; border-radius: 8px; }
+.ts-has-photo .ts-result-text { background: rgba(10,18,30,.8); border-color: rgba(0,188,212,.35); }
+.ts-has-photo .ts-result-text.ts-rare { background: rgba(10,18,30,.8); }
+.ts-has-photo .ts-result-text.ts-mystery-text { background: rgba(10,18,30,.8); }
+.ts-has-photo .ts-result-text.ts-serious { background: rgba(10,18,30,.8); }
+.ts-has-photo .ts-part { background: rgba(10,18,30,.8); border-color: rgba(0,188,212,.3); }
+.ts-has-photo .ts-badge-earned { background: rgba(10,18,30,.8); }
+.ts-has-photo .ts-scan-info { background: rgba(10,18,30,.7); padding: 16px; border-radius: 12px; }
+.ts-has-photo .ts-serious-header { background: rgba(0,0,0,.5); padding: 6px 14px; border-radius: 8px; }
+.ts-has-photo .ts-serious-footer { background: rgba(0,0,0,.5); padding: 4px 12px; border-radius: 6px; }
 .ts-crosshair { width: 120px; height: 120px; border: 3px solid #00bcd4; border-radius: 50%; position: relative; animation: ts-pulse 2s ease-in-out infinite; }
 .ts-crosshair::before, .ts-crosshair::after { content: ''; position: absolute; background: #00bcd4; }
 .ts-crosshair::before { width: 2px; height: 30px; top: 50%; left: 50%; transform: translate(-50%, -50%); }
