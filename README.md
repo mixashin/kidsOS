@@ -70,7 +70,7 @@ Open **https://mixashin.github.io/kidsOS/** in any browser — it runs as a desk
 - localStorage for persistence
 - Service Worker for offline PWA support
 - Canvas API for Paint and Kidstagram
-- getUserMedia API for live camera access in TinyScanner (rear camera on mobile, webcam on desktop)
+- getUserMedia API (optional) — used only in TinyScanner as a camera passthrough for the fake object scanner. Camera access is requested only when the app is opened and only if the user grants permission. No photos are stored, uploaded, or sent anywhere. The app works without camera access (falls back to a static background).
 
 ## License
 
