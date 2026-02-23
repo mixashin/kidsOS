@@ -4,6 +4,7 @@
   const LOCATIONS = [
     { id: 'pillowfort', name: 'The Grand Pillow Fort', emoji: '\u{1F3F0}', category: 'Forts', status: 'Open \u2022 Fluffy',
       desc: 'A legendary fortress built from 847 pillows. Rumor has it, no parent has ever breached its walls.',
+      mapStyle: 'indoor',
       reviews: [
         { user: 'SirNapsALot', stars: 5, text: 'Best nap of my life. 10/10 would pillow again.' },
         { user: 'FortInspector42', stars: 4, text: 'Structural integrity is questionable but the vibes are immaculate.' },
@@ -11,6 +12,7 @@
       ] },
     { id: 'fridgemore', name: 'Mount Fridgemore', emoji: '\u{1F9CA}', category: 'Landmarks', status: 'Open \u2022 Cold',
       desc: 'A towering fridge carved with the faces of legendary snack presidents. Always cold. Always judging your food choices.',
+      mapStyle: 'kitchen',
       reviews: [
         { user: 'SnackHiker', stars: 5, text: 'The view from the top shelf is breathtaking.' },
         { user: 'CheeseExplorer', stars: 4, text: 'Found ancient cheese. Carbon dating says it\'s from last Tuesday.' },
@@ -18,6 +20,7 @@
       ] },
     { id: 'couchcanyon', name: 'Couch Cushion Canyon', emoji: '\u{1F6CB}\uFE0F', category: 'Nature', status: 'Open \u2022 Squishy',
       desc: 'A vast canyon formed between couch cushions. Home to lost remote controls, 47 coins, and one very confused sock.',
+      mapStyle: 'indoor',
       reviews: [
         { user: 'CanyonCrawler', stars: 5, text: 'Found my TV remote from 2019. Life-changing expedition.' },
         { user: 'PennyHunter', stars: 4, text: 'Rich vein of loose change in the east cushion.' },
@@ -25,6 +28,7 @@
       ] },
     { id: 'skybase', name: 'Sky Base Alpha', emoji: '\u{1F333}', category: 'Bases', status: 'Open \u2022 High Up',
       desc: 'A treehouse so high, birds ask for directions. Features a rope ladder, lookout tower, and a "No Adults" sign.',
+      mapStyle: 'outdoor',
       reviews: [
         { user: 'TreeTopTom', stars: 5, text: 'I can see my house from here. Also my neighbor\'s cat.' },
         { user: 'RopeLadderPro', stars: 4, text: 'The climb is worth it. Bring snacks.' },
@@ -32,6 +36,7 @@
       ] },
     { id: 'sanddesert', name: 'The Great Sand Desert', emoji: '\u{1F3D6}\uFE0F', category: 'Nature', status: 'Open \u2022 Sandy',
       desc: 'Also known as "the sandbox." Stretches an entire 6 feet across. Many explorers have gotten sand in their shoes here.',
+      mapStyle: 'outdoor',
       reviews: [
         { user: 'SandCastleKing', stars: 5, text: 'Built a 3-story castle. It was glorious for 4 minutes.' },
         { user: 'DesertSurvivor', stars: 4, text: 'Ran out of juice boxes on the expedition. Nearly didn\'t make it.' },
@@ -39,6 +44,7 @@
       ] },
     { id: 'garage', name: 'The Forbidden Garage', emoji: '\u{1F527}', category: 'Mystery', status: 'Restricted \u2022 Spooky',
       desc: 'Nobody knows what lurks in the back of the garage. Some say tools. Some say spiders. Some say both.',
+      mapStyle: 'garage',
       reviews: [
         { user: 'BraveExplorer', stars: 4, text: 'Found dad\'s "secret" candy stash behind the toolbox.' },
         { user: 'SpiderScout', stars: 3, text: 'The spider in the corner is named Gerald. He\'s chill.' },
@@ -46,6 +52,7 @@
       ] },
     { id: 'bubblebath', name: 'Lake Bubble Bath', emoji: '\u{1F6C1}', category: 'Water', status: 'Open \u2022 Bubbly',
       desc: 'A serene lake filled entirely with bubbles. Visibility: zero. Fun: maximum. Pruney fingers: guaranteed.',
+      mapStyle: 'water',
       reviews: [
         { user: 'BubbleCaptain', stars: 5, text: 'Sailed my rubber duck across the entire lake. Epic voyage.' },
         { user: 'SplashKid', stars: 5, text: 'Made a bubble beard. Became the bubble king.' },
@@ -53,6 +60,7 @@
       ] },
     { id: 'narniacloset', name: 'The Narnia Closet', emoji: '\u{1F6AA}', category: 'Mystery', status: 'Open \u2022 Magical',
       desc: 'Step through the coats and you might find a magical land. Or just more coats. Results vary.',
+      mapStyle: 'indoor',
       reviews: [
         { user: 'CoatExplorer', stars: 5, text: 'Didn\'t find Narnia but found my winter jacket. Win!' },
         { user: 'MagicSeeker', stars: 4, text: 'Thought I heard a lion. It was the cat.' },
@@ -60,6 +68,7 @@
       ] },
     { id: 'wildbackyard', name: 'The Wild Backyard', emoji: '\u{1F33F}', category: 'Nature', status: 'Open \u2022 Untamed',
       desc: 'A wilderness of unmowed grass, mysterious bugs, and at least one garden gnome with a suspicious expression.',
+      mapStyle: 'outdoor',
       reviews: [
         { user: 'BugCollector', stars: 5, text: 'Found 14 different bugs. Named them all Steve.' },
         { user: 'GnomeWatcher', stars: 4, text: 'That gnome moved. I SWEAR it moved.' },
@@ -67,6 +76,7 @@
       ] },
     { id: 'underbedabyss', name: 'The Underbed Abyss', emoji: '\u{1F6CF}\uFE0F', category: 'Mystery', status: 'Open \u2022 Dark',
       desc: 'A vast, dark void beneath the bed. Contains: missing socks, forgotten toys, and possibly a portal to another dimension.',
+      mapStyle: 'indoor',
       reviews: [
         { user: 'AbyssDiver', stars: 5, text: 'Found my favorite toy from 3 years ago. Emotional reunion.' },
         { user: 'DustExplorer', stars: 3, text: 'The dust bunnies have formed a civilization down here.' },
@@ -74,6 +84,7 @@
       ] },
     { id: 'confroomk', name: 'Conference Room K', emoji: '\u{1F37D}\uFE0F', category: 'Food', status: 'Open \u2022 Delicious',
       desc: 'The kitchen table, rebranded as a very important conference room. All meetings involve cookies.',
+      mapStyle: 'kitchen',
       reviews: [
         { user: 'CookieChief', stars: 5, text: 'Best conference ever. Agenda: cookies. Minutes: delicious.' },
         { user: 'MeetingKid', stars: 5, text: 'Proposed more snack breaks. Motion passed unanimously.' },
@@ -81,6 +92,7 @@
       ] },
     { id: 'swingstation', name: 'Swing Set Space Station', emoji: '\u{1F3A2}', category: 'Bases', status: 'Open \u2022 Orbiting',
       desc: 'Pump your legs hard enough and you\'ll reach outer space. Scientists say this is false. Scientists are wrong.',
+      mapStyle: 'outdoor',
       reviews: [
         { user: 'SpaceSwinger', stars: 5, text: 'Almost touched the sky. My personal best: 47 degrees.' },
         { user: 'OrbitKid', stars: 5, text: 'I definitely left Earth\'s atmosphere for a second there.' },
@@ -89,7 +101,6 @@
   ];
 
   const ROUTE_TYPES = [
-    { id: 'sneaky', name: 'Sneaky Route', emoji: '\u{1F977}', desc: 'Tiptoe past sleeping parents. Avoid creaky floorboards.' },
     { id: 'silly', name: 'Silly Walk Route', emoji: '\u{1F92A}', desc: 'Ministry-approved silly walks only. No normal steps allowed.' },
     { id: 'zoom', name: 'Zoom Zoom Route', emoji: '\u{1F3CE}\uFE0F', desc: 'MAXIMUM SPEED. Run everywhere. Slide on socks.' },
     { id: 'scenic', name: 'Scenic Snack Route', emoji: '\u{1F36A}', desc: 'Stops at every snack location on the way. Scenic AND delicious.' },
@@ -169,7 +180,7 @@
     { id: 'treasure', name: 'Treasure Hunter', emoji: '\u{1F48E}', condition: s => s.completedHunts >= 1 },
     { id: 'coins', name: 'Map Millionaire', emoji: '\u{1F4B0}', condition: s => s.mapCoins >= 500 },
     { id: 'allroutes', name: 'Route Master', emoji: '\u{1F6E3}\uFE0F', condition: s => s.completedRoutes.length >= 5 },
-    { id: 'sneaker', name: 'Sneaker View Pro', emoji: '\u{1F45F}', condition: s => s.totalTrips >= 5 },
+    { id: 'cartographer', name: 'Master Cartographer', emoji: '\u{1F5FA}\uFE0F', condition: s => s.totalTrips >= 10 },
   ];
 
   const DAILY_QUESTS = [
@@ -207,15 +218,6 @@
     'Spin around twice near the ___ then look down',
   ];
 
-  const SNEAKER_SCENES = [
-    { name: 'Pillow Fort Street', elements: ['\u{1F6CB}\uFE0F', '\u{1F3F0}', '\u{1F6CF}\uFE0F', '\u{1F9F8}', '\u{1F6CB}\uFE0F', '\u{1F3F0}', '\u{1F4A4}', '\u{1F6CB}\uFE0F'] },
-    { name: 'Kitchen Highway', elements: ['\u{1F9CA}', '\u{1F37D}\uFE0F', '\u{1F373}', '\u{1F36A}', '\u{1F9CA}', '\u{1F37D}\uFE0F', '\u{1F4A7}', '\u{1F373}'] },
-    { name: 'Backyard Wilderness', elements: ['\u{1F333}', '\u{1F33F}', '\u{1F41B}', '\u{1F33A}', '\u{1F333}', '\u{1F33F}', '\u2600\uFE0F', '\u{1F33A}'] },
-    { name: 'Garage Cave', elements: ['\u{1F527}', '\u{1F6B2}', '\u{1F578}\uFE0F', '\u{1F4E6}', '\u{1F527}', '\u{1F6B2}', '\u{1F526}', '\u{1F4E6}'] },
-    { name: 'Bathroom Bay', elements: ['\u{1F6C1}', '\u{1F9F4}', '\u{1F9BD}', '\u{1F9FC}', '\u{1F6C1}', '\u{1F9F4}', '\u{1FAE7}', '\u{1F9FC}'] },
-    { name: 'Bedroom Galaxy', elements: ['\u{1F6CF}\uFE0F', '\u{1F9F8}', '\u{1F319}', '\u2B50', '\u{1F6CF}\uFE0F', '\u{1F9F8}', '\u{1F30C}', '\u2B50'] },
-  ];
-
   const BANNER_TIPS = [
     '\u{1F4A1} TIP: Silly Walk Route burns 200% more giggles per step!',
     '\u{1F5FA}\uFE0F FUN FACT: The Underbed Abyss has never been fully mapped.',
@@ -226,6 +228,158 @@
     '\u{1F916} PATCH: NavBot 3000 now 12% less confused by left and right.',
     '\u{1F3AD} REVIEW: Sir Overly Dramatic rated all places "MAGNIFICENT."',
   ];
+
+  /* ---- Map Drawing ---- */
+  const MAP_THEMES = {
+    indoor: {
+      bg: '#f5e6d3', roadColor: '#d4a574', roadBg: '#efe0d0',
+      buildings: ['#e57373', '#64b5f6', '#81c784', '#ffb74d', '#ba68c8', '#4dd0e1'],
+      landmarks: ['\u{1F6CB}\uFE0F', '\u{1F4FA}', '\u{1F9F8}', '\u{1F6CF}\uFE0F', '\u{1F3E0}', '\u{1F6AA}'],
+    },
+    outdoor: {
+      bg: '#c8e6c9', roadColor: '#8d6e63', roadBg: '#a5d6a7',
+      buildings: ['#66bb6a', '#43a047', '#aed581', '#dce775', '#81c784', '#4caf50'],
+      landmarks: ['\u{1F333}', '\u{1F33A}', '\u{1F33F}', '\u{1F41B}', '\u2600\uFE0F', '\u{1F3E1}'],
+    },
+    kitchen: {
+      bg: '#fff9c4', roadColor: '#f9a825', roadBg: '#fff59d',
+      buildings: ['#ffcc80', '#ff8a65', '#a1887f', '#ffe082', '#ffab91', '#ce93d8'],
+      landmarks: ['\u{1F9CA}', '\u{1F373}', '\u{1F36A}', '\u{1F37D}\uFE0F', '\u{1F9C1}', '\u{1F952}'],
+    },
+    water: {
+      bg: '#bbdefb', roadColor: '#1565c0', roadBg: '#90caf9',
+      buildings: ['#4fc3f7', '#29b6f6', '#81d4fa', '#80deea', '#4dd0e1', '#26c6da'],
+      landmarks: ['\u{1F6C1}', '\u{1F30A}', '\u{1FAE7}', '\u{1F9FC}', '\u{1F420}', '\u{1F6A2}'],
+    },
+    garage: {
+      bg: '#cfd8dc', roadColor: '#546e7a', roadBg: '#b0bec5',
+      buildings: ['#78909c', '#90a4ae', '#607d8b', '#b0bec5', '#455a64', '#37474f'],
+      landmarks: ['\u{1F527}', '\u{1F6B2}', '\u{1F4E6}', '\u{1F578}\uFE0F', '\u{1F526}', '\u{1F529}'],
+    },
+  };
+
+  // Seeded random from string
+  function seedRand(str) {
+    let h = 0;
+    for (let i = 0; i < str.length; i++) h = ((h << 5) - h + str.charCodeAt(i)) | 0;
+    return function() { h = (h * 16807) % 2147483647; return (h - 1) / 2147483646; };
+  }
+
+  function drawMap(canvas, placeId, mapStyle, progress) {
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width;
+    const H = canvas.height;
+    const theme = MAP_THEMES[mapStyle] || MAP_THEMES.indoor;
+    const rand = seedRand(placeId);
+
+    // Background
+    ctx.fillStyle = theme.bg;
+    ctx.fillRect(0, 0, W, H);
+
+    // Grid roads
+    ctx.strokeStyle = theme.roadColor;
+    ctx.lineWidth = 2;
+    const gridSpacing = 50;
+    for (let x = gridSpacing; x < W; x += gridSpacing) {
+      const wobble = (rand() - 0.5) * 8;
+      ctx.beginPath();
+      ctx.moveTo(x + wobble, 0);
+      ctx.lineTo(x - wobble, H);
+      ctx.stroke();
+    }
+    for (let y = gridSpacing; y < H; y += gridSpacing) {
+      const wobble = (rand() - 0.5) * 8;
+      ctx.beginPath();
+      ctx.moveTo(0, y + wobble);
+      ctx.lineTo(W, y - wobble);
+      ctx.stroke();
+    }
+
+    // Buildings (colored rectangles in grid cells)
+    for (let i = 0; i < 20; i++) {
+      const gx = Math.floor(rand() * (W / gridSpacing)) * gridSpacing + 8;
+      const gy = Math.floor(rand() * (H / gridSpacing)) * gridSpacing + 8;
+      const bw = 14 + rand() * 22;
+      const bh = 14 + rand() * 22;
+      ctx.fillStyle = theme.buildings[Math.floor(rand() * theme.buildings.length)];
+      ctx.fillRect(gx, gy, bw, bh);
+      // Roof/shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.1)';
+      ctx.fillRect(gx, gy, bw, 3);
+    }
+
+    // Landmark emoji scattered
+    ctx.font = '18px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (let i = 0; i < 6; i++) {
+      const lx = 20 + rand() * (W - 40);
+      const ly = 20 + rand() * (H - 40);
+      ctx.fillText(theme.landmarks[i % theme.landmarks.length], lx, ly);
+    }
+
+    // Route path (curved line from bottom-left to top-right area)
+    const pathPoints = [];
+    const numPts = 7;
+    for (let i = 0; i < numPts; i++) {
+      const t = i / (numPts - 1);
+      const px = 30 + t * (W - 60) + (rand() - 0.5) * 40;
+      const py = H - 30 - t * (H - 60) + (rand() - 0.5) * 30;
+      pathPoints.push({ x: px, y: py });
+    }
+
+    // Draw path line
+    ctx.strokeStyle = '#1565c0';
+    ctx.lineWidth = 4;
+    ctx.setLineDash([8, 6]);
+    ctx.beginPath();
+    ctx.moveTo(pathPoints[0].x, pathPoints[0].y);
+    for (let i = 1; i < pathPoints.length; i++) {
+      ctx.lineTo(pathPoints[i].x, pathPoints[i].y);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Traveled portion (solid blue)
+    const travIdx = Math.floor(progress * (pathPoints.length - 1));
+    if (travIdx > 0) {
+      ctx.strokeStyle = '#0d47a1';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(pathPoints[0].x, pathPoints[0].y);
+      for (let i = 1; i <= travIdx; i++) {
+        ctx.lineTo(pathPoints[i].x, pathPoints[i].y);
+      }
+      ctx.stroke();
+    }
+
+    // Destination marker (flag at end)
+    const dest = pathPoints[pathPoints.length - 1];
+    ctx.font = '24px sans-serif';
+    ctx.fillText('\u{1F3C1}', dest.x, dest.y);
+
+    // "You" marker at current position
+    const curIdx = Math.min(travIdx, pathPoints.length - 1);
+    const cur = pathPoints[curIdx];
+    // Blue circle
+    ctx.beginPath();
+    ctx.arc(cur.x, cur.y, 12, 0, Math.PI * 2);
+    ctx.fillStyle = '#1565c0';
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    // Pulse ring
+    ctx.beginPath();
+    ctx.arc(cur.x, cur.y, 18, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(21,101,192,0.3)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Start marker
+    ctx.font = '16px sans-serif';
+    ctx.fillText('\u{1F4CD}', pathPoints[0].x, pathPoints[0].y - 16);
+  }
 
   /* ---- Helpers ---- */
   function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
@@ -242,8 +396,6 @@
   let searchQuery = '';
   let currentHunt = null;
   let huntStep = 0;
-  let sneakerSceneIdx = 0;
-  let sneakerSpinning = false;
   let bannerIdx = 0;
   let bannerInterval = null;
   let trafficIdx = 0;
@@ -362,14 +514,8 @@
   };
 
   // Treasure Hunt creator
-  window._tmHuntNext = function() {
-    huntStep++;
-    render();
-  };
-
-  window._tmHuntBack = function() {
-    if (huntStep > 0) { huntStep--; render(); }
-  };
+  window._tmHuntNext = function() { huntStep++; render(); };
+  window._tmHuntBack = function() { if (huntStep > 0) { huntStep--; render(); } };
 
   window._tmHuntStart = function() {
     currentHunt = { name: '', startPlace: null, clues: [], treasureType: null };
@@ -378,13 +524,8 @@
     render();
   };
 
-  window._tmHuntSetName = function(val) {
-    if (currentHunt) currentHunt.name = val;
-  };
-
-  window._tmHuntSetStart = function(id) {
-    if (currentHunt) { currentHunt.startPlace = id; render(); }
-  };
+  window._tmHuntSetName = function(val) { if (currentHunt) currentHunt.name = val; };
+  window._tmHuntSetStart = function(id) { if (currentHunt) { currentHunt.startPlace = id; render(); } };
 
   window._tmHuntAddClue = function(idx) {
     if (currentHunt && currentHunt.clues.length < 3) {
@@ -419,23 +560,6 @@
     }
   };
 
-  // Sneaker View
-  window._tmSvLeft = function() {
-    sneakerSceneIdx = (sneakerSceneIdx - 1 + SNEAKER_SCENES.length) % SNEAKER_SCENES.length;
-    render();
-  };
-
-  window._tmSvRight = function() {
-    sneakerSceneIdx = (sneakerSceneIdx + 1) % SNEAKER_SCENES.length;
-    render();
-  };
-
-  window._tmSvSpin = function() {
-    sneakerSpinning = true;
-    render();
-    setTimeout(() => { sneakerSpinning = false; render(); }, 1500);
-  };
-
   /* ---- Screen Renderers ---- */
   function render() {
     if (!body) return;
@@ -446,7 +570,6 @@
       case 'navigation': renderNavigation(); break;
       case 'arrived': renderArrived(); break;
       case 'treasure': renderTreasure(); break;
-      case 'sneakerview': renderSneakerView(); break;
       case 'explore': renderExplore(); break;
       case 'lists': renderLists(); break;
       case 'vault': renderVault(); break;
@@ -485,9 +608,6 @@
             </button>
             <button class="tm-quick-btn" onclick="window._tmHuntStart()">
               <span>\u{1F4DC}</span> Treasure Hunt
-            </button>
-            <button class="tm-quick-btn" onclick="window._tmGo('sneakerview')">
-              <span>\u{1F45F}</span> Sneaker View
             </button>
           </div>
           <div class="tm-bottom-row">
@@ -530,9 +650,6 @@
             </button>
             <button class="tm-action-btn tm-action-save" onclick="window._tm${isSaved ? 'Remove' : 'Save'}Place('${p.id}')">
               ${isSaved ? '\u2705 Saved' : '\u{1F4BE} Save'}
-            </button>
-            <button class="tm-action-btn tm-action-sv" onclick="window._tmGo('sneakerview')">
-              \u{1F45F} Sneaker View
             </button>
           </div>
           <div class="tm-hazard">
@@ -605,9 +722,11 @@
     const voice = VOICES.find(v => v.id === selectedVoice);
     const route = ROUTE_TYPES.find(r => r.id === selectedRoute);
     if (!voice || !route) { screen = 'home'; render(); return; }
-    const progress = ((navStep + 1) / voice.steps.length) * 100;
+    const progress = ((navStep + 1) / voice.steps.length);
     const showHazard = navStep === 2 || navStep === 4;
     const hazard = showHazard ? pick(HAZARDS) : null;
+    const mapId = selectedPlace ? selectedPlace.id : 'default';
+    const mapStyle = selectedPlace ? (selectedPlace.mapStyle || 'indoor') : 'indoor';
     body.innerHTML = `
       <div class="tm-wrap">
         <div class="tm-header tm-header-nav">
@@ -616,8 +735,9 @@
         </div>
         <div class="tm-content">
           <div class="tm-nav-progress">
-            <div class="tm-nav-progress-bar tm-pulse" style="width:${progress}%"></div>
+            <div class="tm-nav-progress-bar tm-pulse" style="width:${progress * 100}%"></div>
           </div>
+          <canvas class="tm-map-canvas" id="tm-map-canvas" width="380" height="220"></canvas>
           <div class="tm-nav-voice-info">
             <div class="tm-nav-voice-avatar">${voice.emoji}</div>
             <div class="tm-nav-voice-name">${voice.name}</div>
@@ -635,6 +755,11 @@
           <div class="tm-traffic tm-traffic-nav">${pick(TRAFFIC_UPDATES)}</div>
         </div>
       </div>`;
+    // Draw the map after DOM is ready
+    setTimeout(() => {
+      const c = document.getElementById('tm-map-canvas');
+      if (c) drawMap(c, mapId, mapStyle, progress);
+    }, 20);
   }
 
   function renderArrived() {
@@ -768,37 +893,8 @@
     }
   }
 
-  function renderSneakerView() {
-    const scene = SNEAKER_SCENES[sneakerSceneIdx];
-    body.innerHTML = `
-      <div class="tm-wrap">
-        <div class="tm-header">
-          <button class="tm-back" onclick="window._tmGo('home')">\u2190</button>
-          <span class="tm-header-title">\u{1F45F} Sneaker View</span>
-          <span></span>
-        </div>
-        <div class="tm-content">
-          <div class="tm-sv-title">${scene.name}</div>
-          <div class="tm-sv-view ${sneakerSpinning ? 'tm-sv-spinning' : ''}">
-            <div class="tm-sv-scene">
-              ${scene.elements.map(e => `<span class="tm-sv-element">${e}</span>`).join('')}
-            </div>
-          </div>
-          <div class="tm-sv-controls">
-            <button class="tm-sv-arrow" onclick="window._tmSvLeft()">\u2B05\uFE0F</button>
-            <button class="tm-sv-spin" onclick="window._tmSvSpin()">\u{1F300} Spin!</button>
-            <button class="tm-sv-arrow" onclick="window._tmSvRight()">\u27A1\uFE0F</button>
-          </div>
-          <div class="tm-sv-dots">
-            ${SNEAKER_SCENES.map((_, i) => `<span class="tm-sv-dot ${i === sneakerSceneIdx ? 'tm-sv-dot-active' : ''}"></span>`).join('')}
-          </div>
-        </div>
-      </div>`;
-  }
-
   function renderExplore() {
     if (!exploreCategory) {
-      // Show category list
       body.innerHTML = `
         <div class="tm-wrap">
           <div class="tm-header">
@@ -946,8 +1042,6 @@
       navStep = 0;
       currentHunt = null;
       huntStep = 0;
-      sneakerSceneIdx = 0;
-      sneakerSpinning = false;
       exploreCategory = null;
       bannerIdx = Math.floor(Math.random() * BANNER_TIPS.length);
       trafficIdx = Math.floor(Math.random() * TRAFFIC_UPDATES.length);

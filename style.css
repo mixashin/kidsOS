@@ -2023,20 +2023,8 @@ button { font-family: var(--font); }
 .tm-hunt-summary-row { font-size: 13px; color: var(--text-primary); }
 .tm-hunt-summary-row strong { color: var(--text-muted); }
 
-/* Sneaker View */
-.tm-sv-title { text-align: center; font-size: 16px; font-weight: 700; color: var(--text-primary); }
-.tm-sv-view { background: linear-gradient(135deg, #e8f5e9, #c8e6c9); border-radius: 16px; padding: 20px; min-height: 180px; display: flex; align-items: center; justify-content: center; transition: transform .3s; overflow: hidden; }
-[data-theme="dark"] .tm-sv-view { background: linear-gradient(135deg, #1b5e20, #2e7d32); }
-.tm-sv-scene { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
-.tm-sv-element { font-size: 36px; transition: transform .3s; }
-.tm-sv-controls { display: flex; gap: 12px; justify-content: center; align-items: center; }
-.tm-sv-arrow { padding: 10px 18px; border: 1px solid var(--border-light); border-radius: 10px; background: var(--win-body-bg); cursor: pointer; font-size: 18px; }
-.tm-sv-spin { padding: 10px 24px; background: #2e7d32; color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; }
-.tm-sv-spin:hover { background: #1b5e20; }
-.tm-sv-dots { display: flex; gap: 6px; justify-content: center; }
-.tm-sv-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border-light); }
-.tm-sv-dot-active { background: #2e7d32; }
-.tm-sv-spinning { animation: tm-spin 1.5s ease-in-out; }
+/* Navigation Map */
+.tm-map-canvas { width: 100%; border-radius: 12px; border: 1px solid var(--border-light); display: block; }
 
 /* Explore */
 .tm-explore-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -2072,11 +2060,6 @@ button { font-family: var(--font); }
 @keyframes tm-bounce {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-16px); }
-}
-@keyframes tm-spin {
-  0% { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(360deg) scale(.9); }
-  100% { transform: rotate(720deg) scale(1); }
 }
 @keyframes tm-pulse {
   0%, 100% { opacity: 1; }
