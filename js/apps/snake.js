@@ -155,6 +155,9 @@ const SnakeApp = (() => {
       localStorage.setItem('kidsOS_snakeHi', hiScore);
       updateScoreUI();
     }
+    if (score > 0) {
+      OS.awardCoins(Math.max(1, Math.floor(score / 10)), 'snake', '🐍', 'Snake: scored ' + score);
+    }
     drawDeadScreen();
   }
 

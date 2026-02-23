@@ -237,6 +237,9 @@
       }
       data.totalDaysCompleted++;
       saveData();
+      const streakBonus = Math.min(25, data.streak * 5);
+      const coins = 15 + streakBonus;
+      OS.awardCoins(coins, 'chorequest', '✅', 'ChoreQuest: all chores done!' + (data.streak > 0 ? ' (' + data.streak + ' day streak)' : ''));
       screen = 'victory';
     }
     render();

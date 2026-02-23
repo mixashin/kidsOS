@@ -370,6 +370,10 @@ const BreakoutApp = (() => {
       hiScore = score;
       localStorage.setItem('kidsOS_breakout', hiScore);
     }
+    if (score > 0) {
+      const label = won ? 'Breakout: cleared all bricks!' : 'Breakout: scored ' + score;
+      OS.awardCoins(Math.max(1, Math.floor(score / 10)), 'breakout', '🧱', label);
+    }
     updateUI();
     if (won) drawWinScreen();
     else drawDeadScreen();

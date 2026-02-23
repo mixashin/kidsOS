@@ -531,6 +531,9 @@
     const newBadges = checkBadges();
     saveState();
 
+    const gcCoins = Math.max(1, Math.floor(points / 10));
+    OS.awardCoins(gcCoins, 'snackdash', '🛵', 'SnackDash: delivery #' + persisted.totalOrders);
+
     // Show delivered screen
     screen = 'delivered';
     renderDeliveredWith(points, newBadges);

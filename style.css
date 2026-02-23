@@ -2369,9 +2369,53 @@ button { font-family: var(--font); }
 [data-theme="dark"] .ss-nav-btn:hover { background: #3e2c00; }
 [data-theme="dark"] .ss-section-title { color: #ffcc80; }
 
+/* ===== Giggle Coins Toast ===== */
+.gc-toast {
+  position: fixed; top: 18px; right: 18px; z-index: 10001;
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 18px; border-radius: 14px;
+  background: linear-gradient(135deg, #ffd600, #ffab00);
+  color: #3e2723; font-family: inherit;
+  box-shadow: 0 4px 20px rgba(255,171,0,0.45);
+  transform: translateX(120%); transition: none;
+  pointer-events: none; max-width: 340px;
+}
+.gc-toast.gc-toast-in {
+  transform: translateX(0);
+  transition: transform .35s cubic-bezier(.22,1,.36,1);
+}
+.gc-toast-icon { font-size: 28px; flex-shrink: 0; }
+.gc-toast-body { min-width: 0; }
+.gc-toast-title { font-weight: 700; font-size: 15px; white-space: nowrap; }
+.gc-toast-desc { font-size: 12px; opacity: .8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gc-toast-out {
+  animation: gc-slide-out .3s ease-in forwards;
+}
+@keyframes gc-slide-out {
+  to { transform: translateX(140%); opacity: 0; }
+}
+[data-theme="dark"] .gc-toast {
+  background: linear-gradient(135deg, #5d4037, #4e342e);
+  color: #ffe082; box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+
 /* ===== RESPONSIVE — TABLET (≤1024px) ===== */
 @media (max-width: 1024px) {
   :root { --taskbar-h: 56px; }
+  .gc-toast {
+    right: auto; left: 50%; top: 12px;
+    transform: translateX(-50%) translateY(-120%);
+    max-width: 90vw;
+  }
+  .gc-toast.gc-toast-in {
+    transform: translateX(-50%) translateY(0);
+  }
+  .gc-toast-out {
+    animation: gc-drop-out .3s ease-in forwards;
+  }
+  @keyframes gc-drop-out {
+    to { transform: translateX(-50%) translateY(-140%); opacity: 0; }
+  }
 
   /* Fix Android/iOS viewport — dvh accounts for browser chrome */
   #desktop {

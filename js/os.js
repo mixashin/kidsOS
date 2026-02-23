@@ -1,6 +1,6 @@
 /* ===== KidsOS Core ===== */
 const OS = (() => {
-  const VERSION = '0.20.0';
+  const VERSION = '0.21.0';
   const UPDATE_URL = (typeof KIDSOS_CONFIG !== 'undefined' && KIDSOS_CONFIG.updateURL) || 'https://mixashin.github.io/kidsOS';
 
   let zCounter = 100;
@@ -625,6 +625,55 @@ const OS = (() => {
     updateMenuUsername();
   }
 
+  /* ---- Giggle Coins — cross-app reward API ---- */
+  function awardCoins(amount, source, emoji, description) {
+    if (!amount || amount <= 0) return;
+    let tb;
+    try {
+      const raw = localStorage.getItem('kidsOS_tinybank');
+      tb = raw ? JSON.parse(raw) : null;
+    } catch (e) { tb = null; }
+    if (!tb) {
+      tb = {
+        balance: 50, jars: {}, goals: [
+          { id: 'castle', saved: 0 }, { id: 'rocket', saved: 0 },
+          { id: 'unicorn', saved: 0 }, { id: 'pizza', saved: 0 }, { id: 'robot', saved: 0 },
+        ],
+        history: [], earnedToday: [], lastEarnDate: new Date().toISOString().slice(0, 10),
+        badges: [], cardSkin: 0, cardFrozen: false, givenTotal: 0, totalEarned: 0, fraudsHandled: 0,
+        dailyMissions: null,
+      };
+    }
+    tb.balance = (tb.balance || 0) + amount;
+    tb.totalEarned = (tb.totalEarned || 0) + amount;
+    const d = new Date();
+    const dateStr = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    tb.history = tb.history || [];
+    tb.history.unshift({ emoji: emoji || '🪙', text: description || (source + ': +' + amount), amount: amount, date: dateStr });
+    if (tb.history.length > 30) tb.history.pop();
+    localStorage.setItem('kidsOS_tinybank', JSON.stringify(tb));
+    if (typeof window._tbExternalDeposit === 'function') window._tbExternalDeposit();
+    showCoinToast(amount, emoji, description);
+  }
+
+  function showCoinToast(amount, emoji, description) {
+    const existing = document.querySelector('.gc-toast');
+    if (existing) existing.remove();
+    const toast = document.createElement('div');
+    toast.className = 'gc-toast';
+    toast.innerHTML = '<div class="gc-toast-icon">' + (emoji || '🪙') + '</div>'
+      + '<div class="gc-toast-body">'
+      + '<div class="gc-toast-title">+' + amount + ' Giggle Coins!</div>'
+      + (description ? '<div class="gc-toast-desc">' + description + '</div>' : '')
+      + '</div>';
+    document.body.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('gc-toast-in'));
+    setTimeout(() => {
+      toast.classList.add('gc-toast-out');
+      toast.addEventListener('animationend', () => toast.remove());
+    }, 3000);
+  }
+
   return {
     boot, launch, registerApp,
     createWindow, closeWindow, minimizeWindow, restoreWindow, toggleMaximize, focusWindow,
@@ -635,5 +684,6 @@ const OS = (() => {
     getStorageUsage, factoryReset, STORAGE_KEYS, isStandalone,
     applyTheme, ACCENT_COLORS,
     VERSION, UPDATE_URL, _isNewer, _nukeAndReload,
+    awardCoins,
   };
 })();

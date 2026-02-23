@@ -175,6 +175,10 @@
     clearInterval(timerInterval);
     timerInterval = null;
     if (score > hiScore) { hiScore = score; localStorage.setItem('kidsOS_ejobHi', String(hiScore)); }
+    if (emailsSent > 0) {
+      const coins = Math.floor(score / 50) + emailsSent * 2;
+      OS.awardCoins(coins, 'ejob', '💼', 'eJob: sent ' + emailsSent + ' emails');
+    }
     render();
   }
 

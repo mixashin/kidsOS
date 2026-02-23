@@ -667,6 +667,10 @@
     render();
   };
 
+  window._tbExternalDeposit = function() {
+    if (winId) { loadState(); render(); }
+  };
+
   /* ---- App Registration ---- */
   OS.registerApp('tinybank', {
     singleInstance: true,
