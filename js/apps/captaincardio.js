@@ -583,7 +583,6 @@
   window._ccSelectMission = function(packIdx, missionIdx) {
     currentMission = PACKS[packIdx].missions[missionIdx];
     screen = 'active';
-    render();
     startTimer();
   };
 
