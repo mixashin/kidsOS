@@ -187,10 +187,42 @@
   let scanStatus = '';
   let newBadge = null;
   let homeTip = '';
+  let cameraStream = null;
+  let cameraAvailable = false;
+  let capturedImage = null;
 
   // --- Helpers ---
   function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
   function rng(n) { return Math.floor(Math.random() * n); }
+
+  async function startCamera() {
+    const video = document.getElementById('ts-video');
+    if (!video) return;
+    try {
+      cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      video.srcObject = cameraStream;
+      cameraAvailable = true;
+    } catch (e) {
+      cameraAvailable = false;
+    }
+  }
+
+  function stopCamera() {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(t => t.stop());
+      cameraStream = null;
+    }
+  }
+
+  function captureFrame() {
+    const video = document.getElementById('ts-video');
+    if (!video || !video.videoWidth) return null;
+    const c = document.createElement('canvas');
+    c.width = video.videoWidth;
+    c.height = video.videoHeight;
+    c.getContext('2d').drawImage(video, 0, 0);
+    return c.toDataURL('image/jpeg', 0.8);
+  }
 
   function loadCollection() {
     try {
@@ -235,6 +267,7 @@
     return `
     <div class="ts-app">
       <div class="ts-camera">
+        <video id="ts-video" autoplay playsinline muted></video>
         <div class="ts-hud">
           <div class="ts-crosshair"></div>
           <div class="ts-scan-lines"></div>
@@ -257,9 +290,11 @@
 
   function renderScanning() {
     const labels = ['Measuring…', 'Sniffing…', 'Calculating…', 'Guessing…'];
+    const photoBg = capturedImage ? ` style="background-image:url('${capturedImage}');" ` : '';
     return `
     <div class="ts-app">
-      <div class="ts-scanning">
+      <div class="ts-scanning ${capturedImage ? 'ts-has-photo' : ''}"${photoBg}>
+        ${capturedImage ? '<div class="ts-photo-overlay"></div>' : ''}
         <div class="ts-scan-anim">
           <div class="ts-scan-beam"></div>
         </div>
@@ -299,9 +334,11 @@
       badgeHTML = `<div class="ts-badge-earned">🏅 Badge Earned: ${newBadge.emoji} ${newBadge.name}!</div>`;
     }
 
+    const photoBg = capturedImage ? ` style="background-image:url('${capturedImage}');" ` : '';
     return `
     <div class="ts-app">
-      <div class="ts-result">
+      <div class="ts-result ${capturedImage ? 'ts-has-photo' : ''}"${photoBg}>
+        ${capturedImage ? '<div class="ts-photo-overlay"></div>' : ''}
         <div class="ts-result-header">${isRare ? '✨ RARE SCAN RESULT ✨' : isMystery ? '🎲 MYSTERY RESULT' : '📋 SCAN RESULT'}</div>
         ${resultHTML}
         ${badgeHTML}
@@ -368,9 +405,12 @@
   function rerender() {
     const el = document.getElementById('win-body-tinyscanner');
     if (el) el.innerHTML = render();
+    if (screen === 'home') startCamera();
   }
 
   function startScan(isMystery) {
+    capturedImage = captureFrame();
+    stopCamera();
     mysteryMode = isMystery;
     screen = 'scanning';
     scanStep = 0;
@@ -427,6 +467,7 @@
   };
 
   window._tsShowCollection = function () {
+    stopCamera();
     screen = 'collection';
     rerender();
   };
@@ -453,12 +494,14 @@
     getHTML() { return render(); },
     onOpen() { loadCollection(); },
     onClose() {
+      stopCamera();
       if (scanInterval) { clearInterval(scanInterval); scanInterval = null; }
       screen = 'home';
       scanStep = 0;
       lastResult = null;
       newBadge = null;
       mysteryMode = false;
+      capturedImage = null;
     },
   });
 })();

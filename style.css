@@ -2045,7 +2045,19 @@ button { font-family: var(--font); }
 
 /* Home / Camera */
 .ts-camera { flex: 1; display: flex; flex-direction: column; position: relative; overflow: hidden; }
-.ts-hud { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; }
+#ts-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
+.ts-hud { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; z-index: 1; }
+.ts-has-photo { background-size: cover; background-position: center; }
+.ts-photo-overlay { position: absolute; inset: 0; background: rgba(0,0,0,.55); z-index: 0; }
+.ts-has-photo .ts-scan-anim,
+.ts-has-photo .ts-scan-info,
+.ts-has-photo .ts-result-header,
+.ts-has-photo .ts-result-text,
+.ts-has-photo .ts-result-parts,
+.ts-has-photo .ts-result-actions,
+.ts-has-photo .ts-badge-earned,
+.ts-has-photo .ts-serious-header,
+.ts-has-photo .ts-serious-footer { position: relative; z-index: 1; }
 .ts-crosshair { width: 120px; height: 120px; border: 3px solid #00bcd4; border-radius: 50%; position: relative; animation: ts-pulse 2s ease-in-out infinite; }
 .ts-crosshair::before, .ts-crosshair::after { content: ''; position: absolute; background: #00bcd4; }
 .ts-crosshair::before { width: 2px; height: 30px; top: 50%; left: 50%; transform: translate(-50%, -50%); }
@@ -2054,7 +2066,7 @@ button { font-family: var(--font); }
 .ts-hud-text { position: absolute; bottom: 12px; left: 0; right: 0; text-align: center; font-size: 13px; color: #4dd0e1; opacity: .7; }
 @keyframes ts-pulse { 0%, 100% { transform: scale(1); opacity: .8; } 50% { transform: scale(1.08); opacity: 1; } }
 
-.ts-controls { padding: 16px; display: flex; flex-direction: column; gap: 10px; background: rgba(0,0,0,.3); }
+.ts-controls { padding: 16px; display: flex; flex-direction: column; gap: 10px; background: rgba(0,0,0,.3); z-index: 1; position: relative; }
 .ts-toggles { display: flex; align-items: center; justify-content: space-between; }
 .ts-toggle { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #b0bec5; cursor: pointer; }
 .ts-toggle-check { width: 18px; height: 18px; border-radius: 4px; border: 2px solid #546e7a; display: inline-flex; align-items: center; justify-content: center; transition: all .2s; }
