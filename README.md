@@ -2,9 +2,9 @@
 
 A fun browser-based OS simulator for kids learning to use computers. Built with vanilla HTML, CSS, and JavaScript — no frameworks, no build tools.
 
-<img src="media/screenshot1.jpg" alt="KidsOS Screenshot 1" width="400"> <img src="media/screenshot2.jpg" alt="KidsOS Screenshot 2" width="400">
+<img src="media/screenshot1.jpg" alt="KidsOS Screenshot 1" width="400">
 
-[![Demo Video](media/screenshot2.jpg)](https://github.com/mixashin/kidsOS/blob/main/media/demo.mp4)
+[![Demo Video](media/screenshot2.jpg)](https://youtu.be/ifZQ23GNZSk)
 
 ## Features
 
