@@ -366,7 +366,7 @@
 
   // --- Handlers ---
   function rerender() {
-    const el = document.querySelector('#window_tinyscanner .window-body');
+    const el = document.getElementById('win-body-tinyscanner');
     if (el) el.innerHTML = render();
   }
 
