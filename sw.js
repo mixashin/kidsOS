@@ -32,7 +32,7 @@ const ASSETS = [
   './js/apps/captaincardio.js',
   './js/apps/pebbles.js',
   './js/apps/pocketpal.js',
-  './media/corgi.glb',
+  // './media/corgi.glb',  // cached on first load via stale-while-revalidate
   './js/apps/settings.js',
   './version.json',
 ];

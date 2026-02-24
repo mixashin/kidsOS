@@ -36,6 +36,29 @@
 
   const DECAY_PER_HOUR = { hunger: 3, happiness: 2, cleanliness: 1, energy: 2 };
 
+  /* ── Three.js references (loaded dynamically) ── */
+  let THREE = null;
+  let GLTFLoader = null;
+  let OrbitControls = null;
+
+  async function loadThreeJS() {
+    if (THREE) return true; // already loaded
+    try {
+      const threeModule = await import('three');
+      THREE = threeModule;
+      const [gltf, orbit] = await Promise.all([
+        import('three/addons/loaders/GLTFLoader.js'),
+        import('three/addons/controls/OrbitControls.js'),
+      ]);
+      GLTFLoader = gltf.GLTFLoader;
+      OrbitControls = orbit.OrbitControls;
+      return true;
+    } catch (err) {
+      console.error('Pocket Pal: Failed to load Three.js:', err);
+      return false;
+    }
+  }
+
   /* ── State ── */
   let state = null;
   let ui = {
@@ -142,8 +165,8 @@
 
   /* ── Three.js Setup ── */
   function initScene(container) {
-    if (!window.THREE) {
-      container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#999;text-align:center;padding:20px;">Three.js is loading...<br>Please check your internet connection.</div>';
+    if (!THREE) {
+      container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#999;text-align:center;padding:20px;">Three.js failed to load.<br>Please check your internet connection.</div>';
       return false;
     }
 
@@ -167,8 +190,8 @@
     ui.camera.position.set(0, 1.5, 3.5);
 
     // Controls
-    if (THREE.OrbitControls) {
-      ui.controls = new THREE.OrbitControls(ui.camera, ui.renderer.domElement);
+    if (OrbitControls) {
+      ui.controls = new OrbitControls(ui.camera, ui.renderer.domElement);
       ui.controls.target.set(0, 0.5, 0);
       ui.controls.enableDamping = true;
       ui.controls.dampingFactor = 0.08;
@@ -221,12 +244,12 @@
 
   /* ── GLB Model Loader ── */
   function loadGLBModel() {
-    if (!THREE.GLTFLoader) {
+    if (!GLTFLoader) {
       console.warn('Pocket Pal: GLTFLoader not available, using procedural corgi');
       buildProceduralCorgi();
       return;
     }
-    const loader = new THREE.GLTFLoader();
+    const loader = new GLTFLoader();
     loader.load(
       'media/corgi.glb',
       (gltf) => {
@@ -1291,12 +1314,18 @@
   };
 
   /* ── Init Main View (after naming) ── */
-  function initMainView() {
+  async function initMainView() {
     const body = document.getElementById('win-body-' + ui.winId);
     if (!body) return;
     body.innerHTML = getMainHTML();
     const canvasWrap = document.getElementById('pp-canvas');
     if (canvasWrap) {
+      // Load Three.js dynamically
+      const loaded = await loadThreeJS();
+      if (!loaded) {
+        canvasWrap.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#999;text-align:center;padding:20px;">Could not load 3D engine.<br>Check your internet connection and try again.</div>';
+        return;
+      }
       const ok = initScene(canvasWrap);
       if (ok) {
         startRenderLoop();
