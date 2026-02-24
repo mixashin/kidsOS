@@ -209,13 +209,107 @@
     // Clock for animation mixer
     ui.clock = new THREE.Clock();
 
-    // Build procedural corgi
-    buildProceduralCorgi();
+    // Try to load GLB model, fall back to procedural corgi
+    loadGLBModel();
 
     // Resize observer
     ui.resizeObs = new ResizeObserver(() => resizeRenderer(container));
     ui.resizeObs.observe(container);
 
+    return true;
+  }
+
+  /* ── GLB Model Loader ── */
+  function loadGLBModel() {
+    if (!THREE.GLTFLoader) {
+      console.warn('Pocket Pal: GLTFLoader not available, using procedural corgi');
+      buildProceduralCorgi();
+      return;
+    }
+    const loader = new THREE.GLTFLoader();
+    loader.load(
+      'media/corgi.glb',
+      (gltf) => {
+        const model = gltf.scene;
+        model.name = 'corgi';
+
+        // Auto-scale: normalize model to roughly fit our scene
+        const box = new THREE.Box3().setFromObject(model);
+        const size = box.getSize(new THREE.Vector3());
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const targetHeight = 1.4; // desired height in scene units
+        const scale = targetHeight / maxDim;
+        model.scale.setScalar(scale);
+
+        // Center model on ground
+        const scaledBox = new THREE.Box3().setFromObject(model);
+        const center = scaledBox.getCenter(new THREE.Vector3());
+        model.position.x = -center.x;
+        model.position.z = -center.z;
+        model.position.y = -scaledBox.min.y; // sit on ground plane
+
+        // Enable shadows on all meshes
+        model.traverse(child => {
+          if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+          }
+        });
+
+        ui.scene.add(model);
+        ui.corgi = model;
+        ui.corgi._isGLB = true;
+
+        // Set up AnimationMixer if model has animation clips
+        if (gltf.animations && gltf.animations.length > 0) {
+          ui.mixer = new THREE.AnimationMixer(model);
+          ui.animations = {};
+          gltf.animations.forEach(clip => {
+            ui.animations[clip.name.toLowerCase()] = clip;
+          });
+          console.log('Pocket Pal: Loaded animations:', Object.keys(ui.animations).join(', '));
+          // Play idle if available
+          playGLBAnimation('idle');
+        }
+
+        // Adjust camera to look at model center
+        const modelCenter = new THREE.Box3().setFromObject(model).getCenter(new THREE.Vector3());
+        if (ui.controls) {
+          ui.controls.target.copy(modelCenter);
+          ui.controls.update();
+        }
+        ui.camera.position.set(0, modelCenter.y + 0.5, 3);
+      },
+      undefined, // progress
+      (err) => {
+        console.warn('Pocket Pal: Could not load corgi.glb, using procedural corgi:', err);
+        buildProceduralCorgi();
+      }
+    );
+  }
+
+  /* ── GLB Animation Playback ── */
+  let currentGLBAction = null;
+
+  function playGLBAnimation(name) {
+    if (!ui.mixer || !ui.animations) return false;
+    const clip = ui.animations[name] || ui.animations[name.replace('_', '')];
+    if (!clip) return false;
+
+    const action = ui.mixer.clipAction(clip);
+    if (currentGLBAction && currentGLBAction !== action) {
+      currentGLBAction.fadeOut(0.3);
+    }
+    action.reset().fadeIn(0.3).play();
+    // One-shot animations: clamp on finish
+    const onceAnims = ['eat', 'shake', 'wave', 'boop', 'dizzy', 'refuse_food', 'sleep_enter'];
+    if (onceAnims.includes(name)) {
+      action.setLoop(THREE.LoopOnce);
+      action.clampWhenFinished = true;
+    } else {
+      action.setLoop(THREE.LoopRepeat);
+    }
+    currentGLBAction = action;
     return true;
   }
 
@@ -366,7 +460,10 @@
   let breatheAmount = 1;
 
   function animateCorgi(delta) {
-    if (!ui.corgi || !ui.corgi._parts) return;
+    if (!ui.corgi) return;
+    // Skip procedural animation for GLB models (AnimationMixer handles it)
+    if (ui.corgi._isGLB) return;
+    if (!ui.corgi._parts) return;
     const p = ui.corgi._parts;
     animTime += delta;
 
@@ -493,11 +590,21 @@
   }
 
   function playAnim(name) {
+    // Try GLB animation first
+    if (ui.corgi && ui.corgi._isGLB) {
+      playGLBAnimation(name);
+      return;
+    }
     resetCorgiPose();
     currentProceduralAnim = name;
   }
 
   function playAnimOnce(name, duration, thenAnim) {
+    if (ui.corgi && ui.corgi._isGLB) {
+      playGLBAnimation(name);
+      setTimeout(() => playGLBAnimation(thenAnim || getIdleAnimForMood()), duration || 1500);
+      return;
+    }
     resetCorgiPose();
     currentProceduralAnim = name;
     setTimeout(() => {
@@ -906,18 +1013,30 @@
     }, 2500);
   }
 
-  /* ── Canvas Click/Tap Handler ── */
-  function onCanvasTap(e) {
+  /* ── Canvas Click/Tap Handler (with drag detection) ── */
+  let _pointerStart = null;
+
+  function onPointerDown(e) {
+    const t = e.touches ? e.touches[0] : e;
+    _pointerStart = { x: t.clientX, y: t.clientY, time: Date.now() };
+  }
+
+  function onPointerUp(e) {
+    if (!_pointerStart) return;
+    const t = e.changedTouches ? e.changedTouches[0] : e;
+    const dx = t.clientX - _pointerStart.x;
+    const dy = t.clientY - _pointerStart.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const elapsed = Date.now() - _pointerStart.time;
+    _pointerStart = null;
+    // Only treat as tap if short duration and small distance (not a drag/orbit)
+    if (dist > 10 || elapsed > 300) return;
+    handleTap(t.clientX, t.clientY);
+  }
+
+  function handleTap(cx, cy) {
     if (!ui.renderer || !ui.camera || !ui.corgi) return;
     const rect = ui.renderer.domElement.getBoundingClientRect();
-    let cx, cy;
-    if (e.touches) {
-      cx = e.touches[0].clientX;
-      cy = e.touches[0].clientY;
-    } else {
-      cx = e.clientX;
-      cy = e.clientY;
-    }
     ui.mouse.x = ((cx - rect.left) / rect.width) * 2 - 1;
     ui.mouse.y = -((cy - rect.top) / rect.height) * 2 + 1;
     ui.raycaster.setFromCamera(ui.mouse, ui.camera);
@@ -1181,9 +1300,11 @@
       const ok = initScene(canvasWrap);
       if (ok) {
         startRenderLoop();
-        // Attach click/tap listeners
-        ui.renderer.domElement.addEventListener('click', onCanvasTap);
-        ui.renderer.domElement.addEventListener('touchstart', onCanvasTap, { passive: true });
+        // Attach tap listeners (pointer down/up to distinguish taps from drags)
+        ui.renderer.domElement.addEventListener('mousedown', onPointerDown);
+        ui.renderer.domElement.addEventListener('mouseup', onPointerUp);
+        ui.renderer.domElement.addEventListener('touchstart', onPointerDown, { passive: true });
+        ui.renderer.domElement.addEventListener('touchend', onPointerUp, { passive: true });
         playAnim(getIdleAnimForMood());
       }
     }

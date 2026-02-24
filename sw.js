@@ -32,6 +32,7 @@ const ASSETS = [
   './js/apps/captaincardio.js',
   './js/apps/pebbles.js',
   './js/apps/pocketpal.js',
+  './media/corgi.glb',
   './js/apps/settings.js',
   './version.json',
 ];
