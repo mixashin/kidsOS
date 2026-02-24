@@ -13,7 +13,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="stylesheet" href="style.css?v=0.23.1">
+  <link rel="stylesheet" href="style.css?v=0.24.0">
 </head>
 <body>
   <!-- Desktop -->
@@ -107,6 +107,10 @@
       <div class="desktop-icon" onclick="OS.launch('pebbles')">
         <div class="icon-img">🪨</div>
         <span>Pebbles</span>
+      </div>
+      <div class="desktop-icon" onclick="OS.launch('pocketpal')">
+        <div class="icon-img">🐶</div>
+        <span>Pocket Pal</span>
       </div>
       <div class="desktop-icon" onclick="OS.launch('settings')">
         <div class="icon-img">⚙️</div>
@@ -205,6 +209,9 @@
         <div class="menu-app-item" onclick="OS.launch('pebbles'); OS.toggleAppMenu()">
           <span>🪨</span> Pebbles
         </div>
+        <div class="menu-app-item" onclick="OS.launch('pocketpal'); OS.toggleAppMenu()">
+          <span>🐶</span> Pocket Pal
+        </div>
         <div class="menu-app-item" onclick="OS.launch('settings'); OS.toggleAppMenu()">
           <span>⚙️</span> Settings
         </div>
@@ -226,31 +233,35 @@
   </div>
 
   <!-- Scripts -->
-  <script src="config.js?v=0.23.1"></script>
-  <script src="js/os.js?v=0.23.1"></script>
-  <script src="js/apps/calculator.js?v=0.23.1"></script>
-  <script src="js/apps/notepad.js?v=0.23.1"></script>
-  <script src="js/apps/filemanager.js?v=0.23.1"></script>
-  <script src="js/apps/paint.js?v=0.23.1"></script>
-  <script src="js/apps/snake.js?v=0.23.1"></script>
-  <script src="js/apps/memory.js?v=0.23.1"></script>
-  <script src="js/apps/kidstagram.js?v=0.23.1"></script>
-  <script src="js/apps/chat.js?v=0.23.1"></script>
-  <script src="js/apps/minesweeper.js?v=0.23.1"></script>
-  <script src="js/apps/ejob.js?v=0.23.1"></script>
-  <script src="js/apps/tinybank.js?v=0.23.1"></script>
-  <script src="js/apps/chorequest.js?v=0.23.1"></script>
-  <script src="js/apps/treasuremapper.js?v=0.23.1"></script>
-  <script src="js/apps/snackdash.js?v=0.23.1"></script>
-  <script src="js/apps/kidflix.js?v=0.23.1"></script>
-  <script src="js/apps/zoomer.js?v=0.23.1"></script>
-  <script src="js/apps/soundboard.js?v=0.23.1"></script>
-  <script src="js/apps/tinyscanner.js?v=0.23.1"></script>
-  <script src="js/apps/sillyskies.js?v=0.23.1"></script>
-  <script src="js/apps/breakout.js?v=0.23.1"></script>
-  <script src="js/apps/captaincardio.js?v=0.23.1"></script>
-  <script src="js/apps/pebbles.js?v=0.23.1"></script>
-  <script src="js/apps/settings.js?v=0.23.1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.149.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.149.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="config.js?v=0.24.0"></script>
+  <script src="js/os.js?v=0.24.0"></script>
+  <script src="js/apps/calculator.js?v=0.24.0"></script>
+  <script src="js/apps/notepad.js?v=0.24.0"></script>
+  <script src="js/apps/filemanager.js?v=0.24.0"></script>
+  <script src="js/apps/paint.js?v=0.24.0"></script>
+  <script src="js/apps/snake.js?v=0.24.0"></script>
+  <script src="js/apps/memory.js?v=0.24.0"></script>
+  <script src="js/apps/kidstagram.js?v=0.24.0"></script>
+  <script src="js/apps/chat.js?v=0.24.0"></script>
+  <script src="js/apps/minesweeper.js?v=0.24.0"></script>
+  <script src="js/apps/ejob.js?v=0.24.0"></script>
+  <script src="js/apps/tinybank.js?v=0.24.0"></script>
+  <script src="js/apps/chorequest.js?v=0.24.0"></script>
+  <script src="js/apps/treasuremapper.js?v=0.24.0"></script>
+  <script src="js/apps/snackdash.js?v=0.24.0"></script>
+  <script src="js/apps/kidflix.js?v=0.24.0"></script>
+  <script src="js/apps/zoomer.js?v=0.24.0"></script>
+  <script src="js/apps/soundboard.js?v=0.24.0"></script>
+  <script src="js/apps/tinyscanner.js?v=0.24.0"></script>
+  <script src="js/apps/sillyskies.js?v=0.24.0"></script>
+  <script src="js/apps/breakout.js?v=0.24.0"></script>
+  <script src="js/apps/captaincardio.js?v=0.24.0"></script>
+  <script src="js/apps/pebbles.js?v=0.24.0"></script>
+  <script src="js/apps/pocketpal.js?v=0.24.0"></script>
+  <script src="js/apps/settings.js?v=0.24.0"></script>
   <script>
     window.addEventListener('load', () => OS.boot());
     // After update: clean URL param once SW is ready
