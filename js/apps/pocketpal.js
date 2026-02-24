@@ -179,7 +179,12 @@
     ui.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     ui.renderer.shadowMap.enabled = true;
     ui.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    ui.renderer.outputColorSpace = THREE.SRGBColorSpace;
+    // r149: use outputEncoding (outputColorSpace was added in r152)
+    if ('outputColorSpace' in ui.renderer) {
+      ui.renderer.outputColorSpace = THREE.SRGBColorSpace;
+    } else {
+      ui.renderer.outputEncoding = THREE.sRGBEncoding;
+    }
     container.appendChild(ui.renderer.domElement);
 
     // Scene
