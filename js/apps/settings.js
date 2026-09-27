@@ -164,8 +164,7 @@ OS.registerApp('settings', {
           <div style="background:var(--surface-bg);border-radius:8px;padding:14px;font-size:14px;color:var(--text-primary);line-height:1.8">
             <b>KidsOS</b> is a fun, educational operating system simulator designed to help children learn how to use computers!<br><br>
             🎯 <b>Apps included:</b><br>
-            📁 File Manager · 📝 Notepad · 🔢 Calculator<br>
-            🎨 Paint · 🐍 Snake · 🃏 Memory Match · ⚙️ Settings
+            ${OS.APPS.map(a => a.icon + ' ' + a.label).join(' · ')}
           </div>
           <div style="text-align:center;color:var(--text-muted);font-size:13px">Built with HTML, CSS &amp; JavaScript ❤️</div>
         </div>

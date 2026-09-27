@@ -29,6 +29,7 @@ const OS = (() => {
     applyTheme();
     applyWallpaper();
     updateMenuUsername();
+    renderLauncher();
     // Add body class when running as installed PWA
     if (isStandalone()) document.body.classList.add('standalone');
 
@@ -495,16 +496,109 @@ const OS = (() => {
     document.addEventListener('touchend', () => { resizing = false; });
   }
 
+  /* ---- App Registry ---- */
+  // The one list of apps. Desktop icons, app menu, and the About panel come from it.
+  // The code of an app is js/apps/<id>.js. It loads when the app opens for the first time.
+  //   short: label for the desktop icon when the full label is too long
+  //   needs: apps whose code this app calls directly
+  const APPS = [
+    { id: 'filemanager',    icon: '📁', label: 'Files', needs: ['notepad', 'paint'] },
+    { id: 'notepad',        icon: '📝', label: 'Notepad', needs: ['filemanager'] },
+    { id: 'calculator',     icon: '🔢', label: 'Calculator' },
+    { id: 'paint',          icon: '🎨', label: 'Paint', needs: ['filemanager'] },
+    { id: 'snake',          icon: '🐍', label: 'Snake' },
+    { id: 'memory',         icon: '🃏', label: 'Memory' },
+    { id: 'kidstagram',     icon: '📸', label: 'Kidstagram' },
+    { id: 'chat',           icon: '💬', label: 'KidsChat' },
+    { id: 'minesweeper',    icon: '💣', label: 'Minesweeper' },
+    { id: 'ejob',           icon: '💼', label: 'eJob' },
+    { id: 'kidflix',        icon: '🎬', label: 'Kidflix' },
+    { id: 'tinybank',       icon: '🏦', label: 'TinyBank' },
+    { id: 'chorequest',     icon: '✅', label: 'Chores' },
+    { id: 'treasuremapper', icon: '🗺️', label: 'Maps' },
+    { id: 'snackdash',      icon: '🛵', label: 'SnackDash' },
+    { id: 'zoomer',         icon: '🚗', label: 'Zoomer' },
+    { id: 'soundboard',     icon: '🔊', label: 'Sounds' },
+    { id: 'tinyscanner',    icon: '🔍', label: 'Scanner' },
+    { id: 'sillyskies',     icon: '🌈', label: 'SillySkies' },
+    { id: 'breakout',       icon: '🧱', label: 'Breakout' },
+    { id: 'captaincardio',  icon: '🚀', label: 'Captain Cardio', short: 'Cardio' },
+    { id: 'pebbles',        icon: '🪨', label: 'Pebbles' },
+    { id: 'pocketpal',      icon: '🐶', label: 'Pocket Pal' },
+    { id: 'settings',       icon: '⚙️', label: 'Settings' },
+  ];
+
+  function renderLauncher() {
+    const icons = document.getElementById('desktop-icons');
+    const menu = document.getElementById('app-menu-grid');
+    icons.innerHTML = APPS.map(a => `
+      <div class="desktop-icon" data-app="${a.id}" role="button" tabindex="0">
+        <div class="icon-img">${a.icon}</div>
+        <span>${a.short || a.label}</span>
+      </div>`).join('');
+    menu.innerHTML = APPS.map(a => `
+      <div class="menu-app-item" data-app="${a.id}" role="button" tabindex="0">
+        <span>${a.icon}</span> ${a.label}
+      </div>`).join('');
+
+    const open = e => {
+      if (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') return;
+      const el = e.target.closest('[data-app]');
+      if (!el) return;
+      e.preventDefault();
+      launch(el.dataset.app);
+      if (el.closest('#app-menu')) toggleAppMenu();
+    };
+    for (const box of [icons, menu]) {
+      box.addEventListener('click', open);
+      box.addEventListener('keydown', open);
+    }
+  }
+
   /* ---- App Launcher ---- */
-  const apps = {};
+  const apps = {};        // id -> app object, filled by registerApp when the app code loads
+  const scriptLoads = {}; // id -> Promise
 
   function registerApp(name, appObj) {
     apps[name] = appObj;
   }
 
+  function loadScript(id) {
+    return scriptLoads[id] ||= new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = `js/apps/${id}.js?v=${version}`;
+      s.onload = resolve;
+      s.onerror = () => {
+        delete scriptLoads[id]; // a later tap tries again
+        s.remove();
+        reject(new Error('could not load ' + id));
+      };
+      document.head.appendChild(s);
+    });
+  }
+
+  // The app and every app it needs, directly or through another app
+  function withNeeds(id, found = new Set()) {
+    if (found.has(id)) return found;
+    found.add(id);
+    const entry = APPS.find(a => a.id === id);
+    (entry && entry.needs || []).forEach(n => withNeeds(n, found));
+    return found;
+  }
+
   function launch(name) {
+    const entry = APPS.find(a => a.id === name);
+    if (!entry) { console.warn('Unknown app:', name); return; }
+    const ids = [...withNeeds(name)];
+    if (ids.every(id => apps[id])) return openApp(name);
+    Promise.all(ids.map(loadScript))
+      .then(() => openApp(name))
+      .catch(() => alert(`${entry.icon} ${entry.label} could not open. Try again.`));
+  }
+
+  function openApp(name) {
     const app = apps[name];
-    if (!app) { console.warn('Unknown app:', name); return; }
+    if (!app) { console.warn('App code did not register:', name); return; }
 
     // Allow multiple instances for some apps
     const singleInstance = app.singleInstance !== false;
@@ -722,7 +816,7 @@ const OS = (() => {
   }
 
   return {
-    boot, launch, registerApp,
+    boot, launch, registerApp, APPS,
     createWindow, closeWindow, minimizeWindow, restoreWindow, toggleMaximize, focusWindow,
     toggleAppMenu, shutdown,
     saveSettings, loadSettings, getSettings, applyWallpaper, getWallpapers,
