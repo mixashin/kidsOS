@@ -343,6 +343,11 @@ button.k-pill:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--k-s
   [data-mode="touch"] .win-title { --app-icon: 44px; gap: 8px; font-size: 20px; }
   [data-mode="touch"] .win-btn.home, [data-mode="touch"] .win-btn.close { width: 56px; height: 56px; }
 }
+/* Phone: the greeting shows the penguin only. The coins and the clock need the width */
+@media (max-width: 479px) {
+  [data-mode="touch"] #hello-text { display: none; }
+  [data-mode="touch"] #top-bar #hello { padding: 0 4px; }
+}
 /* Low screen in touch mode (phone on its side): the space goes to the apps */
 @media (max-height: 499px) {
   [data-mode="touch"] #top-bar { display: none; }

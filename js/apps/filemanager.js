@@ -113,8 +113,8 @@ const FM = (() => {
   }
 
   function pathLabel(p) {
-    const map = { home: '/home/kidsuser', documents: 'Documents', pictures: 'Pictures', music: 'Music', videos: 'Videos', trash: 'Trash' };
-    return '/home/kidsuser/' + (map[p] || p);
+    const map = { documents: 'Documents', pictures: 'Pictures', music: 'Music', videos: 'Videos', trash: 'Trash' };
+    return p === 'home' ? '/home/kidsuser' : '/home/kidsuser/' + (map[p] || p);
   }
 
   function render() {

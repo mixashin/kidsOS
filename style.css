@@ -1036,6 +1036,8 @@ button { font-family: var(--font); }
 .wallpaper-grid {
   display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 12px;
 }
+/* Phone: one column, so each name fits in its picture */
+@media (max-width: 479px) { .wallpaper-grid { grid-template-columns: 1fr; } }
 .wp-option {
   aspect-ratio: 16/9; border-radius: 8px; cursor: pointer;
   border: 3px solid transparent; transition: border-color 0.15s;

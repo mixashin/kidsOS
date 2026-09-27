@@ -8,7 +8,7 @@ OS.registerApp('memory', {
       title: 'Memory Match',
       icon: '🃏',
       width: 480,
-      height: 520,
+      height: 560,
       content: this.getHTML(),
     };
   },
