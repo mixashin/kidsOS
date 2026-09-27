@@ -1,1 +1,10 @@
 CLAUDE.md
+
+# Working folders: never committed. Only final files go into the repo.
+handoff/
+.claude/
+research/
+node_modules/
+dist/
+_work/
+*.stackdump

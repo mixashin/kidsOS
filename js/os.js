@@ -1,7 +1,6 @@
 /* ===== KidsOS Core ===== */
 const OS = (() => {
-  const VERSION = '0.24.4';
-  const UPDATE_URL = (typeof KIDSOS_CONFIG !== 'undefined' && KIDSOS_CONFIG.updateURL) || 'https://mixashin.github.io/kidsOS';
+  const VERSION = '0.24.5';
 
   let zCounter = 100;
   let windowMap = {};     // id -> { el, taskbarBtn, app }
@@ -70,23 +69,25 @@ const OS = (() => {
     // Skip if we just came from an update reload
     if (location.search.includes('_update')) return;
 
-    const urls = [
-      UPDATE_URL + '/version.json?t=' + Date.now(),
-      'https://mixashin.github.io/kidsOS/version.json?t=' + Date.now(),
-    ];
+    fetchRemoteVersion().then(remote => {
+      if (_isNewer(remote.version, VERSION)) {
+        showUpdatePopup(remote.version, remote.build);
+      }
+    }).catch(() => {}); // silently fail — not critical
+  }
 
-    const tryFetch = (i) => {
-      if (i >= urls.length) return; // silently fail — not critical
-      fetch(urls[i], { cache: 'no-store' }).then(res => {
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        return res.json();
-      }).then(remote => {
-        if (_isNewer(remote.version, VERSION)) {
-          showUpdatePopup(remote.version, remote.build);
-        }
-      }).catch(() => tryFetch(i + 1));
-    };
-    tryFetch(0);
+  // Relative URL on purpose: KidsOS only ever contacts the origin it was loaded from
+  function fetchRemoteVersion() {
+    return fetch('version.json?t=' + Date.now(), { cache: 'no-store' }).then(res => {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    });
+  }
+
+  /* ---- HTML escape: use for any user-entered text that goes into innerHTML ---- */
+  const ESC_MAP = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+  function esc(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => ESC_MAP[c]);
   }
 
   function _isNewer(remote, local) {
@@ -110,7 +111,7 @@ const OS = (() => {
         <div class="update-popup-icon">🐧</div>
         <div class="update-popup-title">${msg.title}</div>
         <div class="update-popup-body">${msg.body}</div>
-        <div class="update-popup-version">v${VERSION} → v${newVer}${build ? ' (build ' + build + ')' : ''}</div>
+        <div class="update-popup-version">v${VERSION} → v${esc(newVer)}${build ? ' (build ' + esc(build) + ')' : ''}</div>
         <div class="update-popup-buttons">
           <button class="update-popup-btn update-popup-later" id="update-later-btn">Later</button>
           <button class="update-popup-btn update-popup-go" id="update-go-btn">🚀 Update Now!</button>
@@ -141,12 +142,13 @@ const OS = (() => {
       const base = window.location.href.split('?')[0].split('#')[0];
       window.location.replace(base + '?_update=' + Date.now());
     };
+    // Only KidsOS caches and the KidsOS service worker: other sites can share this origin
     Promise.all([
       'caches' in window
-        ? caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))))
+        ? caches.keys().then(keys => Promise.all(keys.filter(k => k.startsWith('kidsOS-')).map(k => caches.delete(k))))
         : Promise.resolve(),
       'serviceWorker' in navigator
-        ? navigator.serviceWorker.getRegistrations().then(regs => Promise.all(regs.map(r => r.unregister())))
+        ? navigator.serviceWorker.getRegistration().then(reg => reg && reg.unregister())
         : Promise.resolve(),
     ]).then(hardNav).catch(hardNav);
   }
@@ -541,7 +543,9 @@ const OS = (() => {
     }
     overlay.classList.add('show');
     setTimeout(() => {
-      overlay.innerHTML = '😴 Goodbye!<br><small style="font-size:18px;color:#888">Refresh the page to restart</small>';
+      // Installed fullscreen app has no refresh button, so a tap must restart
+      overlay.innerHTML = '<div style="text-align:center">😴 Goodbye!<br><small style="font-size:18px;color:#888">Tap to restart</small></div>';
+      overlay.onclick = () => location.reload();
     }, 1500);
   }
 
@@ -582,26 +586,15 @@ const OS = (() => {
   });
 
   /* ---- Factory Reset ---- */
-  const STORAGE_KEYS = [
-    'kidsOS_settings',
-    'kidsOS_fs',
-    'kidsOS_chat',
-    'kidsOS_snakeHi',
-    'kidsOS_kidstagram',
-    'kidsOS_snackdash',
-    'kidsOS_treasuremapper',
-    'kidsOS_ejobHi',
-    'kidsOS_chorequest',
-    'kidsOS_tinybank',
-    'kidsOS_tinyscanner',
-    'kidsOS_breakout',
-    'kidsOS_pocketpal',
-  ];
+  // Every app stores under the kidsOS_ prefix, so no list to keep in sync
+  function storageKeys() {
+    return Object.keys(localStorage).filter(key => key.startsWith('kidsOS_')).sort();
+  }
 
   function getStorageUsage() {
     let total = 0;
     const breakdown = {};
-    STORAGE_KEYS.forEach(key => {
+    storageKeys().forEach(key => {
       const val = localStorage.getItem(key);
       const bytes = val ? new Blob([val]).size : 0;
       breakdown[key] = bytes;
@@ -611,7 +604,9 @@ const OS = (() => {
   }
 
   function factoryReset() {
-    STORAGE_KEYS.forEach(key => localStorage.removeItem(key));
+    // Close windows first: some apps save their state in onClose
+    Object.keys(windowMap).forEach(closeWindow);
+    storageKeys().forEach(key => localStorage.removeItem(key));
     // Reset in-memory settings to defaults
     Object.assign(settings, {
       username: 'KidsUser',
@@ -665,7 +660,7 @@ const OS = (() => {
     toast.innerHTML = '<div class="gc-toast-icon">' + (emoji || '🪙') + '</div>'
       + '<div class="gc-toast-body">'
       + '<div class="gc-toast-title">+' + amount + ' Giggle Coins!</div>'
-      + (description ? '<div class="gc-toast-desc">' + description + '</div>' : '')
+      + (description ? '<div class="gc-toast-desc">' + esc(description) + '</div>' : '')
       + '</div>';
     document.body.appendChild(toast);
     requestAnimationFrame(() => toast.classList.add('gc-toast-in'));
@@ -682,9 +677,9 @@ const OS = (() => {
     saveSettings, loadSettings, getSettings, applyWallpaper, getWallpapers,
     showContextMenu, removeContextMenu,
     updateMenuUsername,
-    getStorageUsage, factoryReset, STORAGE_KEYS, isStandalone,
+    getStorageUsage, factoryReset, isStandalone,
     applyTheme, ACCENT_COLORS,
-    VERSION, UPDATE_URL, _isNewer, _nukeAndReload,
-    awardCoins,
+    VERSION, fetchRemoteVersion, _isNewer, _nukeAndReload,
+    awardCoins, esc,
   };
 })();

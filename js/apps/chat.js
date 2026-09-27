@@ -259,7 +259,7 @@ const KidsChat = (() => {
       el.innerHTML = `
         <div class="kc-contact-avatar" style="background:${c.color}">${c.avatar}</div>
         <div class="kc-contact-body">
-          <div class="kc-contact-name">${c.name}</div>
+          <div class="kc-contact-name">${escHtml(c.name)}</div>
           <div class="kc-contact-preview">${escHtml(preview.slice(0, 40))}${preview.length > 40 ? '…' : ''}</div>
         </div>
       `;
@@ -303,7 +303,7 @@ const KidsChat = (() => {
     box.innerHTML = '';
 
     if (c.messages.length === 0) {
-      box.innerHTML = `<div class="kc-no-messages">Say hi to ${c.name}! 👋</div>`;
+      box.innerHTML = `<div class="kc-no-messages">Say hi to ${escHtml(c.name)}! 👋</div>`;
       return;
     }
 
@@ -828,11 +828,7 @@ const KidsChat = (() => {
     return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
-  function escHtml(str) {
-    return String(str)
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
+  function escHtml(str) { return OS.esc(str); }
 
   return { init, destroy, send, selectContact, toggleGallery, showContactDialog, pickAvatar, pickColor, confirmDialog, cancelDialog, openEditPanel, closeEditPanel, addReply, deleteReply };
 })();

@@ -837,7 +837,7 @@
         <div class="tm-content">
           <div class="tm-search-wrap">
             <input class="tm-search" type="text" placeholder="\u{1F50D} Search silly places..."
-              value="${searchQuery}" oninput="window._tmSearch(this.value)">
+              value="${OS.esc(searchQuery)}" oninput="window._tmSearch(this.value)">
           </div>
           <div class="tm-places-grid">
             ${places.map(l => `
@@ -1063,7 +1063,7 @@
         <div class="tm-hunt-field">
           <label>Hunt Name</label>
           <input class="tm-input" type="text" placeholder="e.g. Super Secret Treasure Hunt"
-            value="${currentHunt.name}" oninput="window._tmHuntSetName(this.value)">
+            value="${OS.esc(currentHunt.name)}" oninput="window._tmHuntSetName(this.value)">
         </div>
         <div class="tm-hunt-field">
           <label>Starting Place</label>
@@ -1120,7 +1120,7 @@
         return `
         <div class="tm-hunt-summary">
           <div class="tm-hunt-summary-row">
-            <strong>Name:</strong> ${currentHunt.name || 'Unnamed Hunt'}
+            <strong>Name:</strong> ${OS.esc(currentHunt.name || 'Unnamed Hunt')}
           </div>
           <div class="tm-hunt-summary-row">
             <strong>Start:</strong> ${startLoc ? startLoc.emoji + ' ' + startLoc.name : 'Not set'}
@@ -1206,7 +1206,7 @@
           ${persisted.treasureHunts.length > 0 ? persisted.treasureHunts.map(h => `
             <div class="tm-list-item">
               <span class="tm-list-emoji">${h.treasure.emoji}</span>
-              <span class="tm-list-name">${h.name}</span>
+              <span class="tm-list-name">${OS.esc(h.name)}</span>
               <span class="tm-list-clues">${h.clues.length} clues</span>
             </div>
           `).join('') : '<div class="tm-empty">No treasure hunts created yet.</div>'}

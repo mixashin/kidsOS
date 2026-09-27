@@ -993,7 +993,7 @@ const KidsGram = (() => {
             ${allComments.map(c => `
               <div class="kg-comment">
                 <span class="kg-comment-av">${KG_USERS[c.u]?.av||'😊'}</span>
-                <span><b>${c.u.replace('_',' ')}</b> ${c.t}</span>
+                <span><b>${OS.esc(c.u.replace('_',' '))}</b> ${OS.esc(c.t)}</span>
               </div>`).join('')}
           </div>
           <div class="kg-comment-input-row">
@@ -1066,7 +1066,7 @@ const KidsGram = (() => {
     if (list) {
       const div = document.createElement('div');
       div.className = 'kg-comment kg-comment-new';
-      div.innerHTML = `<span class="kg-comment-av">😊</span><span><b>${username}</b> ${text}</span>`;
+      div.innerHTML = `<span class="kg-comment-av">😊</span><span><b>${OS.esc(username)}</b> ${OS.esc(text)}</span>`;
       list.appendChild(div);
       list.scrollTop = list.scrollHeight;
     }

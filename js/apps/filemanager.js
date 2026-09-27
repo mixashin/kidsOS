@@ -214,7 +214,7 @@ const FM = (() => {
     if (!name || !name.trim()) return;
     const safeName = name.trim().replace(/[/\\:*?"<>|]/g, '_');
     const fs = loadFS();
-    const node = getNode(currentPath);
+    const node = getNodeInFS(fs, currentPath);
     if (!node.children) node.children = {};
     if (node.children[safeName]) { alert('Name already exists!'); return; }
     node.children[safeName] = { type: 'folder', children: {} };
@@ -227,7 +227,7 @@ const FM = (() => {
     if (!name || !name.trim()) return;
     const safeName = name.trim().replace(/[/\\:*?"<>|]/g, '_');
     const fs = loadFS();
-    const node = getNode(currentPath);
+    const node = getNodeInFS(fs, currentPath);
     if (!node.children) node.children = {};
     if (node.children[safeName]) { alert('Name already exists!'); return; }
     const ext = safeName.split('.').pop().toLowerCase();
@@ -241,7 +241,7 @@ const FM = (() => {
     if (!newName || !newName.trim() || newName === name) return;
     const safeName = newName.trim().replace(/[/\\:*?"<>|]/g, '_');
     const fs = loadFS();
-    const node = getNode(currentPath);
+    const node = getNodeInFS(fs, currentPath);
     if (node.children[safeName]) { alert('Name already exists!'); return; }
     node.children[safeName] = node.children[name];
     delete node.children[name];
@@ -252,7 +252,7 @@ const FM = (() => {
   function deleteItem(name) {
     if (!confirm(`Delete "${name}"?`)) return;
     const fs = loadFS();
-    const node = getNode(currentPath);
+    const node = getNodeInFS(fs, currentPath);
     delete node.children[name];
     saveFS(fs);
     render();

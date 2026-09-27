@@ -100,12 +100,12 @@ OS.registerApp('settings', {
         <h2>👤 Account</h2>
         <div class="settings-group">
           <label>Username</label>
-          <input type="text" id="settings-username" value="${s.username || 'KidsUser'}"
+          <input type="text" id="settings-username" value="${OS.esc(s.username || 'KidsUser')}"
                  placeholder="Enter your name" maxlength="20">
         </div>
         <button class="settings-btn" onclick="SettingsApp.saveUsername()">Save Username</button>
         <div style="margin-top:20px;padding:12px;background:var(--surface-bg);border-radius:8px">
-          <strong>Current User:</strong> ${s.username || 'KidsUser'}
+          <strong>Current User:</strong> ${OS.esc(s.username || 'KidsUser')}
         </div>
       </div>
 
@@ -255,7 +255,7 @@ const SettingsApp = {
     }
 
     let html = '';
-    OS.STORAGE_KEYS.forEach(key => {
+    Object.keys(usage.breakdown).forEach(key => {
       const bytes = usage.breakdown[key];
       const pct = usage.total > 0 ? (bytes / usage.total * 100) : 0;
       html += `<div class="storage-row">
@@ -273,12 +273,7 @@ const SettingsApp = {
   factoryReset() {
     if (!confirm('⚠️ Are you sure you want to factory reset?\n\nThis will delete ALL your saved data:\n• Files & documents\n• Settings & wallpaper\n• Chat history\n• Game scores\n• Kidstagram data\n\nThis cannot be undone!')) return;
     if (!confirm('🗑️ Last chance! Really erase everything?')) return;
-    OS.factoryReset();
-    // Close all windows
-    document.querySelectorAll('.window').forEach(w => {
-      const id = w.id.replace('window_', '');
-      OS.closeWindow(id);
-    });
+    OS.factoryReset(); // also closes all windows
     alert('✅ Factory reset complete!\nKidsOS has been restored to defaults.');
   },
 
@@ -291,38 +286,24 @@ const SettingsApp = {
     statusEl.innerHTML = '🔍 Checking for updates...';
     checkBtn.disabled = true;
 
-    const self = this;
-    const urls = [
-      OS.UPDATE_URL + '/version.json?t=' + Date.now(),
-      'https://mixashin.github.io/kidsOS/version.json?t=' + Date.now(),
-    ];
+    OS.fetchRemoteVersion().then(remote => {
+      const local = OS.VERSION;
+      const remoteVer = remote.version;
 
-    const tryFetch = (i) => {
-      if (i >= urls.length) {
-        statusEl.innerHTML = '❌ Could not check for updates. Are you online?';
-        checkBtn.disabled = false;
-        return;
+      if (OS._isNewer(remoteVer, local)) {
+        statusEl.innerHTML = `✅ <b>Update available!</b><br>
+          <span style="font-size:12px">Current: v${local} → New: v${OS.esc(remoteVer)}</span>
+          ${remote.build ? '<br><span style="font-size:12px;color:#888">Build: ' + OS.esc(remote.build) + '</span>' : ''}`;
+        applyBtn.style.display = 'inline-block';
+      } else {
+        statusEl.innerHTML = `👍 KidsOS is up to date! <span style="font-size:12px">(v${local})</span>`;
+        applyBtn.style.display = 'none';
       }
-      fetch(urls[i], { cache: 'no-store' }).then(res => {
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        return res.json();
-      }).then(remote => {
-        const local = OS.VERSION;
-        const remoteVer = remote.version;
-
-        if (OS._isNewer(remoteVer, local)) {
-          statusEl.innerHTML = `✅ <b>Update available!</b><br>
-            <span style="font-size:12px">Current: v${local} → New: v${remoteVer}</span>
-            ${remote.build ? '<br><span style="font-size:12px;color:#888">Build: ' + remote.build + '</span>' : ''}`;
-          applyBtn.style.display = 'inline-block';
-        } else {
-          statusEl.innerHTML = `👍 KidsOS is up to date! <span style="font-size:12px">(v${local})</span>`;
-          applyBtn.style.display = 'none';
-        }
-        checkBtn.disabled = false;
-      }).catch(() => tryFetch(i + 1));
-    };
-    tryFetch(0);
+    }).catch(() => {
+      statusEl.innerHTML = '❌ Could not check for updates. Are you online?';
+    }).finally(() => {
+      checkBtn.disabled = false;
+    });
   },
 
   applyUpdate() {

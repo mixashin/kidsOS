@@ -63,18 +63,19 @@ const SnakeApp = (() => {
       drawIdleScreen();
 
       _onKey = (e) => {
+        const win = document.getElementById('window_snake');
+        if (!win || !win.classList.contains('focused') || win.classList.contains('minimized')) return;
         const map = {
           ArrowLeft: [-1,0], ArrowRight: [1,0],
           ArrowUp:   [0,-1], ArrowDown:  [0,1],
-          a:[-1,0], d:[1,0], w:[0,-1], s:[0,1],
-          A:[-1,0], D:[1,0], W:[0,-1], S:[0,1],
+          KeyA:[-1,0], KeyD:[1,0], KeyW:[0,-1], KeyS:[0,1],
         };
-        if (map[e.key]) {
+        if (map[e.code]) {
           e.preventDefault();
           if (state === 'idle' || state === 'dead') {
             startGame();
           } else if (state === 'playing') {
-            const [dx, dy] = map[e.key];
+            const [dx, dy] = map[e.code];
             if (dx !== -dir[0] || dy !== -dir[1]) nextDir = [dx, dy];
           }
         }

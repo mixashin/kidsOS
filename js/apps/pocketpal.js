@@ -166,7 +166,7 @@
   /* ── Three.js Setup ── */
   function initScene(container) {
     if (!THREE) {
-      container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#999;text-align:center;padding:20px;">Three.js failed to load.<br>Please check your internet connection.</div>';
+      container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#999;text-align:center;padding:20px;">Pocket Pal could not load its 3D engine.<br>Close the app and open it again.</div>';
       return false;
     }
 
@@ -1158,7 +1158,7 @@
     return `
       <div class="pp-wrap">
         <div class="pp-hud" id="pp-hud">
-          <div class="pp-pet-name">${state.name || 'Corgi'} ${getMoodEmoji()}</div>
+          <div class="pp-pet-name">${OS.esc(state.name || 'Corgi')} ${getMoodEmoji()}</div>
           <div class="pp-stats">
             <div class="pp-stat">
               <span class="pp-stat-icon">🍖</span>
@@ -1195,7 +1195,7 @@
   function renderFeedTray() {
     return `
       <div class="pp-tray">
-        <div class="pp-tray-title">🍖 Feed ${state.name}</div>
+        <div class="pp-tray-title">🍖 Feed ${OS.esc(state.name)}</div>
         <div class="pp-tray-grid">
           ${FOODS.map(f => `
             <button class="pp-tray-item" onclick="window._ppFeed('${f.id}')">
@@ -1213,7 +1213,7 @@
   function renderPlayMenu() {
     return `
       <div class="pp-tray">
-        <div class="pp-tray-title">⚽ Play with ${state.name}</div>
+        <div class="pp-tray-title">⚽ Play with ${OS.esc(state.name)}</div>
         <div class="pp-tray-grid">
           ${GAMES.map(g => `
             <button class="pp-tray-item" onclick="window._ppPlay('${g.id}')">
@@ -1231,7 +1231,7 @@
   function renderCleanTray() {
     return `
       <div class="pp-tray">
-        <div class="pp-tray-title">🧼 Clean ${state.name}</div>
+        <div class="pp-tray-title">🧼 Clean ${OS.esc(state.name)}</div>
         <div class="pp-tray-grid">
           ${CLEAN_TOOLS.map(t => `
             <button class="pp-tray-item" onclick="window._ppClean('${t.id}')">
@@ -1252,7 +1252,7 @@
         <div class="pp-sleep-stars">
           ${'⭐'.repeat(5)} 🌙 ${'⭐'.repeat(5)}
         </div>
-        <div class="pp-sleep-text">💤 ${state.name} is sleeping... 💤</div>
+        <div class="pp-sleep-text">💤 ${OS.esc(state.name)} is sleeping... 💤</div>
         <div class="pp-sleep-hint">Tap to wake up</div>
       </div>
     `;
@@ -1328,7 +1328,7 @@
       // Load Three.js dynamically
       const loaded = await loadThreeJS();
       if (!loaded) {
-        canvasWrap.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#999;text-align:center;padding:20px;">Could not load 3D engine.<br>Check your internet connection and try again.</div>';
+        canvasWrap.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#999;text-align:center;padding:20px;">Pocket Pal could not load its 3D engine.<br>Close the app and open it again.</div>';
         return;
       }
       const ok = initScene(canvasWrap);

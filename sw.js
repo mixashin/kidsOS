@@ -1,5 +1,5 @@
 // KidsOS Service Worker — PWA offline support
-const CACHE_NAME = 'kidsOS-v3';
+const CACHE_NAME = 'kidsOS-v4';
 
 const ASSETS = [
   './',
@@ -7,7 +7,12 @@ const ASSETS = [
   './style.css',
   './manifest.json',
   './icons/icon.svg',
-  './config.js',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './vendor/three-0.149.0/build/three.module.js',
+  './vendor/three-0.149.0/examples/jsm/loaders/GLTFLoader.js',
+  './vendor/three-0.149.0/examples/jsm/controls/OrbitControls.js',
+  './vendor/three-0.149.0/examples/jsm/utils/BufferGeometryUtils.js',
   './js/os.js',
   './js/apps/calculator.js',
   './js/apps/notepad.js',
@@ -54,11 +59,11 @@ self.addEventListener('install', e => {
   );
 });
 
-// Activate: clean up old caches
+// Activate: clean up old KidsOS caches (other sites can share this origin, leave theirs alone)
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+      Promise.all(keys.filter(k => k.startsWith('kidsOS-') && k !== CACHE_NAME).map(k => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
 });
@@ -74,17 +79,10 @@ self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   if (!e.request.url.startsWith('http')) return;
 
-  // Network-first for version.json so update checks always get fresh data
+  // Network-first for version.json so update checks always get fresh data.
+  // Not written to the cache: each check has a unique ?t= URL and would add an entry forever.
   if (e.request.url.includes('version.json')) {
-    e.respondWith(
-      fetch(e.request).then(response => {
-        if (response && response.status === 200) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone));
-        }
-        return response;
-      }).catch(() => caches.match(e.request))
-    );
+    e.respondWith(fetch(e.request).catch(() => caches.match('./version.json')));
     return;
   }
 

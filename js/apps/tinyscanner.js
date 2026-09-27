@@ -198,9 +198,15 @@
   async function startCamera() {
     const video = document.getElementById('ts-video');
     if (!video) return;
+    // A rerender makes a new <video>: reuse the open stream, never open a second one
+    if (cameraStream) { video.srcObject = cameraStream; return; }
     try {
-      cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-      video.srcObject = cameraStream;
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      // Window closed or another call finished while the permission prompt was open
+      const current = document.getElementById('ts-video');
+      if (cameraStream || !current) { stream.getTracks().forEach(t => t.stop()); return; }
+      cameraStream = stream;
+      current.srcObject = stream;
       cameraAvailable = true;
     } catch (e) {
       cameraAvailable = false;

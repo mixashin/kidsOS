@@ -468,7 +468,7 @@
     }
   }
 
-  function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+  function escHtml(s) { return OS.esc(s); }
 
   /* ---- Global Handlers ---- */
   window._pbGo = function(screen) { currentScreen = screen; renderScreen(); };
