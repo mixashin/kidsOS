@@ -36,6 +36,8 @@ OS.registerApp('snake', {
   },
 
   onOpen() { SnakeApp.init(); },
+  // Home button: the game waits in the dock
+  onMinimize() { SnakeApp.pause(); },
   onClose() { SnakeApp.destroy(); },
 });
 
@@ -45,7 +47,7 @@ const SnakeApp = (() => {
   const ROWS = 20;
 
   let canvas, ctx;
-  let state = 'idle'; // 'idle' | 'playing' | 'dead'
+  let state = 'idle'; // 'idle' | 'playing' | 'paused' | 'dead'
   let snake, food, dir, nextDir;
   let score, hiScore;
   let ticker = null;
@@ -72,12 +74,7 @@ const SnakeApp = (() => {
         };
         if (map[e.code]) {
           e.preventDefault();
-          if (state === 'idle' || state === 'dead') {
-            startGame();
-          } else if (state === 'playing') {
-            const [dx, dy] = map[e.code];
-            if (dx !== -dir[0] || dy !== -dir[1]) nextDir = [dx, dy];
-          }
+          changeDir(...map[e.code]);
         }
       };
       document.addEventListener('keydown', _onKey);
@@ -93,11 +90,13 @@ const SnakeApp = (() => {
   /* ---- Public controls ---- */
 
   function handleClick() {
-    if (state === 'idle' || state === 'dead') startGame();
+    if (state === 'paused') resume();
+    else if (state === 'idle' || state === 'dead') startGame();
   }
 
   function changeDir(dx, dy) {
     if (state === 'idle' || state === 'dead') { startGame(); return; }
+    if (state === 'paused') resume();
     if (state === 'playing' && (dx !== -dir[0] || dy !== -dir[1])) nextDir = [dx, dy];
   }
 
@@ -116,6 +115,20 @@ const SnakeApp = (() => {
     placeFood();
     updateScoreUI();
     state = 'playing';
+    ticker = setInterval(tick, 130);
+  }
+
+  // The game waits until the next input of the child
+  function pause() {
+    if (state !== 'playing') return;
+    stopTicker();
+    state = 'paused';
+    drawPauseScreen();
+  }
+
+  function resume() {
+    state = 'playing';
+    drawGame();
     ticker = setInterval(tick, 130);
   }
 
@@ -288,6 +301,21 @@ const SnakeApp = (() => {
     drawSnake();
   }
 
+  // Game in the background, with a play symbol. No text, so it needs no translation
+  function drawPauseScreen() {
+    drawGame();
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const cx = canvas.width / 2, cy = canvas.height / 2;
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.moveTo(cx - 24, cy - 34);
+    ctx.lineTo(cx + 36, cy);
+    ctx.lineTo(cx - 24, cy + 34);
+    ctx.closePath();
+    ctx.fill();
+  }
+
   function drawIdleScreen() {
     clearCanvas();
     drawGrid();
@@ -352,5 +380,5 @@ const SnakeApp = (() => {
     if (h) h.textContent = hiScore;
   }
 
-  return { init, destroy, handleClick, changeDir };
+  return { init, destroy, handleClick, changeDir, pause, state: () => state };
 })();

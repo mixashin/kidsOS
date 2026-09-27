@@ -27,6 +27,8 @@ OS.registerApp('breakout', {
   },
 
   onOpen() { BreakoutApp.init(); },
+  // Home button: the game waits in the dock
+  onMinimize() { BreakoutApp.pause(); },
   onClose() { BreakoutApp.destroy(); },
 });
 
@@ -46,7 +48,8 @@ const BreakoutApp = (() => {
   let BRICK_W, BRICK_H, BRICK_PAD, BRICK_TOP, BRICK_LEFT;
 
   let canvas, ctx;
-  let state = 'idle'; // 'idle' | 'serving' | 'playing' | 'won' | 'dead'
+  let state = 'idle'; // 'idle' | 'serving' | 'playing' | 'paused' | 'won' | 'dead'
+  let heldState = null; // state before the pause
   let paddleX;
   let ballX, ballY, ballDX, ballDY, speed;
   let bricks;
@@ -57,6 +60,7 @@ const BreakoutApp = (() => {
   let _onTouchMove = null;
   let _onCanvasClick = null;
   let _onResize = null;
+  let sizeWatch = null;
 
   /* ---- Sizing ---- */
 
@@ -66,9 +70,12 @@ const BreakoutApp = (() => {
     // Canvas fills all space below the HUD bar
     const cw = wrap.clientWidth;
     const ch = wrap.clientHeight - wrap.querySelector('.bo-hud').offsetHeight;
+    if (cw <= 0 || ch <= 0) return false; // app is in the dock: it has no size
+    if (cw === canvas.width && ch === canvas.height) return false;
     canvas.width = cw;
     canvas.height = ch;
     computeDimensions();
+    return true;
   }
 
   function computeDimensions() {
@@ -98,6 +105,7 @@ const BreakoutApp = (() => {
       ctx = canvas.getContext('2d');
       hiScore = parseInt(localStorage.getItem('kidsOS_breakout') || '0');
 
+      canvas.width = canvas.height = 0; // the first call of sizeCanvas sets the size
       sizeCanvas();
       state = 'idle';
       paddleX = (W - PADDLE_W) / 2;
@@ -121,28 +129,34 @@ const BreakoutApp = (() => {
       };
 
       _onCanvasClick = () => {
-        if (state === 'idle' || state === 'won' || state === 'dead') {
-          startGame();
-        } else if (state === 'serving') {
-          launchBall();
-        }
+        handleClick();
       };
 
       _onResize = () => {
-        sizeCanvas();
+        const oldW = W, oldH = H;
+        if (!sizeCanvas()) return;
+        // Ball and paddle keep their place in the court
+        if (oldW > 0 && oldH > 0 && Number.isFinite(ballX)) {
+          ballX *= W / oldW;
+          ballY *= H / oldH;
+          paddleX *= W / oldW;
+        }
         // Clamp paddle into new bounds
         paddleX = Math.max(0, Math.min(W - PADDLE_W, paddleX));
         // Redraw current state
         if (state === 'idle') drawIdleScreen();
         else if (state === 'dead') drawDeadScreen();
         else if (state === 'won') drawWinScreen();
+        else if (state === 'paused') drawPauseScreen();
         // playing/serving will redraw on next frame
       };
 
       canvas.addEventListener('mousemove', _onMouseMove);
       canvas.addEventListener('touchmove', _onTouchMove, { passive: false });
       canvas.addEventListener('click', _onCanvasClick);
-      window.addEventListener('resize', _onResize);
+      // The frame changes its size also with no resize of the window: return from the dock, new scale of the stage
+      sizeWatch = new ResizeObserver(_onResize);
+      sizeWatch.observe(canvas.parentElement);
     }, 50);
   }
 
@@ -153,7 +167,7 @@ const BreakoutApp = (() => {
       if (_onTouchMove) canvas.removeEventListener('touchmove', _onTouchMove);
       if (_onCanvasClick) canvas.removeEventListener('click', _onCanvasClick);
     }
-    if (_onResize) window.removeEventListener('resize', _onResize);
+    if (sizeWatch) { sizeWatch.disconnect(); sizeWatch = null; }
     _onMouseMove = null;
     _onTouchMove = null;
     _onCanvasClick = null;
@@ -165,7 +179,10 @@ const BreakoutApp = (() => {
   /* ---- Public controls ---- */
 
   function handleClick() {
-    if (state === 'idle' || state === 'won' || state === 'dead') {
+    if (state === 'paused') {
+      state = heldState;
+      loop();
+    } else if (state === 'idle' || state === 'won' || state === 'dead') {
       startGame();
     } else if (state === 'serving') {
       launchBall();
@@ -216,6 +233,30 @@ const BreakoutApp = (() => {
     update();
     draw();
     animFrame = requestAnimationFrame(loop);
+  }
+
+  // The game waits until the next tap of the child
+  function pause() {
+    if (state !== 'playing' && state !== 'serving') return;
+    stopLoop();
+    heldState = state;
+    state = 'paused';
+    drawPauseScreen();
+  }
+
+  // Game in the background, with a play symbol. No text, so it needs no translation
+  function drawPauseScreen() {
+    draw();
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.fillRect(0, 0, W, H);
+    const s = Math.min(W, H) * 0.09;
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.moveTo(W / 2 - s * 0.7, H / 2 - s);
+    ctx.lineTo(W / 2 + s, H / 2);
+    ctx.lineTo(W / 2 - s * 0.7, H / 2 + s);
+    ctx.closePath();
+    ctx.fill();
   }
 
   function stopLoop() {
@@ -511,5 +552,5 @@ const BreakoutApp = (() => {
     if (l) l.textContent = lives;
   }
 
-  return { init, destroy, handleClick };
+  return { init, destroy, handleClick, pause, state: () => state };
 })();

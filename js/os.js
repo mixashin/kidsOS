@@ -78,16 +78,43 @@ const OS = (() => {
     grid.style.setProperty('--app-icon', f.icon + 'px');
     grid.style.gridTemplateColumns = `repeat(${f.cols}, minmax(0, 1fr))`;
     grid.style.rowGap = f.scroll ? '10px' : Math.max(4, Math.floor((height - f.rows * (f.icon + label)) / (f.rows + 1))) + 'px';
-    if (f.scroll) grid.style.alignContent = 'start';
-    grid.classList.toggle('small-labels', f.icon < 90);
+    grid.classList.toggle('small-labels', f.icon < 90); // before the measurement below: it changes the height of a tile
+    if (f.scroll) {
+      grid.style.alignContent = 'start';
+      // The row at the lower edge shows half of its pictures, so the child sees that more apps are below
+      // Sizes come from the page: a row is as high as its highest tile
+      const tiles = grid.querySelectorAll('.desktop-icon');
+      if (tiles.length > f.cols) {
+        const pic = tiles[0].querySelector('img').getBoundingClientRect();
+        const row = tiles[f.cols].getBoundingClientRect().top - tiles[0].getBoundingClientRect().top - 10;
+        const space = grid.clientHeight - (pic.top - grid.getBoundingClientRect().top + grid.scrollTop) - pic.height / 2;
+        const rows = Math.floor(space / (row + 10)); // rows in full view
+        if (row > 0 && rows >= 1 && rows < Math.ceil(APPS.length / f.cols)) grid.style.rowGap = (space - rows * row) / rows + 'px';
+      }
+    }
   }
 
   /* ---- Stage (touch mode) ---- */
   // An app has a design for a small window. In full screen its body keeps about that size
   // and gets a scale, so each text and each control of the app is larger.
+  // The stage needs a browser that gives the size of a part with zoom in screen pixels.
+  // A browser that does not: the app fills the screen with no scale, and each pointer position stays correct.
+  let zoomOk = null;
+  function zoomWorks() {
+    if (zoomOk === null) {
+      const probe = document.createElement('div');
+      probe.dataset.probe = 'zoom';
+      probe.style.cssText = 'position:absolute;visibility:hidden;width:10px;height:10px;zoom:2';
+      document.body.appendChild(probe);
+      zoomOk = Math.round(probe.getBoundingClientRect().width) === 20;
+      probe.remove();
+    }
+    return zoomOk;
+  }
+
   function fitStage(w) {
     const body = w.el.querySelector('.win-body');
-    const on = mode() === 'touch' && w.stage;
+    const on = mode() === 'touch' && w.stage && zoomWorks();
     body.classList.toggle('staged', on);
     if (!on) {
       body.style.width = body.style.height = body.style.zoom = '';
@@ -338,9 +365,10 @@ const OS = (() => {
         return;
       }
 
-      // Close topmost focused window
-      if (focusHistory.length > 0) {
-        const topId = focusHistory[focusHistory.length - 1];
+      // Close the window in front. An app in the dock stays open: the child does not see it,
+      // so a back press must not end it
+      const topId = [...focusHistory].reverse().find(id => windowMap[id] && !windowMap[id].el.classList.contains('minimized'));
+      if (topId) {
         closeWindow(topId);
         return;
       }
@@ -500,6 +528,7 @@ const OS = (() => {
     w.taskbarBtn.classList.remove('active');
     updateFront();
     // A hidden app must stop its work: game loop, camera, animation
+    w.el.querySelectorAll('video, audio').forEach(m => m.pause());
     if (w.app && w.app.onMinimize) w.app.onMinimize(id);
   }
 

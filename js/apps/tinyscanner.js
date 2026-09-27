@@ -197,14 +197,14 @@
 
   async function startCamera() {
     const video = document.getElementById('ts-video');
-    if (!video) return;
+    if (!video || inDock()) return;
     // A rerender makes a new <video>: reuse the open stream, never open a second one
     if (cameraStream) { video.srcObject = cameraStream; return; }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
       // Window closed or another call finished while the permission prompt was open
       const current = document.getElementById('ts-video');
-      if (cameraStream || !current) { stream.getTracks().forEach(t => t.stop()); return; }
+      if (cameraStream || !current || inDock()) { stream.getTracks().forEach(t => t.stop()); return; }
       cameraStream = stream;
       current.srcObject = stream;
       cameraAvailable = true;
@@ -218,6 +218,12 @@
       cameraStream.getTracks().forEach(t => t.stop());
       cameraStream = null;
     }
+  }
+
+  // The app is open and not in view (Home button)
+  function inDock() {
+    const win = document.getElementById('window_tinyscanner');
+    return !!win && win.classList.contains('minimized');
   }
 
   function captureFrame() {
@@ -499,6 +505,9 @@
     },
     getHTML() { return render(); },
     onOpen() { loadCollection(); startCamera(); },
+    // The camera is on only while the child sees the app
+    onMinimize() { stopCamera(); },
+    onRestore() { if (screen === 'home') startCamera(); },
     onClose() {
       stopCamera();
       if (scanInterval) { clearInterval(scanInterval); scanInterval = null; }
