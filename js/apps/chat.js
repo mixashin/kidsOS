@@ -99,7 +99,7 @@ OS.registerApp('chat', {
             <input type="text" class="kc-input" id="kc-input"
                    placeholder="${t('Type a message…')} 😊"
                    onkeydown="if(event.key==='Enter') KidsChat.send()">
-            <button class="kc-send-btn" onclick="KidsChat.send()">➤ ${t('Send')}</button>
+            <button class="kc-send-btn" onclick="KidsChat.send()" aria-label="${t('Send')}">➤ <span class="kc-send-text">${t('Send')}</span></button>
           </div>
         </div>
 

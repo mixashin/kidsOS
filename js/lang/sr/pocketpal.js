@@ -11,7 +11,7 @@ Lang.add('sr', 'pocketpal', {
   // Name
   'Name Your Corgi!': 'Дај име свом коргију!',
   'Pick a name for your new best friend': 'Изабери име за свог новог љубимца',
-  'Or type a custom name...': 'Или упиши неко друго име...',
+  'Or type a custom name...': 'Или упиши име...',
   'Go!': 'Крени!',
   'Corgi': 'Корги',
   'Buddy': 'Другар',
