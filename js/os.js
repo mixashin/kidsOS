@@ -262,7 +262,7 @@ const OS = (() => {
     overlay.className = 'update-popup-overlay';
     overlay.innerHTML = `
       <div class="update-popup">
-        <div class="update-popup-icon"><img src="art/mascot/hello.webp" alt="" draggable="false"></div>
+        <div class="update-popup-icon"><img src="art/mascot/parcel.webp" alt="" draggable="false"></div>
         <div class="update-popup-title">${msg.title}</div>
         <div class="update-popup-body">${msg.body}</div>
         <div class="update-popup-version">${newVer && newVer !== version ? `v${esc(version)} → v${esc(newVer)}${build ? ' (build ' + esc(build) + ')' : ''}` : ''}</div>
@@ -777,11 +777,11 @@ const OS = (() => {
   // look: value for the CSS property background-image
   const WALLPAPERS = [
     { id: 'meadow',  name: 'Meadow',  look: "url('art/wallpapers/meadow.webp')" },
-    { id: 'forest',  name: 'Forest',  look: 'linear-gradient(160deg, #cfe6b8, #4E8B5A)' },
-    { id: 'seaside', name: 'Seaside', look: 'linear-gradient(180deg, #cdeaf7 40%, #4F8FC0)' },
-    { id: 'sunset',  name: 'Sunset',  look: 'linear-gradient(180deg, #F7B5C4, #F4A261 60%, #E76F51)' },
-    { id: 'night',   name: 'Night',   look: 'linear-gradient(180deg, #2B3A67, #6b5fa8)' },
-    { id: 'rain',    name: 'Rain',    look: 'linear-gradient(180deg, #b9c6d6, #8cae9a)' },
+    { id: 'forest',  name: 'Forest',  look: "url('art/wallpapers/forest.webp')" },
+    { id: 'seaside', name: 'Seaside', look: "url('art/wallpapers/seaside.webp')" },
+    { id: 'sunset',  name: 'Sunset',  look: "url('art/wallpapers/sunset.webp')" },
+    { id: 'night',   name: 'Night',   look: "url('art/wallpapers/night.webp')" },
+    { id: 'rain',    name: 'Rain',    look: "url('art/wallpapers/rain.webp')" },
   ];
   // The night theme puts this layer over the wallpaper
   const NIGHT_LAYER = 'linear-gradient(rgba(34, 44, 92, 0.8), rgba(24, 28, 66, 0.88))';
@@ -826,13 +826,13 @@ const OS = (() => {
     if (!overlay) {
       overlay = document.createElement('div');
       overlay.id = 'shutdown-overlay';
-      overlay.innerHTML = '⏻ Shutting down KidsOS...';
+      overlay.innerHTML = 'Shutting down KidsOS...';
       document.body.appendChild(overlay);
     }
     overlay.classList.add('show');
     setTimeout(() => {
       // Installed fullscreen app has no refresh button, so a tap must restart
-      overlay.innerHTML = '<div style="text-align:center">😴 Goodbye!<br><small style="font-size:18px;color:#888">Tap to restart</small></div>';
+      overlay.innerHTML = '<div><img src="art/mascot/sleep.webp" alt="" draggable="false">Goodbye!<br><small>Tap to restart</small></div>';
       overlay.onclick = () => location.reload();
     }, 1500);
   }

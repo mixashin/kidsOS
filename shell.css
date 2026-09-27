@@ -88,7 +88,7 @@ body { font-weight: 500; color: var(--k-ink); background: var(--k-bg); }
 }
 /* A long press on a picture must not open the picture menu of the browser (save, share, search).
    The touch goes to the tile or the button that holds the picture. */
-.app-icon, #app-menu-btn img, #hello img, #boot-logo img, .update-popup-icon img, #panel-about img {
+.app-icon, .k-coin, #app-menu-btn img, #hello img, #boot-logo img, #shutdown-overlay img, .update-popup-icon img, #panel-about img {
   pointer-events: none; -webkit-touch-callout: none;
 }
 
@@ -120,11 +120,8 @@ body { font-weight: 500; color: var(--k-ink); background: var(--k-bg); }
 button.k-pill { cursor: pointer; touch-action: manipulation; }
 button.k-pill:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--k-shadow); }
 .k-grow { flex: 1; min-width: 0; }
-.k-coin {
-  display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%;
-  background: var(--k-honey); border: 3px solid var(--k-line); color: var(--k-on-color);
-  font-size: 12px; line-height: 1;
-}
+/* Giggle Coin, file art/objects/coin.webp */
+.k-coin { display: block; flex: none; width: 32px; height: 32px; }
 .k-clock small { font: 600 14px var(--font); color: var(--k-ink-soft); }
 
 .desktop-icon { cursor: pointer; min-width: 0; }
@@ -214,7 +211,7 @@ button.k-pill:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--k-s
 [data-mode="mouse"] #taskbar-center { flex: 1; display: flex; align-items: center; gap: 6px; padding: 0 8px; overflow: hidden; }
 [data-mode="mouse"] #taskbar-right { display: flex; align-items: center; gap: 10px; }
 [data-mode="mouse"] #taskbar-right .k-pill { height: 38px; padding: 0 12px; font-size: 15px; box-shadow: 0 2px 0 var(--k-shadow); }
-[data-mode="mouse"] #taskbar-right .k-coin { width: 20px; height: 20px; border-width: 2px; font-size: 10px; }
+[data-mode="mouse"] #taskbar-right .k-coin { width: 24px; height: 24px; }
 #app-menu-btn {
   display: flex; align-items: center; gap: 6px;
   padding: 5px 14px 5px 6px; border: 2px solid var(--k-line); border-radius: 12px;
@@ -390,6 +387,7 @@ button.k-pill:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--k-s
 }
 #shutdown-overlay.show { opacity: 1; pointer-events: all; }
 #shutdown-overlay small { font-size: 18px; font-weight: 600; color: #C9BFA8; }
+#shutdown-overlay img { display: block; width: 160px; height: 160px; margin: 0 auto 8px; }
 
 /* ---- Update popup ---- */
 .update-popup-overlay {
