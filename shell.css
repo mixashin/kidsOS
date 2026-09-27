@@ -1,0 +1,455 @@
+/* ===== KidsOS shell =====
+   Colors, text font, home screen, dock, windows, taskbar, and messages of the shell.
+   The look of each app is in style.css.
+   js/os.js sets two attributes on the root element:
+     data-mode   touch: home screen, apps in full screen.  mouse: desktop with windows.
+     data-front  app: an app is in view.  home: no app is in view. */
+
+@font-face {
+  font-family: 'Nunito';
+  src: url('fonts/nunito.woff') format('woff');
+  font-weight: 200 1000;
+  font-display: swap;
+}
+
+/* ---- Tokens ---- */
+:root {
+  --k-bg: #FFF6E3;
+  --k-paper: #FFFDF7;
+  --k-paper-2: #FBEACB;
+  --k-ink: #5A4636;
+  --k-ink-soft: #7A6350;
+  --k-line: #5A4636;
+  --k-on-color: #5A4636; /* text on a pastel fill, the same in both themes */
+  --k-honey: #F6C85F;
+  --k-sky: #8EC9E8;
+  --k-meadow: #8CC084;
+  --k-persimmon: #E76F51;
+  --k-pink: #F7B5C4;
+  --k-lavender: #B9A6DC;
+  --k-orange: #F4A261;
+  --k-shadow: rgba(90, 70, 54, 0.28);
+  --k-label: rgba(255, 246, 227, 0.94);
+  /* Paper grain. A small drawing inside this file, no request. */
+  --k-grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .35  0 0 0 0 .27  0 0 0 0 .21  0 0 0 .09 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+
+  --taskbar-h: 52px;
+  --win-radius: 14px;
+  --win-header-h: 36px;
+  --accent: #4F8FC0;
+  --accent2: #E76F51;
+  --font: 'Nunito', system-ui, sans-serif;
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+
+  /* Names that the apps use. They point to the tokens. */
+  --bg-glass: var(--k-paper-2);
+  --win-bg: var(--k-paper-2);
+  --win-body-bg: var(--k-paper);
+  --toolbar-bg: var(--k-paper-2);
+  --surface-bg: var(--k-bg);
+  --input-bg: var(--k-paper);
+  --text-primary: var(--k-ink);
+  --text-secondary: var(--k-ink-soft);
+  --text-muted: #8A7360;
+  --border-color: #E3D3B4;
+  --border-light: #F0E4CC;
+  --hover-bg: #F6E7C8;
+  --context-bg: var(--k-paper);
+  --scrollbar-thumb: rgba(90, 70, 54, 0.3);
+}
+
+[data-theme="dark"] {
+  --k-bg: #232C52;
+  --k-paper: #2E3A68;
+  --k-paper-2: #27315C;
+  --k-ink: #FFF6E3;
+  --k-ink-soft: #C9BFA8;
+  --k-line: #141A38;
+  --k-shadow: rgba(8, 12, 36, 0.5);
+  --k-label: rgba(35, 44, 82, 0.92);
+  --text-muted: #A9A08C;
+  --border-color: #3E4A7A;
+  --border-light: #35406E;
+  --hover-bg: #3A4678;
+  --scrollbar-thumb: rgba(255, 246, 227, 0.3);
+}
+
+body { font-weight: 500; color: var(--k-ink); background: var(--k-bg); }
+
+/* ---- App pictures ---- */
+/* Files in art/icons/. The place that shows a picture sets its size with --app-icon. */
+.app-icon {
+  display: block; flex: none;
+  width: var(--app-icon, 32px); height: var(--app-icon, 32px);
+  user-select: none; -webkit-user-drag: none;
+}
+/* A long press on a picture must not open the picture menu of the browser (save, share, search).
+   The touch goes to the tile or the button that holds the picture. */
+.app-icon, #app-menu-btn img, #hello img, #boot-logo img, .update-popup-icon img, #panel-about img {
+  pointer-events: none; -webkit-touch-callout: none;
+}
+
+/* ---- Shell root ---- */
+/* Three rows: top bar, home, dock or taskbar. The root has the size of the visible area,
+   so the bottom row cannot be below the screen edge. */
+#desktop {
+  position: fixed; inset: 0; overflow: hidden;
+  display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto;
+  padding: var(--sat) var(--sar) var(--sab) var(--sal);
+  background: var(--k-bg) center 58% / cover no-repeat;
+  color: var(--k-ink);
+}
+#top-bar { grid-row: 1; }
+#desktop-icons { grid-row: 2; min-height: 0; }
+#taskbar { grid-row: 3; }
+#windows-container { position: absolute; z-index: 20; pointer-events: none; }
+.window { pointer-events: all; }
+
+/* ---- Parts for both modes ---- */
+.k-pill {
+  display: flex; align-items: center; gap: 8px; flex: none;
+  height: 56px; padding: 0 18px; margin: 0;
+  border: 3px solid var(--k-line); border-radius: 28px 30px 28px 32px / 30px 28px 32px 28px;
+  background: var(--k-grain), var(--k-bg); color: var(--k-ink);
+  font: 800 20px var(--font); white-space: nowrap;
+  box-shadow: 0 4px 0 var(--k-shadow);
+}
+button.k-pill { cursor: pointer; touch-action: manipulation; }
+button.k-pill:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--k-shadow); }
+.k-grow { flex: 1; min-width: 0; }
+.k-coin {
+  display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%;
+  background: var(--k-honey); border: 3px solid var(--k-line); color: var(--k-on-color);
+  font-size: 12px; line-height: 1;
+}
+.k-clock small { font: 600 14px var(--font); color: var(--k-ink-soft); }
+
+.desktop-icon { cursor: pointer; min-width: 0; }
+.desktop-icon span {
+  max-width: 100%; color: #5A4636; background: var(--k-label); font-weight: 800;
+  border-radius: 999px; box-shadow: 0 2px 0 var(--k-shadow);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center;
+}
+[data-theme="dark"] .desktop-icon span { color: #FFF6E3; }
+.desktop-icon .app-icon { filter: drop-shadow(0 4px 3px rgba(50, 32, 14, 0.35)); transition: transform 0.12s; }
+.desktop-icon:active .app-icon { transform: scale(0.92) rotate(-3deg); }
+.desktop-icon:focus-visible { outline: 4px solid var(--accent); outline-offset: 2px; border-radius: 20px; }
+
+#home-btn, .win-btn.home {
+  flex: none; padding: 0; cursor: pointer; touch-action: manipulation;
+  border: 3px solid var(--k-line); border-radius: 24px 22px 26px 22px / 22px 26px 22px 24px;
+  background: #84C6EB url('art/mascot/head.webp') center / cover;
+  box-shadow: 0 4px 0 var(--k-shadow);
+}
+#home-btn:active, .win-btn.home:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--k-shadow); }
+
+.window {
+  position: absolute; display: flex; flex-direction: column; overflow: hidden;
+  min-width: 300px; min-height: 200px;
+  background: var(--win-bg); border-radius: var(--win-radius);
+  box-shadow: 0 8px 30px rgba(40, 25, 10, 0.35), 0 0 0 2px var(--k-line);
+  transition: box-shadow 0.15s;
+}
+.window.focused { box-shadow: 0 12px 40px rgba(40, 25, 10, 0.45), 0 0 0 3px var(--accent); }
+.window.minimized { display: none; }
+.win-titlebar {
+  display: flex; align-items: center; flex-shrink: 0; gap: 8px;
+  height: var(--win-header-h); padding: 0 10px;
+  background: var(--k-grain), var(--k-bg); border-bottom: 2px solid var(--k-line);
+  user-select: none;
+}
+.win-title {
+  --app-icon: 24px;
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px;
+  color: var(--k-ink); font-size: 13px; font-weight: 800;
+  text-align: left; pointer-events: none;
+}
+.win-title-icon { font-size: 16px; flex: none; }
+.win-controls { display: flex; gap: 4px; align-items: center; }
+.win-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 28px; height: 22px; border: none; border-radius: 6px; background: transparent;
+  color: var(--k-ink-soft); font-size: 11px; font-weight: 800; cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+.win-body {
+  flex: 1; overflow: auto; display: flex; flex-direction: column;
+  background: var(--win-body-bg); color: var(--text-primary);
+}
+
+/* ---- Mouse mode: desktop, windows, taskbar ---- */
+[data-mode="mouse"] #top-bar, [data-mode="mouse"] #home-btn, [data-mode="mouse"] .win-btn.home { display: none; }
+[data-mode="mouse"] #desktop-icons {
+  --app-icon: 56px;
+  display: flex; flex-direction: column; flex-wrap: wrap; align-content: flex-start; gap: 10px 8px;
+  padding: 16px; z-index: 10;
+}
+[data-mode="mouse"] .desktop-icon {
+  display: flex; flex-direction: column; align-items: center;
+  width: 96px; padding: 6px 2px; border-radius: 14px; transition: background 0.15s;
+}
+[data-mode="mouse"] .desktop-icon:hover { background: rgba(255, 253, 247, 0.35); }
+[data-mode="mouse"] .desktop-icon span { margin-top: 4px; padding: 2px 8px 3px; font-size: 12px; }
+[data-mode="mouse"] #windows-container { inset: var(--sat) var(--sar) calc(var(--sab) + var(--taskbar-h)) var(--sal); }
+[data-mode="mouse"] .window.maximized {
+  top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; border-radius: 0;
+}
+[data-mode="mouse"] .win-titlebar { cursor: grab; }
+[data-mode="mouse"] .win-titlebar:active { cursor: grabbing; }
+[data-mode="mouse"] .win-btn:hover { background: var(--hover-bg); color: var(--k-ink); }
+[data-mode="mouse"] .win-btn.close:hover { background: var(--k-persimmon); color: #fff; }
+[data-mode="mouse"] .win-resize {
+  position: absolute; bottom: 0; right: 0; width: 16px; height: 16px; cursor: nw-resize;
+  background: linear-gradient(135deg, transparent 50%, var(--k-shadow) 50%);
+}
+[data-mode="mouse"] #taskbar {
+  display: flex; align-items: center; gap: 8px; z-index: 100;
+  height: var(--taskbar-h); padding: 0 12px;
+  background: var(--k-grain), var(--k-bg); border-top: 3px solid var(--k-line);
+}
+[data-mode="mouse"] #taskbar-left { display: flex; align-items: center; }
+[data-mode="mouse"] #taskbar-center { flex: 1; display: flex; align-items: center; gap: 6px; padding: 0 8px; overflow: hidden; }
+[data-mode="mouse"] #taskbar-right { display: flex; align-items: center; gap: 10px; }
+[data-mode="mouse"] #taskbar-right .k-pill { height: 38px; padding: 0 12px; font-size: 15px; box-shadow: 0 2px 0 var(--k-shadow); }
+[data-mode="mouse"] #taskbar-right .k-coin { width: 20px; height: 20px; border-width: 2px; font-size: 10px; }
+#app-menu-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 14px 5px 6px; border: 2px solid var(--k-line); border-radius: 12px;
+  background: var(--k-honey); color: var(--k-on-color); font-size: 14px; font-weight: 800; cursor: pointer;
+  box-shadow: 0 2px 0 var(--k-shadow); transition: filter 0.15s;
+}
+#app-menu-btn:hover { filter: brightness(1.06); }
+#app-menu-btn img { display: block; width: 28px; height: 28px; border-radius: 8px; }
+.tbtn-icon { margin-right: 6px; flex: none; }
+.tbtn-title { overflow: hidden; text-overflow: ellipsis; }
+[data-mode="mouse"] .taskbar-app-btn {
+  --app-icon: 24px;
+  display: flex; align-items: center; max-width: 170px; padding: 4px 12px;
+  background: var(--k-paper); border: 2px solid var(--k-line); border-radius: 10px;
+  color: var(--k-ink); font-size: 13px; font-weight: 700; cursor: pointer;
+  white-space: nowrap; overflow: hidden; transition: background 0.15s;
+}
+[data-mode="mouse"] .taskbar-app-btn:hover { background: var(--hover-bg); }
+[data-mode="mouse"] .taskbar-app-btn.active { background: var(--k-sky); color: var(--k-on-color); }
+[data-mode="mouse"] .taskbar-app-btn.minimized { opacity: 0.6; }
+#taskbar-clock { display: flex; flex-direction: column; align-items: center; padding: 0 8px; color: var(--k-ink); font-size: 13px; line-height: 1.3; }
+#clock-time { font-weight: 800; font-size: 15px; }
+#clock-date { font-size: 11px; color: var(--k-ink-soft); }
+
+/* App menu, mouse mode only */
+#app-menu {
+  position: absolute; bottom: calc(var(--sab) + var(--taskbar-h) + 8px); left: calc(var(--sal) + 12px); z-index: 200;
+  width: 300px; max-height: calc(100% - var(--taskbar-h) - 16px); overflow-x: hidden; overflow-y: auto;
+  background: var(--k-grain), var(--k-paper); color: var(--k-ink);
+  border: 3px solid var(--k-line); border-radius: 18px;
+  box-shadow: 0 8px 30px rgba(40, 25, 10, 0.4);
+}
+#app-menu.hidden, [data-mode="touch"] #app-menu { display: none; }
+.app-menu-header { padding: 14px 16px; background: var(--k-paper-2); border-bottom: 2px solid var(--k-line); font-size: 15px; font-weight: 800; }
+.app-menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; padding: 8px; }
+.menu-app-item {
+  --app-icon: 32px;
+  display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-radius: 12px;
+  font-size: 14px; font-weight: 700; cursor: pointer; transition: background 0.15s;
+}
+.menu-app-item:hover { background: var(--hover-bg); }
+.app-menu-footer { padding: 10px 16px; border-top: 2px solid var(--k-line); }
+.app-menu-footer button {
+  width: 100%; padding: 8px 16px; border: 2px solid var(--k-line); border-radius: 12px;
+  background: var(--k-persimmon); color: var(--k-on-color); font-size: 14px; font-weight: 800; cursor: pointer;
+}
+.app-menu-footer button:hover { filter: brightness(1.06); }
+
+/* ---- Touch mode: home ---- */
+[data-mode="touch"] #top-bar { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 14px 24px 4px; }
+#hello { flex: 0 1 auto; min-width: 0; padding-left: 4px; }
+#hello img { flex: none; width: 50px; height: 50px; margin: -8px 0 -4px; }
+#hello-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+[data-mode="touch"] #desktop-icons {
+  display: grid; align-content: safe center; padding: 4px 28px;
+  overflow-x: hidden; overflow-y: auto; touch-action: pan-y;
+}
+[data-mode="touch"] .desktop-icon { display: grid; justify-items: center; align-content: center; gap: 2px; }
+[data-mode="touch"] .desktop-icon span { padding: 3px 11px 4px; font-size: 15px; line-height: 1.35; }
+[data-mode="touch"] #desktop-icons.small-labels .desktop-icon span { padding: 3px 8px 4px; font-size: 13.5px; }
+
+/* Dock */
+[data-mode="touch"] #taskbar {
+  justify-self: center; display: flex; align-items: center; gap: 12px; min-width: 0;
+  max-width: calc(100% - 24px); margin: 6px 12px 14px; padding: 8px 16px 8px 10px;
+  background: var(--k-grain), var(--k-bg); border: 3px solid var(--k-line);
+  border-radius: 34px 32px 36px 32px / 32px 36px 32px 34px;
+  box-shadow: 0 6px 0 var(--k-shadow);
+}
+[data-mode="touch"] #taskbar-left { flex: none; display: flex; }
+[data-mode="touch"] #app-menu-btn, [data-mode="touch"] #taskbar-right { display: none; }
+[data-mode="touch"] #home-btn { width: 68px; height: 68px; }
+[data-mode="touch"] #taskbar-center {
+  display: flex; align-items: center; gap: 10px; min-width: 0; padding-left: 12px;
+  border-left: 3px solid var(--k-shadow); overflow-x: auto; overflow-y: hidden; touch-action: pan-x; scrollbar-width: none;
+}
+[data-mode="touch"] #taskbar-center::-webkit-scrollbar { display: none; }
+[data-mode="touch"] #taskbar-center:empty { display: none; }
+[data-mode="touch"] .taskbar-app-btn {
+  --app-icon: 58px;
+  flex: none; display: grid; justify-items: center; gap: 0;
+  padding: 0; border: 0; background: none; cursor: pointer; touch-action: manipulation;
+}
+[data-mode="touch"] .taskbar-app-btn .tbtn-icon { margin: 0; }
+[data-mode="touch"] .taskbar-app-btn .tbtn-title { display: none; }
+[data-mode="touch"] .taskbar-app-btn::after {
+  content: ''; width: 9px; height: 9px; margin-top: -2px; border-radius: 50%;
+  background: var(--k-persimmon); border: 2px solid var(--k-line);
+}
+/* An app in view covers the home. The home keeps its layout and takes no touch. */
+[data-mode="touch"][data-front="app"] #top-bar,
+[data-mode="touch"][data-front="app"] #desktop-icons,
+[data-mode="touch"][data-front="app"] #taskbar { visibility: hidden; }
+
+/* ---- Touch mode: app in full screen ---- */
+[data-mode="touch"] #windows-container { inset: var(--sat) var(--sar) var(--sab) var(--sal); }
+[data-mode="touch"] .window {
+  top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important;
+  min-width: 0; min-height: 0; border-radius: 0; box-shadow: none;
+  background: var(--k-grain), var(--k-paper-2);
+}
+[data-mode="touch"] .win-titlebar { height: 78px; gap: 14px; padding: 0 14px; border-bottom-width: 3px; touch-action: none; }
+[data-mode="touch"] .win-title { --app-icon: 54px; gap: 12px; font-size: 26px; }
+[data-mode="touch"] .win-title-icon { font-size: 34px; }
+[data-mode="touch"] .win-btn.home { width: 62px; height: 62px; }
+[data-mode="touch"] .win-btn.minimize, [data-mode="touch"] .win-btn.maximize, [data-mode="touch"] .win-resize { display: none; }
+[data-mode="touch"] .win-btn.close {
+  width: 62px; height: 62px; border: 3px solid var(--k-line); border-radius: 50%;
+  background: var(--k-persimmon); color: var(--k-on-color); font-size: 26px;
+  box-shadow: 0 4px 0 var(--k-shadow); touch-action: manipulation;
+}
+[data-mode="touch"] .win-btn.close:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--k-shadow); }
+/* Stage: js/os.js sets width, height, and zoom of the body, and this class */
+[data-mode="touch"] .win-body.staged { flex: none; margin: 0 auto; box-shadow: 0 0 0 3px var(--k-line); }
+
+/* Narrow screen in touch mode */
+@media (max-width: 599px) {
+  [data-mode="touch"] #top-bar { gap: 8px; padding: 10px 10px 2px; }
+  [data-mode="touch"] #top-bar .k-pill { height: 48px; padding: 0 12px; font-size: 16px; }
+  [data-mode="touch"] #hello img { width: 42px; height: 42px; margin: -6px 0 -3px; }
+  [data-mode="touch"] .k-clock small { display: none; }
+  [data-mode="touch"] #desktop-icons { padding: 4px 8px; }
+  [data-mode="touch"] .desktop-icon span { padding: 2px 7px 3px; font-size: 12px; }
+  [data-mode="touch"] #taskbar { gap: 8px; margin-bottom: 10px; }
+  [data-mode="touch"] #home-btn { width: 60px; height: 60px; }
+  [data-mode="touch"] .win-titlebar { height: 70px; gap: 8px; padding: 0 8px; }
+  [data-mode="touch"] .win-title { --app-icon: 44px; gap: 8px; font-size: 20px; }
+  [data-mode="touch"] .win-btn.home, [data-mode="touch"] .win-btn.close { width: 56px; height: 56px; }
+}
+/* Low screen in touch mode (phone on its side): the space goes to the apps */
+@media (max-height: 499px) {
+  [data-mode="touch"] #top-bar { display: none; }
+  [data-mode="touch"] #taskbar { margin: 4px 12px 8px; padding: 5px 14px 5px 8px; }
+  [data-mode="touch"] #home-btn { width: 56px; height: 56px; }
+  [data-mode="touch"] .taskbar-app-btn { --app-icon: 50px; }
+  [data-mode="touch"] .win-titlebar { height: 64px; }
+  [data-mode="touch"] .win-title { --app-icon: 44px; font-size: 22px; }
+  [data-mode="touch"] .win-btn.home, [data-mode="touch"] .win-btn.close { width: 56px; height: 56px; }
+}
+
+/* ---- Start screen. It has the day look in both themes. ---- */
+#boot-screen {
+  position: fixed; inset: 0; z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--k-grain), #FFF6E3; transition: opacity 0.8s;
+}
+#boot-screen.fade-out { opacity: 0; pointer-events: none; }
+#boot-content { text-align: center; color: #5A4636; }
+#boot-logo { animation: pulse 1.5s infinite; }
+#boot-logo img { display: block; width: 160px; height: 160px; margin: 0 auto; }
+#boot-title { margin: 10px 0 4px; font-size: 48px; font-weight: 900; color: #5A4636; }
+#boot-subtitle { margin-bottom: 30px; font-size: 18px; font-weight: 700; color: #7A6350; }
+#boot-bar-wrap {
+  width: 260px; height: 20px; margin: 0 auto; overflow: hidden;
+  background: #FFFDF7; border: 3px solid #5A4636; border-radius: 999px;
+}
+#boot-bar { width: 0; height: 100%; background: #F6C85F; border-radius: 999px; transition: width 0.1s; }
+@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+@media (max-width: 768px) {
+  #boot-logo img { width: 120px; height: 120px; }
+  #boot-title { font-size: 32px; }
+  #boot-subtitle { font-size: 14px; }
+}
+
+/* ---- Shut down screen ---- */
+#shutdown-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  background: #2B3A67; color: #FFF6E3; font-size: 32px; font-weight: 800; text-align: center;
+  opacity: 0; transition: opacity 1s; pointer-events: none;
+}
+#shutdown-overlay.show { opacity: 1; pointer-events: all; }
+#shutdown-overlay small { font-size: 18px; font-weight: 600; color: #C9BFA8; }
+
+/* ---- Update popup ---- */
+.update-popup-overlay {
+  position: fixed; inset: 0; z-index: 10000;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(43, 58, 103, 0.55);
+  opacity: 0; transition: opacity 0.3s ease; pointer-events: none;
+}
+.update-popup-overlay.visible { opacity: 1; pointer-events: auto; }
+.update-popup {
+  width: 90%; max-width: 440px; padding: 28px 30px 22px; text-align: center;
+  background: var(--k-grain), var(--k-paper); color: var(--k-ink);
+  border: 3px solid var(--k-line); border-radius: 30px 28px 32px 28px / 28px 32px 28px 30px;
+  box-shadow: 0 8px 0 var(--k-shadow);
+  transform: translateY(30px) scale(0.95); transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.update-popup-overlay.visible .update-popup { transform: translateY(0) scale(1); }
+.update-popup-icon { margin-bottom: 8px; animation: up-bounce 1.2s ease infinite alternate; }
+.update-popup-icon img { display: block; width: 96px; height: 96px; margin: 0 auto; }
+@keyframes up-bounce { 0% { transform: translateY(0); } 100% { transform: translateY(-8px); } }
+.update-popup-title { margin-bottom: 10px; font: 800 22px/1.3 var(--font); color: var(--k-ink); }
+.update-popup-body { margin-bottom: 14px; font: 600 16px/1.5 var(--font); color: var(--k-ink-soft); }
+.update-popup-version {
+  display: inline-block; margin-bottom: 18px; padding: 8px 14px; border-radius: 999px;
+  background: var(--k-paper-2); color: var(--k-ink); font: 700 14px/1 var(--font);
+}
+.update-popup-buttons { display: flex; gap: 12px; justify-content: center; margin-bottom: 12px; }
+.update-popup-btn {
+  min-height: 56px; padding: 10px 24px; cursor: pointer; touch-action: manipulation;
+  border: 3px solid var(--k-line); border-radius: 22px 24px 22px 26px / 24px 22px 26px 22px;
+  color: var(--k-on-color); font: 800 18px var(--font);
+  box-shadow: 0 4px 0 var(--k-shadow);
+}
+.update-popup-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--k-shadow); }
+.update-popup-later { background: #FFFDF7; }
+.update-popup-go { background: var(--k-meadow); }
+.update-popup-go:disabled { background: #cfc8b8; cursor: wait; }
+.update-popup-note { font: 600 13px/1.3 var(--font); color: var(--k-ink-soft); }
+
+/* ---- Coin message ---- */
+.gc-toast {
+  position: fixed; top: calc(var(--sat) + 14px); left: 50%; z-index: 10001;
+  display: flex; align-items: center; gap: 10px; max-width: min(360px, 90vw); padding: 10px 18px;
+  background: var(--k-grain), var(--k-honey); color: var(--k-on-color);
+  border: 3px solid var(--k-line); border-radius: 24px 26px 24px 28px / 26px 24px 28px 24px;
+  box-shadow: 0 4px 0 var(--k-shadow);
+  transform: translateX(-50%) translateY(-160%); pointer-events: none;
+}
+.gc-toast.gc-toast-in { transform: translateX(-50%) translateY(0); transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
+.gc-toast-icon { flex-shrink: 0; font-size: 28px; }
+.gc-toast-body { min-width: 0; }
+.gc-toast-title { font-weight: 800; font-size: 16px; white-space: nowrap; }
+.gc-toast-desc { font-size: 13px; font-weight: 600; opacity: 0.85; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gc-toast-out { animation: gc-out 0.3s ease-in forwards; }
+@keyframes gc-out { to { transform: translateX(-50%) translateY(-160%); opacity: 0; } }
+
+/* ---- Context menu in touch mode: rows for a finger ---- */
+[data-mode="touch"] .context-menu { min-width: 220px; border-radius: 16px; border: 3px solid var(--k-line); }
+[data-mode="touch"] .context-menu-item { min-height: 52px; padding: 10px 18px; font-size: 17px; font-weight: 700; }
+
+@media (prefers-reduced-motion: reduce) {
+  #boot-logo, .update-popup-icon { animation: none; }
+  .desktop-icon .app-icon, .update-popup, .gc-toast.gc-toast-in { transition: none; }
+  .desktop-icon:active .app-icon { transform: none; }
+}

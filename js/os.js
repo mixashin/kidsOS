@@ -23,6 +23,33 @@ const OS = (() => {
            window.matchMedia('(display-mode: fullscreen)').matches;
   }
 
+  /* ---- Modes ---- */
+  // touch: home screen, apps in full screen. mouse: desktop with windows.
+  // The mode comes from the device: a finger as main pointer, or a small screen, gives touch.
+  const coarse = window.matchMedia('(pointer: coarse)');
+  function mode() {
+    return coarse.matches || window.innerWidth < 700 || window.innerHeight < 500 ? 'touch' : 'mouse';
+  }
+
+  // Runs at start and at each change of pointer or screen size. Open apps stay open.
+  function applyMode() {
+    document.documentElement.dataset.mode = mode();
+    updateFront();
+  }
+
+  // front is 'app' when a window is in view, and 'home' when not
+  function updateFront() {
+    const front = Object.values(windowMap).some(w => !w.el.classList.contains('minimized')) ? 'app' : 'home';
+    document.documentElement.dataset.front = front;
+  }
+
+  // Home button: each app in view goes to the dock and stays open
+  function goHome() {
+    Object.keys(windowMap).forEach(id => {
+      if (!windowMap[id].el.classList.contains('minimized')) minimizeWindow(id);
+    });
+  }
+
   /* ---- Boot ---- */
   function boot() {
     loadSettings();
@@ -30,6 +57,9 @@ const OS = (() => {
     applyWallpaper();
     updateMenuUsername();
     renderLauncher();
+    applyMode();
+    coarse.addEventListener('change', applyMode);
+    window.addEventListener('resize', applyMode);
     // Add body class when running as installed PWA
     if (isStandalone()) document.body.classList.add('standalone');
 
@@ -242,9 +272,8 @@ const OS = (() => {
         return;
       }
 
-      // No windows open — on desktop, double-back exits
-      const isMobile = window.innerWidth <= 1024;
-      if (!isMobile) {
+      // No windows open: with a mouse, a second back in a short time leaves the app
+      if (mode() === 'mouse') {
         const now = Date.now();
         if (now - lastBackTime < 1500) {
           history.go(-(history.length));
@@ -268,14 +297,13 @@ const OS = (() => {
       const [y,m,d] = settings.dateOverride.split('-');
       now.setFullYear(+y, +m - 1, +d);
     }
-    const timeEl = document.getElementById('clock-time');
-    const dateEl = document.getElementById('clock-date');
-    if (timeEl) timeEl.textContent = now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-    if (dateEl) {
-      const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-      dateEl.textContent = `${days[now.getDay()]} ${String(now.getDate()).padStart(2,'0')} ${months[now.getMonth()]}`;
-    }
+    // The top bar and the taskbar have a clock each
+    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const time = now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    const date = `${days[now.getDay()]} ${String(now.getDate()).padStart(2,'0')} ${months[now.getMonth()]}`;
+    document.querySelectorAll('.clock-time').forEach(el => { el.textContent = time; });
+    document.querySelectorAll('.clock-date').forEach(el => { el.textContent = date; });
   }
 
   /* ---- App Menu ---- */
@@ -304,6 +332,7 @@ const OS = (() => {
 
     win.innerHTML = `
       <div class="win-titlebar">
+        <button class="win-btn home" title="Home" aria-label="Home" onclick="OS.goHome()"></button>
         <div class="win-title">
           <span class="win-title-icon">${picture || opts.icon || '🪟'}</span> ${opts.title||'Window'}
         </div>
@@ -342,9 +371,7 @@ const OS = (() => {
 
     windowMap[id] = { el: win, taskbarBtn: btn, app: opts.app, maximized: false, prevRect: null };
     focusWindow(id);
-
-    // Auto-maximize on tablets and phones
-    if (window.innerWidth <= 1024) toggleMaximize(id);
+    updateFront();
 
     if (opts.app && opts.app.onOpen) opts.app.onOpen(id);
     return id;
@@ -383,6 +410,7 @@ const OS = (() => {
     if (focusHistory.length > 0) {
       focusWindow(focusHistory[focusHistory.length - 1]);
     }
+    updateFront();
   }
 
   function minimizeWindow(id) {
@@ -391,6 +419,7 @@ const OS = (() => {
     w.el.classList.add('minimized');
     w.taskbarBtn.classList.add('minimized');
     w.taskbarBtn.classList.remove('active');
+    updateFront();
     // A hidden app must stop its work: game loop, camera, animation
     if (w.app && w.app.onMinimize) w.app.onMinimize(id);
   }
@@ -400,12 +429,13 @@ const OS = (() => {
     if (!w) return;
     w.el.classList.remove('minimized');
     focusWindow(id);
+    updateFront();
     if (w.app && w.app.onRestore) w.app.onRestore(id);
   }
 
   function toggleMaximize(id) {
     const w = windowMap[id];
-    if (!w) return;
+    if (!w || mode() === 'touch') return; // touch mode: each app fills the screen
     if (w.maximized) {
       const r = w.prevRect;
       w.el.style.cssText += `left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px;`;
@@ -430,7 +460,7 @@ const OS = (() => {
 
     function startDrag(cx, cy) {
       const w = windowMap[id];
-      if (w && w.maximized) return;
+      if ((w && w.maximized) || mode() === 'touch') return;
       dragging = true;
       ox = cx - win.offsetLeft;
       oy = cy - win.offsetTop;
@@ -472,6 +502,7 @@ const OS = (() => {
     let resizing = false, startX, startY, startW, startH;
 
     function startResize(cx, cy) {
+      if (mode() === 'touch') return;
       resizing = true;
       startX = cx; startY = cy;
       startW = win.offsetWidth; startH = win.offsetHeight;
@@ -867,7 +898,7 @@ const OS = (() => {
   }
 
   return {
-    boot, launch, registerApp, APPS, icon,
+    boot, launch, registerApp, APPS, icon, mode, goHome,
     createWindow, closeWindow, minimizeWindow, restoreWindow, toggleMaximize, focusWindow,
     toggleAppMenu, shutdown,
     saveSettings, loadSettings, getSettings, applyWallpaper, getWallpapers,

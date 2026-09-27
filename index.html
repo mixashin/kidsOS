@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>KidsOS</title>
   <meta name="description" content="A fun educational OS simulator for kids to learn computing">
-  <meta name="theme-color" content="#1a1a2e">
+  <meta name="theme-color" content="#FFF6E3">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
@@ -13,12 +13,20 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/favicon-48.png" type="image/png" sizes="48x48">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="shell.css">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Desktop -->
+  <!-- Shell. Touch mode: top bar, home, dock. Mouse mode: desktop and taskbar. The look is in shell.css. -->
   <div id="desktop">
-    <!-- Desktop Icons -->
+    <header id="top-bar">
+      <div class="k-pill" id="hello"><img src="art/mascot/hello.webp" alt="" draggable="false"><span id="hello-text">Hello!</span></div>
+      <span class="k-grow"></span>
+      <button class="k-pill k-coins" data-coins aria-label="Giggle Coins"><span class="k-coin">★</span><span class="k-coin-count">50</span></button>
+      <div class="k-pill k-clock"><span class="clock-time">00:00</span><small class="clock-date">Mon 01 Jan</small></div>
+    </header>
+
+    <!-- App tiles -->
     <div id="desktop-icons">
     </div>
 
@@ -28,15 +36,17 @@
     <!-- Taskbar -->
     <div id="taskbar">
       <div id="taskbar-left">
+        <button id="home-btn" aria-label="Home" onclick="OS.goHome()"></button>
         <button id="app-menu-btn" onclick="OS.toggleAppMenu()">
           <img src="art/mascot/head.webp" alt="" draggable="false"> Apps
         </button>
       </div>
       <div id="taskbar-center"></div>
       <div id="taskbar-right">
+        <button class="k-pill k-coins" data-coins aria-label="Giggle Coins"><span class="k-coin">★</span><span class="k-coin-count">50</span></button>
         <div id="taskbar-clock">
-          <span id="clock-time">00:00</span>
-          <span id="clock-date">Mon 01 Jan</span>
+          <span id="clock-time" class="clock-time">00:00</span>
+          <span id="clock-date" class="clock-date">Mon 01 Jan</span>
         </div>
       </div>
     </div>
