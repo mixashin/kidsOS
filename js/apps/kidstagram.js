@@ -1,4 +1,8 @@
 /* ===== Kidstagram ===== */
+// All app files share one scope for a top-level const. The block keeps `t` inside this file.
+// `var` puts KidsGram into the shared scope: the markup calls it.
+{
+const t = OS.texts('kidstagram');
 
 /* ---- User profiles ---- */
 const KG_USERS = {
@@ -14,161 +18,167 @@ const KG_USERS = {
   'GameMaster':  { av:'👦', color:'#1a237e', bio:'I will beat every game 🏆' },
 };
 
+/* Users by id, in the language of the app. The name that the child sees is a text field of the list */
+function kgUsers() {
+  const list = Object.keys(KG_USERS).map(id => ({ id, name: id.replace('_',' '), ...KG_USERS[id] }));
+  return Object.fromEntries(t.list('kidstagram.users', list).map(u => [u.id, u]));
+}
+
 /* ---- 30 posts ---- */
 const KG_POSTS = [
   /* ---- DRAWING posts ---- */
   { id:1,  user:'Emma_Stars',  type:'drawing', seed:1,
     caption:'My rainbow drawing, I worked SO hard on it! 🌈✨',
     tags:'#kidsart #drawing #rainbow',  time:'2h ago', likes:47,
-    comments:[{u:'Luna_Paws',t:'So beautiful!! 😍'},{u:'MaxCool',t:'That rainbow looks real 🌈'}] },
+    comments:[{id:'1-1',u:'Luna_Paws',t:'So beautiful!! 😍'},{id:'1-2',u:'MaxCool',t:'That rainbow looks real 🌈'}] },
 
   { id:2,  user:'SunnyArt',    type:'drawing', seed:2,
     caption:'Drew a magical castle today! Can you spot the dragon? 🏰🐉',
     tags:'#castle #fantasy #drawing',   time:'3h ago', likes:62,
-    comments:[{u:'RainbowGirl',t:'The dragon is my fav part 🔥'},{u:'DinoBoy',t:'EPIC!! 👏'}] },
+    comments:[{id:'2-1',u:'RainbowGirl',t:'The dragon is my fav part 🔥'},{id:'2-2',u:'DinoBoy',t:'EPIC!! 👏'}] },
 
   { id:3,  user:'RainbowGirl', type:'drawing', seed:3,
     caption:'My butterfly took me all afternoon 🦋💜 Worth it!',
     tags:'#butterfly #art #purple',     time:'5h ago', likes:38,
-    comments:[{u:'Emma_Stars',t:'Purple is perfect! 💜'},{u:'FluffyPets',t:'Adorable 🦋'}] },
+    comments:[{id:'3-1',u:'Emma_Stars',t:'Purple is perfect! 💜'},{id:'3-2',u:'FluffyPets',t:'Adorable 🦋'}] },
 
   { id:4,  user:'Emma_Stars',  type:'drawing', seed:4,
     caption:"Family portrait for Mom's birthday! 👨‍👩‍👧‍👦❤️",
     tags:'#family #love #portrait',     time:'1d ago', likes:91,
-    comments:[{u:'SunnyArt',t:'Your mom will love it! 🥰'},{u:'NatureKid',t:'So sweet! ❤️'},{u:'Luna_Paws',t:'Best gift ever!'}] },
+    comments:[{id:'4-1',u:'SunnyArt',t:'Your mom will love it! 🥰'},{id:'4-2',u:'NatureKid',t:'So sweet! ❤️'},{id:'4-3',u:'Luna_Paws',t:'Best gift ever!'}] },
 
   { id:5,  user:'SunnyArt',    type:'drawing', seed:5,
     caption:'My first ever dragon drawing! RAWR 🐉🔥',
     tags:'#dragon #fire #drawing',      time:'1d ago', likes:54,
-    comments:[{u:'GameMaster',t:'That dragon is fierce! 🔥'},{u:'DinoBoy',t:'Dino cousin! 🦕'}] },
+    comments:[{id:'5-1',u:'GameMaster',t:'That dragon is fierce! 🔥'},{id:'5-2',u:'DinoBoy',t:'Dino cousin! 🦕'}] },
 
   { id:6,  user:'RainbowGirl', type:'drawing', seed:6,
     caption:'Flower garden in springtime! 🌸🌷🌼',
     tags:'#flowers #spring #garden',    time:'2d ago', likes:73,
-    comments:[{u:'NatureKid',t:'I want to walk in that garden! 🌸'},{u:'Emma_Stars',t:'So colorful! 🌈'}] },
+    comments:[{id:'6-1',u:'NatureKid',t:'I want to walk in that garden! 🌸'},{id:'6-2',u:'Emma_Stars',t:'So colorful! 🌈'}] },
 
   { id:7,  user:'Luna_Paws',   type:'drawing', seed:7,
     caption:'Drew my cat Whiskers from memory! Did I get it right? 🐱🎨',
     tags:'#cat #drawing #pets',         time:'2d ago', likes:85,
-    comments:[{u:'FluffyPets',t:'Perfect! 😻'},{u:'MaxCool',t:'Whiskers would be proud 😂'}] },
+    comments:[{id:'7-1',u:'FluffyPets',t:'Perfect! 😻'},{id:'7-2',u:'MaxCool',t:'Whiskers would be proud 😂'}] },
 
   { id:8,  user:'DinoBoy',     type:'drawing', seed:8,
     caption:'T-REX ATTACK!! My best drawing ever 🦖💥',
     tags:'#dinosaur #trex #roar',       time:'3d ago', likes:66,
-    comments:[{u:'GameMaster',t:'ROAAAR 🦖'},{u:'PixelKid',t:'So intense!! 💥'},{u:'SunnyArt',t:'The teeth! wow!'}] },
+    comments:[{id:'8-1',u:'GameMaster',t:'ROAAAR 🦖'},{id:'8-2',u:'PixelKid',t:'So intense!! 💥'},{id:'8-3',u:'SunnyArt',t:'The teeth! wow!'}] },
 
   { id:9,  user:'Emma_Stars',  type:'drawing', seed:9,
     caption:'Blasting off to outer space! 🚀🌟🪐',
     tags:'#space #rocket #stars',       time:'3d ago', likes:49,
-    comments:[{u:'PixelKid',t:'To infinity!! 🚀'},{u:'RainbowGirl',t:'Love the planets! 🪐'}] },
+    comments:[{id:'9-1',u:'PixelKid',t:'To infinity!! 🚀'},{id:'9-2',u:'RainbowGirl',t:'Love the planets! 🪐'}] },
 
   /* ---- PET posts ---- */
   { id:10, user:'Luna_Paws',   type:'pet', seed:10,
     caption:'Whiskers found my homework again 📚🐱😅 Cat: 1, Homework: 0',
     tags:'#cats #whiskers #homework',   time:'1h ago', likes:134,
-    comments:[{u:'FluffyPets',t:'HAHAHA 😂😂'},{u:'MaxCool',t:'Classic cat move 😹'},{u:'NatureKid',t:'Best excuse ever! 📚'}] },
+    comments:[{id:'10-1',u:'FluffyPets',t:'HAHAHA 😂😂'},{id:'10-2',u:'MaxCool',t:'Classic cat move 😹'},{id:'10-3',u:'NatureKid',t:'Best excuse ever! 📚'}] },
 
   { id:11, user:'FluffyPets',  type:'pet', seed:11,
     caption:'Bunnies are SO fluffy I cannot handle it 🐰💕',
     tags:'#bunny #fluffy #cute',        time:'4h ago', likes:88,
-    comments:[{u:'Luna_Paws',t:'I need one!! 🐰'},{u:'Emma_Stars',t:'SO CUTE 😍'}] },
+    comments:[{id:'11-1',u:'Luna_Paws',t:'I need one!! 🐰'},{id:'11-2',u:'Emma_Stars',t:'SO CUTE 😍'}] },
 
   { id:12, user:'Luna_Paws',   type:'pet', seed:12,
     caption:'Feeding time! Goldie loves her new food 🐟🌊',
     tags:'#fish #goldfish #pet',        time:'6h ago', likes:55,
-    comments:[{u:'NatureKid',t:'Happy fishy! 🐟'},{u:'DinoBoy',t:'She looks tasty... I mean cute! 😅'}] },
+    comments:[{id:'12-1',u:'NatureKid',t:'Happy fishy! 🐟'},{id:'12-2',u:'DinoBoy',t:'She looks tasty... I mean cute! 😅'}] },
 
   { id:13, user:'FluffyPets',  type:'pet', seed:13,
     caption:'Max learned a new trick today — SIT! 🐶🏅',
     tags:'#dog #training #goodboy',     time:'8h ago', likes:112,
-    comments:[{u:'Luna_Paws',t:'Good boy Max!! 🐶'},{u:'GameMaster',t:'Unlocked: Sit achievement 🏅'},{u:'RainbowGirl',t:'So clever! 🥰'}] },
+    comments:[{id:'13-1',u:'Luna_Paws',t:'Good boy Max!! 🐶'},{id:'13-2',u:'GameMaster',t:'Unlocked: Sit achievement 🏅'},{id:'13-3',u:'RainbowGirl',t:'So clever! 🥰'}] },
 
   { id:14, user:'NatureKid',   type:'pet', seed:14,
     caption:'A butterfly LANDED ON MY HAND!! I stayed so still 🦋😱',
     tags:'#butterfly #nature #wow',     time:'10h ago', likes:203,
-    comments:[{u:'Emma_Stars',t:'YOU ARE SO LUCKY!! 🦋'},{u:'RainbowGirl',t:'Nature chose you! 🌿'},{u:'SunnyArt',t:'Amazing!! 😱'}] },
+    comments:[{id:'14-1',u:'Emma_Stars',t:'YOU ARE SO LUCKY!! 🦋'},{id:'14-2',u:'RainbowGirl',t:'Nature chose you! 🌿'},{id:'14-3',u:'SunnyArt',t:'Amazing!! 😱'}] },
 
   { id:15, user:'Luna_Paws',   type:'pet', seed:15,
     caption:'Hammy running so fast on his wheel 🐹💨 Little champion!',
     tags:'#hamster #pets #speed',       time:'1d ago', likes:77,
-    comments:[{u:'FluffyPets',t:'Go Hammy go!! 🐹'},{u:'PixelKid',t:'Needs a speed upgrade 💨'}] },
+    comments:[{id:'15-1',u:'FluffyPets',t:'Go Hammy go!! 🐹'},{id:'15-2',u:'PixelKid',t:'Needs a speed upgrade 💨'}] },
 
   { id:16, user:'FluffyPets',  type:'pet', seed:16,
     caption:'Baby chicks hatched this morning!! 🐣🥚✨ Welcome to the world!',
     tags:'#chicks #baby #hatching',     time:'1d ago', likes:167,
-    comments:[{u:'Luna_Paws',t:'BABIES!! 🐣🐣🐣'},{u:'Emma_Stars',t:'I am crying happy tears 😭💛'},{u:'NatureKid',t:'So magical! 🥚'}] },
+    comments:[{id:'16-1',u:'Luna_Paws',t:'BABIES!! 🐣🐣🐣'},{id:'16-2',u:'Emma_Stars',t:'I am crying happy tears 😭💛'},{id:'16-3',u:'NatureKid',t:'So magical! 🥚'}] },
 
   { id:17, user:'MaxCool',     type:'pet', seed:17,
     caption:'My turtle is faster than my little brother 🐢😂 (not really)',
     tags:'#turtle #pets #funny',        time:'2d ago', likes:93,
-    comments:[{u:'GameMaster',t:'HAHA poor brother 😂'},{u:'PixelKid',t:'Slow and steady wins! 🐢'},{u:'DinoBoy',t:'Brother has been defeated 😄'}] },
+    comments:[{id:'17-1',u:'GameMaster',t:'HAHA poor brother 😂'},{id:'17-2',u:'PixelKid',t:'Slow and steady wins! 🐢'},{id:'17-3',u:'DinoBoy',t:'Brother has been defeated 😄'}] },
 
   /* ---- GAME posts ---- */
   { id:18, user:'MaxCool',     type:'game', seed:18,
     caption:'NEW HIGH SCORE!! 999,999 points!!! 🎮🏆🔥 IMPOSSIBLE!!',
     tags:'#gaming #highscore #epic',    time:'30m ago', likes:158,
-    comments:[{u:'GameMaster',t:'NO WAY!! How?? 😱'},{u:'PixelKid',t:'I bow to you 🙏'},{u:'DinoBoy',t:'LEGENDARY 🔥🔥🔥'}] },
+    comments:[{id:'18-1',u:'GameMaster',t:'NO WAY!! How?? 😱'},{id:'18-2',u:'PixelKid',t:'I bow to you 🙏'},{id:'18-3',u:'DinoBoy',t:'LEGENDARY 🔥🔥🔥'}] },
 
   { id:19, user:'PixelKid',    type:'game', seed:19,
     caption:'Finally reached Level 50! Only took 3 weeks 😤⭐',
     tags:'#level50 #gaming #achievement', time:'2h ago', likes:89,
-    comments:[{u:'MaxCool',t:'LETS GOOO!! ⭐'},{u:'GameMaster',t:'Welcome to the club 🏆'},{u:'Luna_Paws',t:'So dedicated! 😮'}] },
+    comments:[{id:'19-1',u:'MaxCool',t:'LETS GOOO!! ⭐'},{id:'19-2',u:'GameMaster',t:'Welcome to the club 🏆'},{id:'19-3',u:'Luna_Paws',t:'So dedicated! 😮'}] },
 
   { id:20, user:'MaxCool',     type:'game', seed:20,
     caption:'Final boss battle was INSANE!! Nearly died 5 times 😅⚔️👾',
     tags:'#boss #battle #games',        time:'5h ago', likes:74,
-    comments:[{u:'PixelKid',t:'That boss is the worst! 😤'},{u:'GameMaster',t:'Did you win tho?? 👀'}] },
+    comments:[{id:'20-1',u:'PixelKid',t:'That boss is the worst! 😤'},{id:'20-2',u:'GameMaster',t:'Did you win tho?? 👀'}] },
 
   { id:21, user:'GameMaster',  type:'game', seed:21,
     caption:'FIRST PLACE on the global leaderboard!! 🥇👑🎉',
     tags:'#firstplace #winner #gaming', time:'7h ago', likes:201,
-    comments:[{u:'MaxCool',t:'KING!! 👑'},{u:'PixelKid',t:'I challenge you!! 🎮'},{u:'Emma_Stars',t:'So proud of you! 🎉'},{u:'DinoBoy',t:'Unstoppable!! 🏆'}] },
+    comments:[{id:'21-1',u:'MaxCool',t:'KING!! 👑'},{id:'21-2',u:'PixelKid',t:'I challenge you!! 🎮'},{id:'21-3',u:'Emma_Stars',t:'So proud of you! 🎉'},{id:'21-4',u:'DinoBoy',t:'Unstoppable!! 🏆'}] },
 
   { id:22, user:'PixelKid',    type:'game', seed:22,
     caption:'Unlocked the SECRET character!! I found the hidden code 🎮✨',
     tags:'#secret #unlock #gaming',     time:'12h ago', likes:66,
-    comments:[{u:'MaxCool',t:'WHATS THE CODE TELL ME 😤'},{u:'GameMaster',t:'I already knew it 😎'}] },
+    comments:[{id:'22-1',u:'MaxCool',t:'WHATS THE CODE TELL ME 😤'},{id:'22-2',u:'GameMaster',t:'I already knew it 😎'}] },
 
   { id:23, user:'GameMaster',  type:'game', seed:23,
     caption:'Found the hidden treasure room!! 💎🗝️ Nobody knew this existed!',
     tags:'#secret #treasure #gaming',   time:'1d ago', likes:143,
-    comments:[{u:'PixelKid',t:'How did you even find that?!'},{u:'MaxCool',t:'Secret hunter! 🗝️'},{u:'SunnyArt',t:'This is amazing! 💎'}] },
+    comments:[{id:'23-1',u:'PixelKid',t:'How did you even find that?!'},{id:'23-2',u:'MaxCool',t:'Secret hunter! 🗝️'},{id:'23-3',u:'SunnyArt',t:'This is amazing! 💎'}] },
 
   { id:24, user:'MaxCool',     type:'game', seed:24,
     caption:'ALL 100 STARS COLLECTED!! Nothing can stop me now ⭐⭐⭐',
     tags:'#100stars #complete #gaming', time:'2d ago', likes:117,
-    comments:[{u:'GameMaster',t:'The grind pays off! ⭐'},{u:'PixelKid',t:'Same bro! Did it last month 💪'}] },
+    comments:[{id:'24-1',u:'GameMaster',t:'The grind pays off! ⭐'},{id:'24-2',u:'PixelKid',t:'Same bro! Did it last month 💪'}] },
 
   /* ---- OUTDOOR posts ---- */
   { id:25, user:'NatureKid',   type:'outdoor', seed:25,
     caption:'Best day at the park with my friends! Nothing beats sunshine 🌳⛅',
     tags:'#park #friends #fun',         time:'3h ago', likes:96,
-    comments:[{u:'DinoBoy',t:'Park gang!! 🌳'},{u:'Emma_Stars',t:'Should have come! 😭'},{u:'RainbowGirl',t:'So much fun! ⛅'}] },
+    comments:[{id:'25-1',u:'DinoBoy',t:'Park gang!! 🌳'},{id:'25-2',u:'Emma_Stars',t:'Should have come! 😭'},{id:'25-3',u:'RainbowGirl',t:'So much fun! ⛅'}] },
 
   { id:26, user:'DinoBoy',     type:'outdoor', seed:26,
     caption:'Found the coolest rock EVER at the creek 🪨💎 It sparkles!',
     tags:'#rocks #nature #exploring',   time:'6h ago', likes:44,
-    comments:[{u:'NatureKid',t:'Rock collector!! 🪨'},{u:'GameMaster',t:'Side quest: Rock Finding completed ✅'}] },
+    comments:[{id:'26-1',u:'NatureKid',t:'Rock collector!! 🪨'},{id:'26-2',u:'GameMaster',t:'Side quest: Rock Finding completed ✅'}] },
 
   { id:27, user:'NatureKid',   type:'outdoor', seed:27,
     caption:'DOUBLE RAINBOW after the storm!! 🌈🌈✨ I screamed so loud!',
     tags:'#rainbow #nature #wow',       time:'8h ago', likes:289,
-    comments:[{u:'RainbowGirl',t:'DOUBLE!! My dream!! 🌈🌈'},{u:'Emma_Stars',t:'LUCKY!! 😭'},{u:'SunnyArt',t:'What does it MEAN?? 😂'},{u:'FluffyPets',t:'Nature is amazing! ✨'}] },
+    comments:[{id:'27-1',u:'RainbowGirl',t:'DOUBLE!! My dream!! 🌈🌈'},{id:'27-2',u:'Emma_Stars',t:'LUCKY!! 😭'},{id:'27-3',u:'SunnyArt',t:'What does it MEAN?? 😂'},{id:'27-4',u:'FluffyPets',t:'Nature is amazing! ✨'}] },
 
   { id:28, user:'DinoBoy',     type:'outdoor', seed:28,
     caption:"Beach day with Dad! Built the world's biggest sandcastle 🏖️🏰",
     tags:'#beach #sandcastle #summer',  time:'1d ago', likes:181,
-    comments:[{u:'NatureKid',t:'Beach squad! 🏖️'},{u:'MaxCool',t:'Epic sandcastle! 🏰'},{u:'Emma_Stars',t:'Take me next time!! 🌊'}] },
+    comments:[{id:'28-1',u:'NatureKid',t:'Beach squad! 🏖️'},{id:'28-2',u:'MaxCool',t:'Epic sandcastle! 🏰'},{id:'28-3',u:'Emma_Stars',t:'Take me next time!! 🌊'}] },
 
   { id:29, user:'NatureKid',   type:'outdoor', seed:29,
     caption:'Picked wildflowers for Mom. She cried happy tears 🌸💐❤️',
     tags:'#flowers #mom #nature',       time:'2d ago', likes:156,
-    comments:[{u:'Emma_Stars',t:'This is the sweetest thing 🥺❤️'},{u:'FluffyPets',t:'Best kid award!! 🌸'},{u:'RainbowGirl',t:'Mom must love you so much! 💐'}] },
+    comments:[{id:'29-1',u:'Emma_Stars',t:'This is the sweetest thing 🥺❤️'},{id:'29-2',u:'FluffyPets',t:'Best kid award!! 🌸'},{id:'29-3',u:'RainbowGirl',t:'Mom must love you so much! 💐'}] },
 
   { id:30, user:'DinoBoy',     type:'outdoor', seed:30,
     caption:'Watched the sunset from the top of the hill with Dad 🌅🏔️',
     tags:'#sunset #hiking #beautiful',  time:'3d ago', likes:122,
-    comments:[{u:'NatureKid',t:'Best view ever! 🌅'},{u:'SunnyArt',t:'I want to paint this! 🎨'},{u:'Emma_Stars',t:'So beautiful!! 😍'}] },
+    comments:[{id:'30-1',u:'NatureKid',t:'Best view ever! 🌅'},{id:'30-2',u:'SunnyArt',t:'I want to paint this! 🎨'},{id:'30-3',u:'Emma_Stars',t:'So beautiful!! 😍'}] },
 ];
 
 /* ================================================================
@@ -226,9 +236,9 @@ function kgGradientBg(ctx, W, H, top, bot) {
   g.addColorStop(0, top); g.addColorStop(1, bot);
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
 }
-function kgText(ctx, text, x, y, size, color, font) {
-  ctx.fillStyle = color; ctx.font = `bold ${size}px ${font||'sans-serif'}`;
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, x, y);
+function kgText(ctx, text, x, y, size, color, font, max) {
+  ctx.fillStyle = color; ctx.font = `bold ${size}px Nunito, ${font||'sans-serif'}`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, x, y, max);
 }
 
 /* ---- KIDS ART drawings ---- */
@@ -583,7 +593,7 @@ function kgGame(ctx, W, H, rng, v) {
     for(let i=0;i<40;i++) kgCircle(ctx, rng()*W, rng()*H*0.6, rng()*1.5+0.5, '#fff');
     // HUD bar
     kgRect(ctx, 0, 0, W, H*0.12, 'rgba(0,0,0,0.5)');
-    kgText(ctx, 'SCORE: 42,800', W*0.38, H*0.06, 14, '#fff');
+    kgText(ctx, t('SCORE: {n}', { n: (42800).toLocaleString(OS.locale()) }), W*0.38, H*0.06, 14, '#fff', null, W*0.7);
     kgText(ctx, '❤️❤️❤️', W*0.82, H*0.06, 12);
     // Platforms
     [[0.05,0.75,0.25,0.05],[0.35,0.6,0.2,0.05],[0.62,0.72,0.22,0.05],[0.18,0.48,0.18,0.05],[0.55,0.42,0.15,0.05]].forEach(([x,y,w,h]) => {
@@ -622,8 +632,8 @@ function kgGame(ctx, W, H, rng, v) {
     for(let i=0;i<60;i++) kgCircle(ctx, rng()*W, rng()*H, rng()*2, `rgba(255,255,255,${0.3+rng()*0.7})`);
     // HUD
     kgRect(ctx, 0, 0, W, H*0.1, 'rgba(0,0,0,0.6)');
-    kgText(ctx, '⭐ 8,250', W*0.22, H*0.05, 13, '#ffd600');
-    kgText(ctx, 'LEVEL 7', W*0.5, H*0.05, 13, '#fff');
+    kgText(ctx, '⭐ ' + (8250).toLocaleString(OS.locale()), W*0.22, H*0.05, 13, '#ffd600', null, W*0.3);
+    kgText(ctx, t('LEVEL {n}', { n: 7 }), W*0.5, H*0.05, 13, '#fff', null, W*0.25);
     kgText(ctx, '❤️❤️', W*0.82, H*0.05, 12);
     // Enemies
     [[0.2,0.28],[0.45,0.22],[0.7,0.3],[0.35,0.38],[0.6,0.18]].forEach(([px,py]) => {
@@ -687,7 +697,7 @@ function kgGame(ctx, W, H, rng, v) {
     ctx.beginPath(); ctx.moveTo(W*0.83,H*0.22); ctx.lineTo(W*0.77,H*0.27); ctx.stroke();
     // Score/HUD
     kgRect(ctx, 0, 0, W, H*0.1, 'rgba(121,85,72,0.3)');
-    kgText(ctx, '💎 1,450    ⚔️ LVL 12    ❤️❤️❤️', W*0.5, H*0.055, 12, '#4e342e');
+    kgText(ctx, '💎 ' + (1450).toLocaleString(OS.locale()) + '    ⚔️ ' + t('LVL {n}', { n: 12 }) + '    ❤️❤️❤️', W*0.5, H*0.055, 12, '#4e342e', null, W - 32);
   }
 }
 
@@ -873,7 +883,7 @@ OS.registerApp('kidstagram', {
   getWindowOpts() {
     return {
       id: 'kidstagram',
-      title: 'Kidstagram',
+      title: t('Kidstagram'),
       icon: '📸',
       width: 460,
       height: 580,
@@ -886,7 +896,7 @@ OS.registerApp('kidstagram', {
     <div class="kg-wrap">
       <!-- Top nav -->
       <div class="kg-nav">
-        <span class="kg-nav-logo">📸 Kidstagram</span>
+        <span class="kg-nav-logo">📸 ${t('Kidstagram')}</span>
         <span class="kg-nav-count" id="kg-like-total"></span>
       </div>
       <!-- Stories -->
@@ -901,7 +911,7 @@ OS.registerApp('kidstagram', {
 });
 
 /* ---- App controller ---- */
-const KidsGram = (() => {
+var KidsGram = (() => {
   const STORE = 'kidsOS_kidstagram';
   let state = {};   // { liked: Set, comments: { id: [...extra] } }
 
@@ -936,13 +946,13 @@ const KidsGram = (() => {
   function renderStories() {
     const wrap = document.getElementById('kg-stories');
     if (!wrap) return;
-    const users = Object.entries(KG_USERS);
-    wrap.innerHTML = users.map(([name, u]) => `
+    const users = Object.values(kgUsers());
+    wrap.innerHTML = users.map(u => `
       <div class="kg-story">
         <div class="kg-story-ring">
           <div class="kg-story-av" style="background:${u.color}">${u.av}</div>
         </div>
-        <div class="kg-story-name">${name.replace('_',' ')}</div>
+        <div class="kg-story-name">${u.name}</div>
       </div>`).join('');
   }
 
@@ -952,11 +962,14 @@ const KidsGram = (() => {
     if (!feed) return;
     feed.innerHTML = '';
 
-    KG_POSTS.forEach(post => {
-      const u = KG_USERS[post.user];
+    const users = kgUsers();
+    const comments = t.list('kidstagram.comments', KG_POSTS.flatMap(p => p.comments));
+    t.list('kidstagram.posts', KG_POSTS).forEach(post => {
+      const u = users[post.user];
       const liked = state.liked.has(post.id);
       const extraComments = state.comments[post.id] || [];
-      const allComments = [...post.comments, ...extraComments];
+      // A comment of the app has an id. A comment of the child has no id and shows as stored
+      const allComments = [...post.comments.map(c => comments.find(x => x.id === c.id)), ...extraComments];
       const likeCount = post.likes + (liked ? 1 : 0);
 
       const card = document.createElement('div');
@@ -966,11 +979,11 @@ const KidsGram = (() => {
         <div class="kg-post-header">
           <div class="kg-post-av" style="background:${u.color}">${u.av}</div>
           <div class="kg-post-info">
-            <div class="kg-post-username">${post.user.replace('_',' ')}</div>
+            <div class="kg-post-username">${u.name}</div>
             <div class="kg-post-time">${post.time}</div>
           </div>
           <span class="kg-post-type-badge kg-type-${post.type}">${
-            {drawing:'🎨 Drawing',pet:'🐾 Pet',game:'🎮 Game',outdoor:'🌳 Outdoor'}[post.type]
+            {drawing:'🎨 ' + t('Drawing'),pet:'🐾 ' + t('Pet'),game:'🎮 ' + t('Game'),outdoor:'🌳 ' + t('Outdoor')}[post.type]
           }</span>
         </div>
         <div class="kg-img-wrap">
@@ -985,7 +998,7 @@ const KidsGram = (() => {
           </button>
         </div>
         <div class="kg-caption">
-          <b>${post.user.replace('_',' ')}</b> ${post.caption}
+          <b>${u.name}</b> ${post.caption}
           <span class="kg-tags">${post.tags}</span>
         </div>
         <div class="kg-comments" id="kg-comments-${post.id}" style="display:none">
@@ -993,13 +1006,13 @@ const KidsGram = (() => {
             ${allComments.map(c => `
               <div class="kg-comment">
                 <span class="kg-comment-av">${KG_USERS[c.u]?.av||'😊'}</span>
-                <span><b>${OS.esc(c.u.replace('_',' '))}</b> ${OS.esc(c.t)}</span>
+                <span><b>${OS.esc(c.id ? users[c.u].name : c.u.replace('_',' '))}</b> ${OS.esc(c.t)}</span>
               </div>`).join('')}
           </div>
           <div class="kg-comment-input-row">
-            <input class="kg-comment-input" id="kg-ci-${post.id}" placeholder="Add a comment… 😊"
+            <input class="kg-comment-input" id="kg-ci-${post.id}" placeholder="${t('Add a comment…')} 😊"
                    onkeydown="if(event.key==='Enter') KidsGram.addComment(${post.id})">
-            <button class="kg-comment-send" onclick="KidsGram.addComment(${post.id})">Post</button>
+            <button class="kg-comment-send" onclick="KidsGram.addComment(${post.id})">${t('Post')}</button>
           </div>
         </div>`;
       feed.appendChild(card);
@@ -1056,7 +1069,7 @@ const KidsGram = (() => {
     input.value = '';
 
     const s = OS.getSettings();
-    const username = (s.username || 'Me').replace(/\s/g,'_');
+    const username = (s.username || t('Me')).replace(/\s/g,'_');
 
     if (!state.comments[id]) state.comments[id] = [];
     state.comments[id].push({ u: username, t: text });
@@ -1085,3 +1098,4 @@ const KidsGram = (() => {
 
   return { init, toggleLike, toggleComments, addComment };
 })();
+}

@@ -1,5 +1,6 @@
 /* ===== Pebbles — Virtual Pet Rock ===== */
 (() => {
+  const t = OS.texts('pebbles');
   const STORE_KEY = 'kidsOS_pebbles';
 
   /* ---- Data Constants ---- */
@@ -72,6 +73,12 @@
     { id: 'obstacle', name: 'Obstacle Course',  emoji: '🏁', desc: 'Pebbles vs. obstacles' },
   ];
 
+  /* ---- Lists in the language of the app ---- */
+  const tricks = () => t.list('pebbles.tricks', TRICKS);
+
+  // 'Pebbles' is the name of the first start: it shows in the language of the app. A name from the child shows as stored
+  function rockName() { return state.name === 'Pebbles' ? t('Pebbles') : state.name; }
+
   /* ---- State ---- */
   let state = null;
   let currentScreen = 'home';
@@ -135,11 +142,11 @@
 
   function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
-  function getMood() { return pick(ROCK_MOODS); }
+  function getMood() { return pick(t.list('pebbles.moods', ROCK_MOODS)); }
 
   function getNextTrick() {
-    for (const t of TRICKS) {
-      if (!state.tricksLearned.includes(t.id)) return t;
+    for (const trick of TRICKS) {
+      if (!state.tricksLearned.includes(trick.id)) return trick;
     }
     return null;
   }
@@ -178,10 +185,10 @@
   /* ---- Meters (always fake) ---- */
   function metersHTML() {
     return '<div class="pb-meters">' +
-      meterRow('Hunger', 0, 'Does not hunger') +
-      meterRow('Energy', 100, 'Stable (forever)') +
-      meterRow('Happiness', 92, 'Content') +
-      meterRow('Neediness', 0, 'Zero. Zilch. Nada.') +
+      meterRow(t('Hunger'), 0, t('Does not hunger')) +
+      meterRow(t('Energy'), 100, t('Stable (forever)')) +
+      meterRow(t('Happiness'), 92, t('Content')) +
+      meterRow(t('Neediness'), 0, t('Zero. Zilch. Nada.')) +
       '</div>';
   }
 
@@ -204,10 +211,10 @@
 
   function navHTML() {
     const items = [
-      { id: 'home',    icon: '🏠', label: 'Home' },
-      { id: 'train',   icon: '🏋️', label: 'Train' },
-      { id: 'games',   icon: '🎮', label: 'Games' },
-      { id: 'profile', icon: '📋', label: 'Profile' },
+      { id: 'home',    icon: '🏠', label: t('Home') },
+      { id: 'train',   icon: '🏋️', label: t('Train') },
+      { id: 'games',   icon: '🎮', label: t('Games') },
+      { id: 'profile', icon: '📋', label: t('Profile') },
     ];
     return '<div class="pb-nav">' + items.map(i =>
       '<button class="pb-nav-btn' + (currentScreen === i.id ? ' pb-nav-active' : '') +
@@ -217,25 +224,25 @@
 
   /* -- Home Screen -- */
   function homeHTML() {
-    const trick = TRICKS.find(t => t.id === state.currentTrick) || TRICKS[0];
+    const trick = tricks().find(x => x.id === state.currentTrick) || tricks()[0];
     return '<div class="pb-screen pb-home">' +
       '<div class="pb-home-top">' +
-        '<div class="pb-name-display">' + escHtml(state.name) + '</div>' +
+        '<div class="pb-name-display">' + escHtml(rockName()) + '</div>' +
         '<div class="pb-mood">' + getMood() + '</div>' +
       '</div>' +
       rockHTML() +
-      '<div class="pb-trick-label">Current trick: <strong>' + trick.name + '</strong></div>' +
+      '<div class="pb-trick-label">' + t('Current trick: {trick}', { trick: '<strong>' + trick.name + '</strong>' }) + '</div>' +
       metersHTML() +
-      '<button class="pb-encourage-btn" onclick="_pbEncourage()">💪 Encourage ' + escHtml(state.name) + '</button>' +
-      '<div class="pb-streak">🔥 Sediment Streak: ' + state.streak + ' day' + (state.streak !== 1 ? 's' : '') +
-        (state.bestStreak > state.streak ? ' (best: ' + state.bestStreak + ')' : '') + '</div>' +
+      '<button class="pb-encourage-btn" onclick="_pbEncourage()">💪 ' + t('Encourage {name}', { name: escHtml(rockName()) }) + '</button>' +
+      '<div class="pb-streak">🔥 ' + t('Sediment Streak: {n} {days}', { n: state.streak, days: t.plural(state.streak, 'day', 'days') }) +
+        (state.bestStreak > state.streak ? ' ' + t('(best: {n})', { n: state.bestStreak }) : '') + '</div>' +
       '</div>' + navHTML();
   }
 
   /* -- Train Screen -- */
   function trainHTML() {
     const next = getNextTrick();
-    const currentTrickObj = TRICKS.find(t => t.id === state.currentTrick) || TRICKS[0];
+    const currentTrickObj = TRICKS.find(x => x.id === state.currentTrick) || TRICKS[0];
     let xpBar = '';
     if (next) {
       const prevXP = TRICKS[TRICKS.indexOf(next) - 1] ? TRICKS[TRICKS.indexOf(next) - 1].xpCost : 0;
@@ -243,26 +250,26 @@
       const progress = Math.min(state.xp - prevXP, needed);
       const pct = Math.round((progress / needed) * 100);
       xpBar = '<div class="pb-xp-section">' +
-        '<div class="pb-xp-label">Next: <strong>' + next.name + '</strong> (' + state.xp + '/' + next.xpCost + ' XP)</div>' +
+        '<div class="pb-xp-label">' + t('Next: {trick} ({xp}/{cost} XP)', { trick: '<strong>' + tricks().find(x => x.id === next.id).name + '</strong>', xp: state.xp, cost: next.xpCost }) + '</div>' +
         '<div class="pb-xp-track"><div class="pb-xp-fill" style="width:' + pct + '%"></div></div></div>';
     } else {
-      xpBar = '<div class="pb-xp-section"><div class="pb-xp-label">🏆 All tricks mastered! (' + state.xp + ' XP)</div></div>';
+      xpBar = '<div class="pb-xp-section"><div class="pb-xp-label">🏆 ' + t('All tricks mastered! ({xp} XP)', { xp: state.xp }) + '</div></div>';
     }
 
-    const trickList = TRICKS.map(t => {
-      const learned = state.tricksLearned.includes(t.id);
-      const active = state.currentTrick === t.id;
+    const trickList = tricks().map(trick => {
+      const learned = state.tricksLearned.includes(trick.id);
+      const active = state.currentTrick === trick.id;
       return '<div class="pb-trick-item' + (learned ? ' pb-trick-learned' : ' pb-trick-locked') +
         (active ? ' pb-trick-active' : '') + '">' +
-        '<span>' + (learned ? '✅' : '🔒') + ' ' + t.name + '</span>' +
-        (learned ? '<button class="pb-trick-demo-btn" onclick="_pbTrickDemo(\'' + t.id + '\')">Demo</button>' : '<span class="pb-trick-cost">' + t.xpCost + ' XP</span>') +
+        '<span>' + (learned ? '✅' : '🔒') + ' ' + trick.name + '</span>' +
+        (learned ? '<button class="pb-trick-demo-btn" onclick="_pbTrickDemo(\'' + trick.id + '\')">' + t('Demo') + '</button>' : '<span class="pb-trick-cost">' + t('{n} XP', { n: trick.xpCost }) + '</span>') +
         '</div>';
     }).join('');
 
     return '<div class="pb-screen pb-train">' +
-      '<div class="pb-train-header">Training ' + escHtml(state.name) + '</div>' +
+      '<div class="pb-train-header">' + t('Training {name}', { name: escHtml(rockName()) }) + '</div>' +
       rockHTML() +
-      '<button class="pb-encourage-btn pb-big-btn" onclick="_pbEncourage()">💪 ENCOURAGE</button>' +
+      '<button class="pb-encourage-btn pb-big-btn" onclick="_pbEncourage()">💪 ' + t('ENCOURAGE') + '</button>' +
       xpBar +
       '<div class="pb-trick-list">' + trickList + '</div>' +
       '</div>' + navHTML();
@@ -270,7 +277,7 @@
 
   /* -- Games Screen -- */
   function gamesHTML() {
-    const cards = MINI_GAMES.map(g =>
+    const cards = t.list('pebbles.games', MINI_GAMES).map(g =>
       '<button class="pb-game-card" onclick="_pbPlayGame(\'' + g.id + '\')">' +
         '<div class="pb-game-emoji">' + g.emoji + '</div>' +
         '<div class="pb-game-name">' + g.name + '</div>' +
@@ -278,7 +285,7 @@
       '</button>'
     ).join('');
     return '<div class="pb-screen pb-games">' +
-      '<div class="pb-games-header">🎮 Mini-Games</div>' +
+      '<div class="pb-games-header">🎮 ' + t('Mini-Games') + '</div>' +
       '<div class="pb-game-grid">' + cards + '</div>' +
       '<div class="pb-game-result" id="pb-game-result"></div>' +
       '</div>' + navHTML();
@@ -286,7 +293,7 @@
 
   /* -- Profile Screen -- */
   function profileHTML() {
-    const accGrid = ACCESSORIES.map(a => {
+    const accGrid = t.list('pebbles.accessories', ACCESSORIES).map(a => {
       const unlocked = isAccessoryUnlocked(a);
       const equipped = state.currentAccessory === a.id;
       return '<button class="pb-acc-card' + (equipped ? ' pb-acc-equipped' : '') +
@@ -294,27 +301,27 @@
         (unlocked ? ' onclick="_pbSetAccessory(\'' + a.id + '\')"' : '') + '>' +
         '<div class="pb-acc-emoji">' + a.top + '</div>' +
         '<div class="pb-acc-name">' + a.name + '</div>' +
-        (unlocked ? (equipped ? '<div class="pb-acc-tag">Equipped</div>' : '') : '<div class="pb-acc-tag">🔒 ' + a.xp + ' XP</div>') +
+        (unlocked ? (equipped ? '<div class="pb-acc-tag">' + t('Equipped') + '</div>' : '') : '<div class="pb-acc-tag">🔒 ' + t('{n} XP', { n: a.xp }) + '</div>') +
         '</button>';
     }).join('');
 
     return '<div class="pb-screen pb-profile">' +
-      '<div class="pb-profile-header">📋 Profile</div>' +
+      '<div class="pb-profile-header">📋 ' + t('Profile') + '</div>' +
       rockHTML() +
       '<div class="pb-name-edit">' +
-        '<label>Name:</label>' +
-        '<input class="pb-name-input" type="text" value="' + escHtml(state.name) + '" maxlength="20" onchange="_pbSetName(this.value)">' +
+        '<label>' + t('Name:') + '</label>' +
+        '<input class="pb-name-input" type="text" value="' + escHtml(rockName()) + '" maxlength="20" onchange="_pbSetName(this.value)">' +
       '</div>' +
       '<div class="pb-stats">' +
-        '<div class="pb-stat">⭐ XP: <strong>' + state.xp + '</strong></div>' +
-        '<div class="pb-stat">🎯 Tricks: <strong>' + state.tricksLearned.length + '/' + TRICKS.length + '</strong></div>' +
-        '<div class="pb-stat">🎮 Games: <strong>' + state.gamesPlayed + '</strong></div>' +
-        '<div class="pb-stat">💪 Encouragements: <strong>' + state.encouragements + '</strong></div>' +
-        '<div class="pb-stat">🔥 Best Streak: <strong>' + state.bestStreak + ' days</strong></div>' +
-        '<div class="pb-stat">💬 Affirmations: <strong>' + state.affirmationsGiven + '</strong></div>' +
+        '<div class="pb-stat">⭐ ' + t('XP: {n}', { n: '<strong>' + state.xp + '</strong>' }) + '</div>' +
+        '<div class="pb-stat">🎯 ' + t('Tricks: {n}', { n: '<strong>' + state.tricksLearned.length + '/' + TRICKS.length + '</strong>' }) + '</div>' +
+        '<div class="pb-stat">🎮 ' + t('Games: {n}', { n: '<strong>' + state.gamesPlayed + '</strong>' }) + '</div>' +
+        '<div class="pb-stat">💪 ' + t('Encouragements: {n}', { n: '<strong>' + state.encouragements + '</strong>' }) + '</div>' +
+        '<div class="pb-stat">🔥 ' + t('Best Streak: {streak}', { streak: '<strong>' + t('{n} {days}', { n: state.bestStreak, days: t.plural(state.bestStreak, 'days', 'days') }) + '</strong>' }) + '</div>' +
+        '<div class="pb-stat">💬 ' + t('Affirmations: {n}', { n: '<strong>' + state.affirmationsGiven + '</strong>' }) + '</div>' +
       '</div>' +
-      '<button class="pb-affirm-btn" onclick="_pbAffirm()">💬 Get Affirmation</button>' +
-      '<div class="pb-section-title">Accessories</div>' +
+      '<button class="pb-affirm-btn" onclick="_pbAffirm()">💬 ' + t('Get Affirmation') + '</button>' +
+      '<div class="pb-section-title">' + t('Accessories') + '</div>' +
       '<div class="pb-accessory-grid">' + accGrid + '</div>' +
       '</div>' + navHTML();
   }
@@ -323,12 +330,12 @@
   function addXP(amount) {
     state.xp += amount;
     // check trick unlocks
-    for (const t of TRICKS) {
-      if (!state.tricksLearned.includes(t.id) && state.xp >= t.xpCost) {
-        state.tricksLearned.push(t.id);
-        state.currentTrick = t.id;
-        showBubble('🎉 New trick: ' + t.name + '!', 4000);
-        OS.awardCoins(5, 'Pebbles', '🪨', 'New trick: ' + t.name);
+    for (const trick of tricks()) {
+      if (!state.tricksLearned.includes(trick.id) && state.xp >= trick.xpCost) {
+        state.tricksLearned.push(trick.id);
+        state.currentTrick = trick.id;
+        showBubble('🎉 ' + t('New trick: {trick}!', { trick: trick.name }), 4000);
+        OS.awardCoins(5, 'Pebbles', '🪨', t('New trick: {trick}', { trick: trick.name }));
         save();
         setTimeout(renderScreen, 500);
         return;
@@ -344,11 +351,11 @@
 
     state.encouragements++;
     addXP(3);
-    showBubble(pick(ENCOURAGE_RESPONSES), 3000);
+    showBubble(pick(t.list('pebbles.responses', ENCOURAGE_RESPONSES)), 3000);
 
     // bonus coins every 10 encouragements
     if (state.encouragements % 10 === 0) {
-      OS.awardCoins(2, 'Pebbles', '🪨', 'Encouragement milestone x' + state.encouragements);
+      OS.awardCoins(2, 'Pebbles', '🪨', t('Encouragement milestone x{n}', { n: state.encouragements }));
     }
     save();
     // animate rock
@@ -367,34 +374,34 @@
     resultEl.className = 'pb-game-result pb-game-result-show';
 
     if (gameId === 'roll') {
-      resultEl.innerHTML = '<div class="pb-game-anim">🪨 Rolling...</div>';
+      resultEl.innerHTML = '<div class="pb-game-anim">🪨 ' + t('Rolling...') + '</div>';
       setTimeout(() => {
-        const dirs = ['left', 'right', 'up', 'down'];
+        const dirs = t.list('pebbles.dirs', ['left', 'right', 'up', 'down']);
         const dir = pick(dirs);
-        resultEl.innerHTML = '<div class="pb-game-anim">🪨 moved 1 pixel ' + dir + '!</div>' +
-          '<div class="pb-game-big">🎉🎊🥳 INCREDIBLE! 🎊🎉🥳</div>' +
-          '<div class="pb-game-sub">Scientists are baffled. History has been made.</div>';
+        resultEl.innerHTML = '<div class="pb-game-anim">🪨 ' + t('moved 1 pixel {dir}!', { dir }) + '</div>' +
+          '<div class="pb-game-big">🎉🎊🥳 ' + t('INCREDIBLE!') + ' 🎊🎉🥳</div>' +
+          '<div class="pb-game-sub">' + t('Scientists are baffled. History has been made.') + '</div>';
         finishGame(4);
       }, 2000);
     } else if (gameId === 'hide') {
-      resultEl.innerHTML = '<div class="pb-game-anim">🙈 Pebbles is hiding!</div><div class="pb-game-sub">Looking...</div>';
+      resultEl.innerHTML = '<div class="pb-game-anim">🙈 ' + t('Pebbles is hiding!') + '</div><div class="pb-game-sub">' + t('Looking...') + '</div>';
       setTimeout(() => {
-        resultEl.innerHTML = '<div class="pb-game-anim">👀 Found!</div>' +
-          '<div class="pb-game-big">Pebbles was right here the whole time.</div>' +
-          '<div class="pb-game-sub">Masterful camouflage. Or... not.</div>';
+        resultEl.innerHTML = '<div class="pb-game-anim">👀 ' + t('Found!') + '</div>' +
+          '<div class="pb-game-big">' + t('Pebbles was right here the whole time.') + '</div>' +
+          '<div class="pb-game-sub">' + t('Masterful camouflage. Or... not.') + '</div>';
         finishGame(3);
       }, 3000);
     } else if (gameId === 'karaoke') {
-      resultEl.innerHTML = '<div class="pb-game-anim">🎤 Sing something!</div>' +
-        '<button class="pb-encourage-btn" onclick="_pbKaraokeDone()">🎶 Done Singing</button>';
+      resultEl.innerHTML = '<div class="pb-game-anim">🎤 ' + t('Sing something!') + '</div>' +
+        '<button class="pb-encourage-btn" onclick="_pbKaraokeDone()">🎶 ' + t('Done Singing') + '</button>';
     } else if (gameId === 'obstacle') {
-      resultEl.innerHTML = '<div class="pb-game-anim">🏁 Obstacle Course</div>' +
+      resultEl.innerHTML = '<div class="pb-game-anim">🏁 ' + t('Obstacle Course') + '</div>' +
         '<div class="pb-game-obstacles">🔥 → 🌊 → 🌪️</div>' +
-        '<div class="pb-game-sub">Starting in 3...</div>';
+        '<div class="pb-game-sub">' + t('Starting in 3...') + '</div>';
       setTimeout(() => {
-        resultEl.innerHTML = '<div class="pb-game-anim">✅ Course Complete!</div>' +
-          '<div class="pb-game-big">Pebbles let the obstacles go around it.</div>' +
-          '<div class="pb-game-sub">Strategy: exist. Result: flawless.</div>';
+        resultEl.innerHTML = '<div class="pb-game-anim">✅ ' + t('Course Complete!') + '</div>' +
+          '<div class="pb-game-big">' + t('Pebbles let the obstacles go around it.') + '</div>' +
+          '<div class="pb-game-sub">' + t('Strategy: exist. Result: flawless.') + '</div>';
         finishGame(5);
       }, 3000);
     }
@@ -403,16 +410,16 @@
   function karaokeDone() {
     const resultEl = document.getElementById('pb-game-result');
     if (!resultEl) return;
-    resultEl.innerHTML = '<div class="pb-game-anim">🎤 Pebbles\' Rating:</div>' +
-      '<div class="pb-game-big">Rock/10</div>' +
-      '<div class="pb-game-sub">Every time.</div>';
+    resultEl.innerHTML = '<div class="pb-game-anim">🎤 ' + t("Pebbles' Rating:") + '</div>' +
+      '<div class="pb-game-big">' + t('Rock/10') + '</div>' +
+      '<div class="pb-game-sub">' + t('Every time.') + '</div>';
     finishGame(3);
   }
 
   function finishGame(xp) {
     state.gamesPlayed++;
     addXP(xp);
-    OS.awardCoins(1, 'Pebbles', '🪨', 'Mini-game completed');
+    OS.awardCoins(1, 'Pebbles', '🪨', t('Mini-game completed'));
     save();
     setTimeout(() => {
       gameActive = false;
@@ -440,28 +447,28 @@
   function affirm() {
     state.affirmationsGiven++;
     save();
-    showBubble(pick(AFFIRMATIONS), 4000);
+    showBubble(pick(t.list('pebbles.affirmations', AFFIRMATIONS)), 4000);
   }
 
   function trickDemo(trickId) {
     if (!state.tricksLearned.includes(trickId)) return;
     const rock = document.getElementById('pb-rock');
     if (!rock) return;
-    const trick = TRICKS.find(t => t.id === trickId);
+    const trick = tricks().find(x => x.id === trickId);
     if (!trick) return;
 
     if (trick.anim === 'tilt') {
       rock.classList.add('pb-rock-tilt');
-      showBubble('*tilts 3 degrees*', 2000);
+      showBubble(t('*tilts 3 degrees*'), 2000);
       setTimeout(() => rock.classList.remove('pb-rock-tilt'), 2000);
     } else if (trick.anim === 'untilt') {
       rock.classList.add('pb-rock-tilt');
-      setTimeout(() => { rock.classList.remove('pb-rock-tilt'); showBubble('*returns to sit*', 2000); }, 1000);
+      setTimeout(() => { rock.classList.remove('pb-rock-tilt'); showBubble(t('*returns to sit*'), 2000); }, 1000);
     } else if (trick.anim === 'pause') {
       showBubble('...', 3000);
     } else if (trick.anim === 'legendary') {
       rock.classList.add('pb-rock-legendary');
-      showBubble('✨ Legendary Stillness ✨', 3000);
+      showBubble('✨ ' + t('Legendary Stillness') + ' ✨', 3000);
       setTimeout(() => rock.classList.remove('pb-rock-legendary'), 3000);
     } else {
       showBubble(trick.anim, 2000);
@@ -485,7 +492,7 @@
     singleInstance: true,
     getWindowOpts() {
       return {
-        id: 'pebbles', title: 'Pebbles', icon: '🪨',
+        id: 'pebbles', title: t('Pebbles'), icon: '🪨',
         width: 420, height: 620,
         content: '<div class="pb-wrap" id="pb-wrap"></div>',
       };

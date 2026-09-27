@@ -1,11 +1,16 @@
 /* ===== KidsChat App ===== */
+// All app files share one scope for a top-level const. The block keeps `t` inside this file.
+// `var` puts KidsChat into the shared scope: the markup calls it.
+{
+const t = OS.texts('chat');
+
 OS.registerApp('chat', {
   singleInstance: true,
 
   getWindowOpts() {
     return {
       id: 'chat',
-      title: 'KidsChat',
+      title: t('KidsChat'),
       icon: '💬',
       width: 580,
       height: 480,
@@ -19,8 +24,8 @@ OS.registerApp('chat', {
       <!-- Sidebar -->
       <div class="kc-sidebar">
         <div class="kc-sidebar-header">
-          <span>💬 KidsChat</span>
-          <button class="kc-add-btn" onclick="KidsChat.showContactDialog()" title="Add contact">+</button>
+          <span>💬 ${t('KidsChat')}</span>
+          <button class="kc-add-btn" onclick="KidsChat.showContactDialog()" title="${t('Add contact')}">+</button>
         </div>
         <div class="kc-contact-list" id="kc-contact-list"></div>
       </div>
@@ -30,30 +35,30 @@ OS.registerApp('chat', {
         <!-- Shown when no contact selected -->
         <div class="kc-empty" id="kc-empty">
           <div style="font-size:64px">💬</div>
-          <div style="font-size:18px;font-weight:700;color:#555;margin-top:12px">Select someone to chat with!</div>
-          <div style="font-size:13px;color:#999;margin-top:6px">Pick a contact on the left</div>
+          <div style="font-size:18px;font-weight:700;color:#555;margin-top:12px">${t('Select someone to chat with!')}</div>
+          <div style="font-size:13px;color:#999;margin-top:6px">${t('Pick a contact on the left')}</div>
         </div>
 
         <!-- Add/Edit Contact Dialog -->
         <div class="kc-dialog-overlay" id="kc-dialog" style="display:none">
           <div class="kc-dialog">
-            <h3 id="kc-dialog-title">New Contact</h3>
+            <h3 id="kc-dialog-title">${t('New Contact')}</h3>
             <div class="kc-dialog-field">
-              <label>Name</label>
-              <input type="text" id="kc-dialog-name" placeholder="Enter name…" maxlength="20"
+              <label>${t('Name')}</label>
+              <input type="text" id="kc-dialog-name" placeholder="${t('Enter name…')}" maxlength="20"
                      onkeydown="if(event.key==='Enter') KidsChat.confirmDialog()">
             </div>
             <div class="kc-dialog-field">
-              <label>Choose Avatar</label>
+              <label>${t('Choose Avatar')}</label>
               <div class="kc-avatar-grid" id="kc-avatar-grid"></div>
             </div>
             <div class="kc-dialog-field">
-              <label>Choose Color</label>
+              <label>${t('Choose Color')}</label>
               <div class="kc-color-grid" id="kc-color-grid"></div>
             </div>
             <div class="kc-dialog-btns">
-              <button class="kc-dialog-cancel" onclick="KidsChat.cancelDialog()">Cancel</button>
-              <button class="kc-dialog-save" onclick="KidsChat.confirmDialog()">Save</button>
+              <button class="kc-dialog-cancel" onclick="KidsChat.cancelDialog()">${t('Cancel')}</button>
+              <button class="kc-dialog-save" onclick="KidsChat.confirmDialog()">${t('Save')}</button>
             </div>
           </div>
         </div>
@@ -62,12 +67,12 @@ OS.registerApp('chat', {
         <div class="kc-chat-panel" id="kc-chat-panel" style="display:none;flex-direction:column;height:100%;">
           <!-- Chat header -->
           <div class="kc-chat-header" id="kc-chat-header">
-            <div class="kc-chat-header-avatar" id="kc-hdr-avatar" onclick="KidsChat.showContactDialog('edit')" title="Change avatar" style="cursor:pointer">👩</div>
+            <div class="kc-chat-header-avatar" id="kc-hdr-avatar" onclick="KidsChat.showContactDialog('edit')" title="${t('Change avatar')}" style="cursor:pointer">👩</div>
             <div class="kc-chat-header-info">
-              <div class="kc-chat-header-name" id="kc-hdr-name">Mom</div>
-              <div class="kc-chat-header-status">🟢 Online</div>
+              <div class="kc-chat-header-name" id="kc-hdr-name">${t('Mom')}</div>
+              <div class="kc-chat-header-status">🟢 ${t('Online')}</div>
             </div>
-            <button class="kc-edit-replies-btn" onclick="KidsChat.openEditPanel()">✏️ Edit Replies</button>
+            <button class="kc-edit-replies-btn" onclick="KidsChat.openEditPanel()">✏️ ${t('Edit Replies')}</button>
           </div>
 
           <!-- Messages -->
@@ -75,14 +80,14 @@ OS.registerApp('chat', {
 
           <!-- Typing indicator -->
           <div class="kc-typing" id="kc-typing" style="display:none">
-            <span id="kc-typing-name">Mom</span> is typing
+            ${t('{name} is typing', { name: `<span id="kc-typing-name">${t('Mom')}</span>` })}
             <span class="kc-dots"><span>.</span><span>.</span><span>.</span></span>
           </div>
 
           <!-- Gallery picker -->
           <div class="kc-gallery" id="kc-gallery" style="display:none">
             <div class="kc-gallery-header">
-              <span>📷 Send a Photo</span>
+              <span>📷 ${t('Send a Photo')}</span>
               <button class="kc-gallery-close" onclick="KidsChat.toggleGallery()">✕</button>
             </div>
             <div class="kc-gallery-grid" id="kc-gallery-grid"></div>
@@ -90,27 +95,27 @@ OS.registerApp('chat', {
 
           <!-- Input bar -->
           <div class="kc-input-bar">
-            <button class="kc-photo-btn" onclick="KidsChat.toggleGallery()" title="Send a photo">📷</button>
+            <button class="kc-photo-btn" onclick="KidsChat.toggleGallery()" title="${t('Send a photo')}">📷</button>
             <input type="text" class="kc-input" id="kc-input"
-                   placeholder="Type a message… 😊"
+                   placeholder="${t('Type a message…')} 😊"
                    onkeydown="if(event.key==='Enter') KidsChat.send()">
-            <button class="kc-send-btn" onclick="KidsChat.send()">➤ Send</button>
+            <button class="kc-send-btn" onclick="KidsChat.send()">➤ ${t('Send')}</button>
           </div>
         </div>
 
         <!-- Edit Replies panel -->
         <div class="kc-edit-panel" id="kc-edit-panel" style="display:none;flex-direction:column;height:100%;">
           <div class="kc-edit-header">
-            <button class="kc-back-btn" onclick="KidsChat.closeEditPanel()">← Back</button>
-            <span id="kc-edit-title">✏️ Mom's Replies</span>
+            <button class="kc-back-btn" onclick="KidsChat.closeEditPanel()">← ${t('Back')}</button>
+            <span id="kc-edit-title">✏️ ${t("{name}'s Replies", { name: t('Mom') })}</span>
           </div>
-          <div class="kc-edit-hint">These are the messages <b id="kc-edit-who">Mom</b> will send back automatically.</div>
+          <div class="kc-edit-hint">${t('These are the messages {name} will send back automatically.', { name: `<b id="kc-edit-who">${t('Mom')}</b>` })}</div>
           <div class="kc-edit-list" id="kc-edit-list"></div>
           <div class="kc-edit-add-row">
             <input type="text" class="kc-edit-input" id="kc-edit-input"
-                   placeholder="Type a new reply…"
+                   placeholder="${t('Type a new reply…')}"
                    onkeydown="if(event.key==='Enter') KidsChat.addReply()">
-            <button class="kc-edit-add-btn" onclick="KidsChat.addReply()">+ Add</button>
+            <button class="kc-edit-add-btn" onclick="KidsChat.addReply()">+ ${t('Add')}</button>
           </div>
         </div>
       </div>
@@ -122,7 +127,7 @@ OS.registerApp('chat', {
 });
 
 /* ===================== KidsChat Logic ===================== */
-const KidsChat = (() => {
+var KidsChat = (() => {
   const STORE_KEY = 'kidsOS_chat';
 
   const DEFAULT_CONTACTS = [
@@ -215,19 +220,21 @@ const KidsChat = (() => {
   /* ---- Data persistence ---- */
 
   function loadData() {
+    // Stored contacts stay as they are. Only a start with no stored contacts gets the contacts in the language of the app
+    const defaults = t.list('chat.contacts', DEFAULT_CONTACTS);
     try {
       const saved = JSON.parse(localStorage.getItem(STORE_KEY));
       if (saved && saved.contacts && saved.contacts.length > 0) {
         contacts = saved.contacts;
         // Ensure all default contacts exist (merge in new ones)
-        DEFAULT_CONTACTS.forEach(def => {
+        defaults.forEach(def => {
           if (!contacts.find(c => c.id === def.id)) contacts.push({ ...def });
         });
       } else {
-        contacts = DEFAULT_CONTACTS.map(c => ({ ...c, messages: [], replies: [...c.replies] }));
+        contacts = defaults.map(c => ({ ...c, messages: [], replies: [...c.replies] }));
       }
     } catch (e) {
-      contacts = DEFAULT_CONTACTS.map(c => ({ ...c, messages: [], replies: [...c.replies] }));
+      contacts = defaults.map(c => ({ ...c, messages: [], replies: [...c.replies] }));
     }
     // Init reply counters
     contacts.forEach(c => { replyCounters[c.id] = replyCounters[c.id] || 0; });
@@ -250,8 +257,8 @@ const KidsChat = (() => {
     contacts.forEach(c => {
       const lastMsg = c.messages.length > 0 ? c.messages[c.messages.length - 1] : null;
       const preview = lastMsg
-        ? (lastMsg.from === 'me' ? 'You: ' + lastMsg.text : lastMsg.text)
-        : 'Tap to start chatting!';
+        ? (lastMsg.from === 'me' ? t('You: {text}', { text: lastMsg.text }) : lastMsg.text)
+        : t('Tap to start chatting!');
 
       const el = document.createElement('div');
       el.className = 'kc-contact' + (c.id === activeId ? ' active' : '');
@@ -303,10 +310,11 @@ const KidsChat = (() => {
     box.innerHTML = '';
 
     if (c.messages.length === 0) {
-      box.innerHTML = `<div class="kc-no-messages">Say hi to ${escHtml(c.name)}! 👋</div>`;
+      box.innerHTML = `<div class="kc-no-messages">${t('Say hi to {name}!', { name: escHtml(c.name) })} 👋</div>`;
       return;
     }
 
+    const gallery = t.list('chat.gallery', GALLERY_IMAGES);
     c.messages.forEach(msg => {
       const div = document.createElement('div');
       div.className = 'kc-msg-row ' + (msg.from === 'me' ? 'me' : 'them');
@@ -314,8 +322,8 @@ const KidsChat = (() => {
       const isImage = msg.type === 'image';
       let contentHtml;
       if (isImage) {
-        const imgInfo = GALLERY_IMAGES.find(g => g.id === msg.imageId);
-        const label = imgInfo ? imgInfo.label : 'Photo';
+        const imgInfo = gallery.find(g => g.id === msg.imageId);
+        const label = imgInfo ? imgInfo.label : t('Photo');
         contentHtml = `<div class="kc-bubble-img ${msg.from === 'me' ? 'me' : 'them'}"><canvas class="kc-msg-canvas" data-img-id="${msg.imageId}" width="180" height="130"></canvas><div class="kc-img-label">${escHtml(label)}</div></div>`;
       } else {
         contentHtml = `<div class="kc-bubble ${msg.from === 'me' ? 'me' : 'them'}" ${msg.from !== 'me' ? `style="--contact-color:${c.color}"` : ''}>${escHtml(msg.text)}</div>`;
@@ -406,7 +414,7 @@ const KidsChat = (() => {
 
     el('kc-chat-panel').style.display = 'none';
     el('kc-edit-panel').style.display = 'flex';
-    el('kc-edit-title').textContent = `✏️ ${c.name}'s Replies`;
+    el('kc-edit-title').textContent = '✏️ ' + t("{name}'s Replies", { name: c.name });
     el('kc-edit-who').textContent = c.name;
     renderEditList();
     el('kc-edit-input').focus();
@@ -432,7 +440,7 @@ const KidsChat = (() => {
     list.innerHTML = '';
 
     if (c.replies.length === 0) {
-      list.innerHTML = '<div style="padding:16px;color:#999;text-align:center">No replies yet. Add some below!</div>';
+      list.innerHTML = '<div style="padding:16px;color:#999;text-align:center">' + t('No replies yet. Add some below!') + '</div>';
       return;
     }
 
@@ -442,7 +450,7 @@ const KidsChat = (() => {
       row.innerHTML = `
         <span class="kc-edit-reply-avatar">${c.avatar}</span>
         <span class="kc-edit-reply-text">${escHtml(reply)}</span>
-        <button class="kc-edit-del-btn" onclick="KidsChat.deleteReply(${i})" title="Delete">✕</button>
+        <button class="kc-edit-del-btn" onclick="KidsChat.deleteReply(${i})" title="${t('Delete')}">✕</button>
       `;
       list.appendChild(row);
     });
@@ -541,7 +549,7 @@ const KidsChat = (() => {
         const enemies = [[0.2, 0.15], [0.5, 0.12], [0.8, 0.18], [0.35, 0.28], [0.65, 0.25]];
         enemies.forEach(([ex, ey]) => { ctx.fillStyle = '#f44'; ctx.fillRect(w * ex - 8, h * ey, 16, 12); ctx.fillStyle = '#ff0'; ctx.fillRect(w * ex - 4, h * ey + 3, 3, 3); ctx.fillRect(w * ex + 2, h * ey + 3, 3, 3); });
         // Score
-        ctx.fillStyle = '#0f0'; ctx.font = 'bold 11px monospace'; ctx.fillText('SCORE: 4280', 6, 14);
+        ctx.fillStyle = '#0f0'; ctx.font = 'bold 11px Nunito, monospace'; ctx.fillText(t('SCORE: 4280'), 6, 14, w - 52);
         ctx.fillStyle = '#f44'; ctx.fillText('♥♥♥', w - 40, 14);
         break;
       }
@@ -679,7 +687,7 @@ const KidsChat = (() => {
     const grid = el('kc-gallery-grid');
     if (!grid) return;
     grid.innerHTML = '';
-    GALLERY_IMAGES.forEach(img => {
+    t.list('chat.gallery', GALLERY_IMAGES).forEach(img => {
       const item = document.createElement('div');
       item.className = 'kc-gallery-item';
       item.innerHTML = `<canvas class="kc-gallery-canvas" width="140" height="100"></canvas><span>${img.label}</span>`;
@@ -700,8 +708,8 @@ const KidsChat = (() => {
     if (gal) gal.style.display = 'none';
 
     // Add image message
-    const imgInfo = GALLERY_IMAGES.find(g => g.id === imageId);
-    c.messages.push({ from: 'me', type: 'image', imageId, text: imgInfo ? imgInfo.label : 'Photo', time: now() });
+    const imgInfo = t.list('chat.gallery', GALLERY_IMAGES).find(g => g.id === imageId);
+    c.messages.push({ from: 'me', type: 'image', imageId, text: imgInfo ? imgInfo.label : t('Photo'), time: now() });
     saveData();
     renderMessages();
     renderContactList();
@@ -709,7 +717,7 @@ const KidsChat = (() => {
 
     // Auto-reply about the image
     if (typingTimer) clearTimeout(typingTimer);
-    const imageReplies = [
+    const imageReplies = t.list('chat.imageReplies', [
       'Wow, great photo! 😍',
       'That looks amazing! 📸',
       'Love it! 🥰',
@@ -717,7 +725,7 @@ const KidsChat = (() => {
       'Haha nice one! 😄',
       'That\'s awesome! 🌟',
       'Pretty! 💖',
-    ];
+    ]);
     const delay = 1200 + Math.random() * 1400;
     setTimeout(() => {
       const typingEl = el('kc-typing');
@@ -752,7 +760,7 @@ const KidsChat = (() => {
     dialogAvatar = c ? c.avatar : AVATARS[0];
     dialogColor = c ? c.color : COLORS[0];
 
-    el('kc-dialog-title').textContent = dialogMode === 'edit' ? 'Edit Contact' : 'New Contact';
+    el('kc-dialog-title').textContent = dialogMode === 'edit' ? t('Edit Contact') : t('New Contact');
     const nameInput = el('kc-dialog-name');
     nameInput.value = c ? c.name : '';
     if (dialogMode === 'edit') nameInput.placeholder = c.name;
@@ -799,7 +807,8 @@ const KidsChat = (() => {
       const id = 'contact_' + Date.now();
       contacts.push({
         id, name, avatar: dialogAvatar, color: dialogColor,
-        replies: ["Hi there! 👋", "That's great! 😊", "Tell me more! 🤔", "Sounds fun! 🎉"],
+        // A copy: the contact gets its own list, a parent can change it
+        replies: t.list('chat.newContactReplies', ["Hi there! 👋", "That's great! 😊", "Tell me more! 🤔", "Sounds fun! 🎉"]).slice(),
         messages: [],
       });
       replyCounters[id] = 0;
@@ -825,10 +834,11 @@ const KidsChat = (() => {
   function el(id) { return document.getElementById(id); }
 
   function now() {
-    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return new Date().toLocaleTimeString(OS.lang() === 'en' ? [] : OS.locale(), { hour: '2-digit', minute: '2-digit' });
   }
 
   function escHtml(str) { return OS.esc(str); }
 
   return { init, destroy, send, selectContact, toggleGallery, showContactDialog, pickAvatar, pickColor, confirmDialog, cancelDialog, openEditPanel, closeEditPanel, addReply, deleteReply };
 })();
+}

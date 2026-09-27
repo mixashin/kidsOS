@@ -1,5 +1,7 @@
 /* ===== Captain Cardio — Starship Fitness App ===== */
 (() => {
+  const t = OS.texts('captaincardio');
+
   /* ---- Exercise Moves ---- */
   const MOVES = {
     'jumping-jacks':  { emoji: '⭐', name: 'Jumping Jacks',    instruction: 'Jump and spread arms & legs wide, then back!', command: 'Engage star-jump thrusters!' },
@@ -136,13 +138,26 @@
 
   /* ---- Ranks (by total missions) ---- */
   const RANKS = [
-    { min: 0,  name: 'Space Rookie' },
-    { min: 3,  name: 'Stardust Cadet' },
-    { min: 10, name: 'Nebula Navigator' },
-    { min: 20, name: 'Galaxy Guardian' },
-    { min: 40, name: 'Supernova Captain' },
-    { min: 75, name: 'Warp Commander' },
+    { id: 'rookie',    min: 0,  name: 'Space Rookie' },
+    { id: 'cadet',     min: 3,  name: 'Stardust Cadet' },
+    { id: 'navigator', min: 10, name: 'Nebula Navigator' },
+    { id: 'guardian',  min: 20, name: 'Galaxy Guardian' },
+    { id: 'captain',   min: 40, name: 'Supernova Captain' },
+    { id: 'commander', min: 75, name: 'Warp Commander' },
   ];
+
+  /* ---- Lists in the language of the app ---- */
+  const byId = list => Object.fromEntries(list.map(item => [item.id, item]));
+  const withId = map => Object.keys(map).map(id => ({ id, ...map[id] }));
+  const moves = () => byId(t.list('captaincardio.moves', withId(MOVES)));
+  const themes = () => byId(t.list('captaincardio.themes', withId(THEME_LABELS)));
+  const badges = () => t.list('captaincardio.badges', BADGES);
+  const command = () => pick(t.list('captaincardio.commands', CAPTAIN_COMMANDS));
+  // The missions of all packs are one list
+  function packs() {
+    const missions = byId(t.list('captaincardio.missions', PACKS.flatMap(p => p.missions)));
+    return t.list('captaincardio.packs', PACKS).map(p => ({ ...p, missions: p.missions.map(m => missions[m.id]) }));
+  }
 
   /* ---- State ---- */
   const STORAGE_KEY = 'kidsOS_captaincardio';
@@ -200,8 +215,9 @@
 
   /* ---- Helpers ---- */
   function getRank() {
-    let rank = RANKS[0];
-    for (const r of RANKS) {
+    const ranks = t.list('captaincardio.ranks', RANKS);
+    let rank = ranks[0];
+    for (const r of ranks) {
       if (state.missionsTotal >= r.min) rank = r;
     }
     return rank;
@@ -222,7 +238,7 @@
   function getRecommended() {
     const theme = getTodayTheme();
     const all = [];
-    PACKS.forEach((p, pi) => p.missions.forEach((m, mi) => {
+    packs().forEach((p, pi) => p.missions.forEach((m, mi) => {
       if (theme === 'free' || m.type === theme) all.push({ pack: pi, mission: mi, ...m });
     }));
     return all;
@@ -239,7 +255,7 @@
   function checkBadges() {
     const earned = [];
     const has = id => state.badges.includes(id);
-    const add = id => { if (!has(id)) { state.badges.push(id); earned.push(BADGES.find(b => b.id === id)); } };
+    const add = id => { if (!has(id)) { state.badges.push(id); earned.push(badges().find(b => b.id === id)); } };
 
     if (state.missionsTotal >= 1) add('stardust-cadet');
     if (state.missionsToday >= 3) add('wiggle-engineer');
@@ -267,21 +283,21 @@
 
   function renderBridge() {
     const theme = getTodayTheme();
-    const tl = THEME_LABELS[theme];
+    const tl = themes()[theme];
     const goal = getGoal();
     const rank = getRank();
     const pct = Math.min(100, Math.round((state.missionsToday / goal.target) * 100));
     const goalMet = state.missionsToday >= goal.target;
     const rec = getRecommended();
-    const username = (typeof OS !== 'undefined' && OS.getSettings) ? OS.getSettings().username : 'Cadet';
+    const username = (typeof OS !== 'undefined' && OS.getSettings) ? OS.getSettings().username : t('Cadet');
 
     let html = `<div class="cc-bridge">`;
     // Captain greeting
     html += `<div class="cc-captain-bubble">
       <div class="cc-captain-avatar">👨‍🚀</div>
       <div class="cc-captain-text">
-        <strong>Captain says:</strong><br>
-        ${goalMet ? 'Mission goal ACHIEVED! You are a star, ' + username + '!' : 'Welcome aboard, ' + username + '! Ready for action?'}
+        <strong>${t('Captain says:')}</strong><br>
+        ${goalMet ? t('Mission goal ACHIEVED! You are a star, {name}!', { name: OS.esc(username) }) : t('Welcome aboard, {name}! Ready for action?', { name: OS.esc(username) })}
       </div>
     </div>`;
 
@@ -289,17 +305,17 @@
     html += `<div class="cc-theme-badge">${tl.emoji} ${tl.name} — ${tl.desc}</div>`;
 
     // Rank
-    html += `<div class="cc-rank">Rank: <strong>${rank.name}</strong></div>`;
+    html += `<div class="cc-rank">${t('Rank: {rank}', { rank: `<strong>${rank.name}</strong>` })}</div>`;
 
     // Progress bar
     html += `<div class="cc-progress-section">
-      <div class="cc-progress-label">Today: ${state.missionsToday} / ${goal.target} missions ${goalMet ? '✅' : ''}</div>
+      <div class="cc-progress-label">${t('Today: {done} / {goal} missions', { done: state.missionsToday, goal: goal.target })} ${goalMet ? '✅' : ''}</div>
       <div class="cc-progress-bar"><div class="cc-progress-fill${goalMet ? ' cc-goal-met' : ''}" style="width:${pct}%"></div></div>
     </div>`;
 
     // Goal picker
     html += `<div class="cc-goal-row">`;
-    GOALS.forEach(g => {
+    t.list('captaincardio.goals', GOALS).forEach(g => {
       const active = g.target === state.dailyGoal ? ' cc-goal-active' : '';
       html += `<button class="cc-goal-pill${active}" onclick="_ccSetGoal(${g.target})">${g.emoji} ${g.label}</button>`;
     });
@@ -307,26 +323,27 @@
 
     // Streak
     if (state.streak > 0 || state.bestStreak > 0) {
-      html += `<div class="cc-streak-row">🔥 Streak: <strong>${state.streak}</strong> day${state.streak !== 1 ? 's' : ''} &nbsp;|&nbsp; Best: <strong>${state.bestStreak}</strong></div>`;
+      html += `<div class="cc-streak-row">🔥 ${t('Streak: {n} {days}', { n: `<strong>${state.streak}</strong>`, days: t.plural(state.streak, 'day', 'days') })} &nbsp;|&nbsp; ${t('Best: {n}', { n: `<strong>${state.bestStreak}</strong>` })}</div>`;
     }
 
     // Badges (compact row)
     if (state.badges.length > 0) {
       html += `<div class="cc-badges-row">`;
+      const all = badges();
       state.badges.forEach(id => {
-        const b = BADGES.find(x => x.id === id);
+        const b = all.find(x => x.id === id);
         if (b) html += `<span class="cc-badge-mini" title="${b.name}">${b.emoji}</span>`;
       });
       html += `</div>`;
     }
 
     // Start mission button
-    html += `<button class="cc-start-btn" onclick="_ccGo('select')">🚀 Start Mission</button>`;
+    html += `<button class="cc-start-btn" onclick="_ccGo('select')">🚀 ${t('Start Mission')}</button>`;
 
     // Recommended missions
     if (rec.length > 0) {
       html += `<div class="cc-rec-section">
-        <div class="cc-rec-title">Suggested for today:</div>`;
+        <div class="cc-rec-title">${t('Suggested for today:')}</div>`;
       rec.slice(0, 3).forEach(r => {
         const done = isMissionDoneToday(r.id);
         html += `<button class="cc-rec-item${done ? ' cc-rec-done' : ''}" onclick="_ccSelectMission(${r.pack}, ${r.mission})">
@@ -337,7 +354,7 @@
     }
 
     // Nav
-    html += `<button class="cc-nav-link" onclick="_ccGo('log')">📋 Captain's Log</button>`;
+    html += `<button class="cc-nav-link" onclick="_ccGo('log')">📋 ${t("Captain's Log")}</button>`;
     html += `</div>`;
     return html;
   }
@@ -345,9 +362,9 @@
   function renderSelect() {
     const theme = getTodayTheme();
     let html = `<div class="cc-select">`;
-    html += `<div class="cc-select-header"><button class="cc-back-btn" onclick="_ccGo('bridge')">← Bridge</button><span>Choose Your Mission</span></div>`;
+    html += `<div class="cc-select-header"><button class="cc-back-btn" onclick="_ccGo('bridge')">← ${t('Bridge')}</button><span>${t('Choose Your Mission')}</span></div>`;
 
-    PACKS.forEach((pack, pi) => {
+    packs().forEach((pack, pi) => {
       html += `<div class="cc-pack-card">
         <div class="cc-pack-header">${pack.emoji} <strong>${pack.name}</strong><br><span class="cc-pack-vibe">${pack.vibe}</span></div>
         <div class="cc-pack-missions">`;
@@ -369,8 +386,9 @@
   }
 
   function renderActive() {
-    const phase = PHASES[phaseIdx];
+    const phase = t.list('captaincardio.phases', PHASES)[phaseIdx];
     const mission = currentMission;
+    const all = moves();
     let instruction, moveEmoji;
     if (phase.id === 'warmup' || phase.id === 'hero') {
       instruction = phase.instruction;
@@ -378,12 +396,12 @@
     } else {
       const moveIdx = phaseIdx - 1; // 0,1,2 for move1,move2,move3
       const moveKey = mission.moves[moveIdx];
-      const move = MOVES[moveKey];
+      const move = all[moveKey];
       instruction = move.instruction;
       moveEmoji = move.emoji;
     }
 
-    const phaseName = phase.id.startsWith('move') ? (MOVES[mission.moves[phaseIdx - 1]]?.name || phase.name) : phase.name;
+    const phaseName = phase.id.startsWith('move') ? (all[mission.moves[phaseIdx - 1]]?.name || phase.name) : phase.name;
 
     let html = `<div class="cc-active">`;
     // Phase dots
@@ -408,7 +426,7 @@
     </div>`;
 
     // Skip button
-    html += `<button class="cc-skip-btn" onclick="_ccSkipPhase()">⏭ Done Early!</button>`;
+    html += `<button class="cc-skip-btn" onclick="_ccSkipPhase()">⏭ ${t('Done Early!')}</button>`;
     html += `</div>`;
     return html;
   }
@@ -420,26 +438,26 @@
   function renderComplete() {
     let html = `<div class="cc-complete">`;
     html += `<div class="cc-complete-emoji">🎉</div>`;
-    html += `<div class="cc-complete-title">Mission Complete!</div>`;
+    html += `<div class="cc-complete-title">${t('Mission Complete!')}</div>`;
     html += `<div class="cc-praise">${completePraise}</div>`;
-    html += `<div class="cc-coins-display">+${completeCoins} Giggle Coins! 🪙</div>`;
+    html += `<div class="cc-coins-display">${t('+{n} {coins}!', { n: completeCoins, coins: t.plural(completeCoins, 'Giggle Coin', 'Giggle Coins') })} 🪙</div>`;
 
     // New badges
     if (completeNewBadges.length > 0) {
       html += `<div class="cc-new-badges">`;
       completeNewBadges.forEach(b => {
-        html += `<div class="cc-new-badge">${b.emoji} <strong>${b.name}</strong> unlocked!</div>`;
+        html += `<div class="cc-new-badge">${t('{badge} unlocked!', { badge: `${b.emoji} <strong>${b.name}</strong>` })}</div>`;
       });
       html += `</div>`;
     }
 
     // Hydrate reminder
-    html += `<div class="cc-hydrate">💧 Refuel the reactor! Grab some water!</div>`;
+    html += `<div class="cc-hydrate">💧 ${t('Refuel the reactor! Grab some water!')}</div>`;
 
     // Buttons
     html += `<div class="cc-complete-btns">
-      <button class="cc-start-btn" onclick="_ccNextMission()">🚀 Next Mission</button>
-      <button class="cc-nav-link" onclick="_ccDone()">← Back to Bridge</button>
+      <button class="cc-start-btn" onclick="_ccNextMission()">🚀 ${t('Next Mission')}</button>
+      <button class="cc-nav-link" onclick="_ccDone()">← ${t('Back to Bridge')}</button>
     </div>`;
     html += `</div>`;
     return html;
@@ -448,23 +466,23 @@
   function renderLog() {
     const rank = getRank();
     let html = `<div class="cc-log">`;
-    html += `<div class="cc-select-header"><button class="cc-back-btn" onclick="_ccGo('bridge')">← Bridge</button><span>Captain's Log</span></div>`;
+    html += `<div class="cc-select-header"><button class="cc-back-btn" onclick="_ccGo('bridge')">← ${t('Bridge')}</button><span>${t("Captain's Log")}</span></div>`;
 
     // Stats
     html += `<div class="cc-log-stats">
-      <div class="cc-log-stat"><div class="cc-log-stat-val">${state.missionsTotal}</div><div class="cc-log-stat-label">Total Missions</div></div>
-      <div class="cc-log-stat"><div class="cc-log-stat-val">${state.streak}</div><div class="cc-log-stat-label">Current Streak</div></div>
-      <div class="cc-log-stat"><div class="cc-log-stat-val">${state.bestStreak}</div><div class="cc-log-stat-label">Best Streak</div></div>
-      <div class="cc-log-stat"><div class="cc-log-stat-val">${state.daysActive}</div><div class="cc-log-stat-label">Days Active</div></div>
+      <div class="cc-log-stat"><div class="cc-log-stat-val">${state.missionsTotal}</div><div class="cc-log-stat-label">${t('Total Missions')}</div></div>
+      <div class="cc-log-stat"><div class="cc-log-stat-val">${state.streak}</div><div class="cc-log-stat-label">${t('Current Streak')}</div></div>
+      <div class="cc-log-stat"><div class="cc-log-stat-val">${state.bestStreak}</div><div class="cc-log-stat-label">${t('Best Streak')}</div></div>
+      <div class="cc-log-stat"><div class="cc-log-stat-val">${state.daysActive}</div><div class="cc-log-stat-label">${t('Days Active')}</div></div>
     </div>`;
 
     // Rank
-    html += `<div class="cc-log-rank">Rank: <strong>${rank.name}</strong></div>`;
+    html += `<div class="cc-log-rank">${t('Rank: {rank}', { rank: `<strong>${rank.name}</strong>` })}</div>`;
 
     // Badges grid
-    html += `<div class="cc-log-section-title">Badges</div>`;
+    html += `<div class="cc-log-section-title">${t('Badges')}</div>`;
     html += `<div class="cc-badge-grid">`;
-    BADGES.forEach(b => {
+    badges().forEach(b => {
       const unlocked = state.badges.includes(b.id);
       html += `<div class="cc-badge-card${unlocked ? '' : ' cc-badge-locked'}">
         <div class="cc-badge-emoji">${unlocked ? b.emoji : '🔒'}</div>
@@ -475,8 +493,8 @@
     html += `</div>`;
 
     // Mission completion
-    html += `<div class="cc-log-section-title">Mission Progress</div>`;
-    PACKS.forEach(pack => {
+    html += `<div class="cc-log-section-title">${t('Mission Progress')}</div>`;
+    packs().forEach(pack => {
       const done = pack.missions.filter(m => state.completedMissions.includes(m.id)).length;
       html += `<div class="cc-log-pack">${pack.emoji} ${pack.name}: ${done}/${pack.missions.length}</div>`;
     });
@@ -490,7 +508,7 @@
     stopTimer();
     phaseIdx = 0;
     timerSeconds = PHASES[0].duration;
-    lastCommand = pick(CAPTAIN_COMMANDS);
+    lastCommand = command();
     render();
     timerInterval = setInterval(tick, 1000);
   }
@@ -508,7 +526,7 @@
     }
     // Rotate captain command every 8 seconds
     if (timerSeconds > 0 && timerSeconds % 8 === 0) {
-      lastCommand = pick(CAPTAIN_COMMANDS);
+      lastCommand = command();
     }
     updateTimerDisplay();
   }
@@ -516,7 +534,7 @@
   function advancePhase() {
     phaseIdx++;
     timerSeconds = PHASES[phaseIdx].duration;
-    lastCommand = pick(CAPTAIN_COMMANDS);
+    lastCommand = command();
     render(); // full re-render for phase change
   }
 
@@ -562,11 +580,11 @@
     const base = 10;
     const streakBonus = Math.min(10, state.streak * 2);
     completeCoins = base + streakBonus;
-    OS.awardCoins(completeCoins, 'captaincardio', '🚀', 'Captain Cardio: ' + currentMission.name);
+    OS.awardCoins(completeCoins, 'captaincardio', '🚀', t('Captain Cardio: {mission}', { mission: currentMission.name }));
 
     // Check badges
     completeNewBadges = checkBadges();
-    completePraise = pick(PRAISE_LINES);
+    completePraise = pick(t.list('captaincardio.praise', PRAISE_LINES));
 
     save();
     screen = 'complete';
@@ -581,7 +599,7 @@
   };
 
   window._ccSelectMission = function(packIdx, missionIdx) {
-    currentMission = PACKS[packIdx].missions[missionIdx];
+    currentMission = packs()[packIdx].missions[missionIdx];
     screen = 'active';
     startTimer();
   };
@@ -623,7 +641,7 @@
     getWindowOpts() {
       return {
         id: 'captaincardio',
-        title: 'Captain Cardio',
+        title: t('Captain Cardio'),
         icon: '🚀',
         width: 480,
         height: 620,
