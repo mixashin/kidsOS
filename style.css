@@ -192,7 +192,7 @@ html, body {
   border: 1px solid rgba(255,255,255,0.15);
   border-radius: 12px; z-index: 200;
   /* The list is taller than a screen of 800 px: the menu stays inside the screen and scrolls */
-  max-height: calc(100% - var(--taskbar-h) - 16px); overflow-y: auto;
+  max-height: calc(100% - var(--taskbar-h) - 16px); overflow-x: hidden; overflow-y: auto;
   box-shadow: 0 8px 32px rgba(0,0,0,0.5);
 }
 #app-menu.hidden { display: none; }
