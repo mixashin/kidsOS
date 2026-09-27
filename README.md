@@ -41,7 +41,7 @@ A fun browser-based OS simulator for kids learning to use computers. Built with 
 | **TinyScanner** | Object scanner with real camera and silly results |
 | **SillySkies** | Parody weather app for silly places |
 | **Breakout** | Classic brick breaker game |
-| **Pong** | Ball game for one player against the computer, or for two players on one device |
+| **Pong** | Ball game for one player against the computer, or for two players on one device. Classic style, and Pong+ with spin trick shots and power-ups |
 | **Captain Cardio** | Starship fitness app with exercise moves |
 | **Pebbles** | Virtual pet rock |
 | **Pocket Pal** | Virtual pet corgi in 3D |

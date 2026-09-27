@@ -3172,3 +3172,16 @@ button { font-family: var(--font); }
 .pg-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0,0,0,0.28); }
 .pg-btn-plain { background: rgba(255,255,255,0.16); color: #fff; min-height: 60px; font-size: 20px; }
 @media (prefers-reduced-motion: reduce) { .pg-btn:active { transform: none; } }
+/* Pong: style choice in the menu, and the look of the classic style */
+.pg-picks { display: flex; gap: 10px; width: 100%; }
+.pg-pick { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 60px; padding: 8px 10px; border: 3px solid rgba(255,255,255,0.25); border-radius: 18px; background: rgba(255,255,255,0.08); color: #fff; font: 700 19px var(--font); cursor: pointer; touch-action: manipulation; }
+.pg-pick span { font-size: 24px; }
+.pg-pick.pg-on { border-color: #fff; background: rgba(255,255,255,0.28); }
+.pg-classic { background: #000; }
+/* Short screen (phone in landscape): the menu must fit, so the logo goes */
+@media (max-height: 520px) {
+  .pg-logo, .pg-title { display: none; }
+  .pg-panel { gap: 10px; }
+  .pg-btn { min-height: 62px; }
+  .pg-final { font-size: 30px; }
+}
