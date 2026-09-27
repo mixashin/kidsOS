@@ -328,6 +328,7 @@ const OS = (() => {
     btn.className = 'taskbar-app-btn active';
     btn.innerHTML = `<span class="tbtn-icon">${picture || opts.icon || ''}</span><span class="tbtn-title">${opts.title||'App'}</span>`;
     btn.id = 'tbtn_' + id;
+    btn.setAttribute('aria-label', opts.title || 'App'); // a narrow screen hides the title text
     btn.onclick = () => {
       if (win.classList.contains('minimized')) {
         restoreWindow(id);

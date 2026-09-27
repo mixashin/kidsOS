@@ -66,7 +66,7 @@ OS.registerApp('notepad', {
         }
         // Update window title to show filename
         const titleEl = document.querySelector(`#window_${id} .win-title`);
-        if (titleEl) titleEl.innerHTML = `<span class="win-title-icon">📝</span> ${fileName}`;
+        if (titleEl) titleEl.innerHTML = `<span class="win-title-icon">${OS.icon('notepad')}</span> ${fileName}`;
       }, 20);
     }
   },
@@ -146,7 +146,7 @@ const NotepadApp = {
       wrap.dataset.filename = finalName;
       // Update window title
       const titleEl = wrap.closest('.window')?.querySelector('.win-title');
-      if (titleEl) titleEl.innerHTML = `<span class="win-title-icon">📝</span> ${finalName}`;
+      if (titleEl) titleEl.innerHTML = `<span class="win-title-icon">${OS.icon('notepad')}</span> ${finalName}`;
       this._flashSaved(btn, '✅ Saved');
     }
   },

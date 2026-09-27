@@ -108,6 +108,11 @@ html, body {
   width: var(--app-icon, 32px); height: var(--app-icon, 32px);
   user-select: none; -webkit-user-drag: none;
 }
+/* A long press on a picture must not open the picture menu of the browser (save, share, search).
+   The touch goes to the tile or the button that holds the picture. */
+.app-icon, #app-menu-btn img, #boot-logo img, .update-popup-icon img, #panel-about img {
+  pointer-events: none; -webkit-touch-callout: none;
+}
 
 /* ===== DESKTOP ICONS ===== */
 #desktop-icons {
@@ -186,7 +191,9 @@ html, body {
   backdrop-filter: blur(16px);
   border: 1px solid rgba(255,255,255,0.15);
   border-radius: 12px; z-index: 200;
-  overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  /* The list is taller than a screen of 800 px: the menu stays inside the screen and scrolls */
+  max-height: calc(100% - var(--taskbar-h) - 16px); overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
 }
 #app-menu.hidden { display: none; }
 

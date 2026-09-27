@@ -228,7 +228,7 @@ const PaintApp = (() => {
       // Update window title
       const win = canvas.closest('.window');
       const titleEl = win && win.querySelector('.win-title');
-      if (titleEl) titleEl.innerHTML = `<span class="win-title-icon">🎨</span> ${name}`;
+      if (titleEl) titleEl.innerHTML = `<span class="win-title-icon">${OS.icon('paint')}</span> ${name}`;
       flashBtn(btn, '✅ Saved');
     }
   }
@@ -319,7 +319,7 @@ const PaintApp = (() => {
       currentFile = { name };
       const win = canvas.closest('.window');
       const titleEl = win && win.querySelector('.win-title');
-      if (titleEl) titleEl.innerHTML = `<span class="win-title-icon">🎨</span> ${name}`;
+      if (titleEl) titleEl.innerHTML = `<span class="win-title-icon">${OS.icon('paint')}</span> ${name}`;
     }, 150);
   }
 
