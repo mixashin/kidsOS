@@ -183,3 +183,17 @@ The text font is Nunito (SIL Open Font License 1.1). The file is in `fonts/`, wi
 ## 📜 License
 
 MIT. Share it, change it, give it to your kids. The rock stays calm either way.
+
+---
+
+<div align="center">
+
+*Dedicated with love to the two biggest joys of my life.*
+
+<img src="docs/heart.svg" alt="A pink heart" width="72">
+
+***Thank you for existing!***
+
+**Dad**
+
+</div>
