@@ -8,15 +8,15 @@ A fun browser-based OS simulator for kids learning to use computers. Built with 
 
 ## Features
 
-- **Window Manager** — Draggable, resizable windows with minimize/maximize/close
-- **Taskbar & App Menu** — Windows-style taskbar with clock and start menu
+- **Home screen for touch** — On a tablet or phone, all apps are on one painted home screen. An app opens in full screen, with a Home button and a Close button
+- **Desktop for mouse** — On a PC, apps open in windows that you can move and resize, with a taskbar and an app menu
 - **25 Apps** — Games, creativity tools, and silly parody apps
 - **Painted pictures** — Each app has its own picture in a hand-painted style. Each device shows the same pictures
 - **Private** — No trackers, no telemetry, no requests to other servers. All data stays on the device
-- **Dark/Light Theme** — With accent color picker
+- **Day and Night** — Two themes, 6 painted wallpapers, 6 accent colors
 - **PWA Support** — Installable on Android and iOS, works offline
 - **Virtual Filesystem** — Save files in localStorage
-- **Fully Responsive** — Desktop experience on PC, phone-style launcher on mobile
+- **Fits the device** — The app selects its layout by the kind of pointer and the size of the screen
 
 ## Apps
 
@@ -105,7 +105,11 @@ node build.mjs                                # build the deployable site into d
 
 ## Art
 
-The app pictures, the penguin, and the home screen icon are original pictures in a hand-painted style. An AI image tool made them for KidsOS. They use no stock picture and no character of a film, a game, or a book. The files are in `art/` and `icons/`. They are free to use under the license of this project.
+The app pictures, the penguin, the wallpapers, the coin, and the home screen icon are original pictures in a hand-painted style. An AI image tool made them for KidsOS. They use no stock picture and no character of a film, a game, or a book. The files are in `art/` and `icons/`. They are free to use under the license of this project.
+
+## Font
+
+The text font is Nunito (SIL Open Font License 1.1). The file is in `fonts/`, with the license text. The app loads it from its own site.
 
 ## License
 
