@@ -26,7 +26,7 @@ Lang.add('sr', 'chat', {
   'Send a photo': 'Пошаљи слику',
   'Type a message…': 'Напиши поруку…',
   'Send': 'Пошаљи',
-  'Tap to start chatting!': 'Додирни и почни ћаскање!',
+  'Tap to start chatting!': 'Додирни и пиши!',
   'You: {text}': 'Ти: {text}',
   'Say hi to {name}!': '{name} чека твоје „Здраво!“',
   'Photo': 'Слика',

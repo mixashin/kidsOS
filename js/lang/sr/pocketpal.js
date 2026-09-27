@@ -42,7 +42,7 @@ Lang.add('sr', 'pocketpal', {
 
   // Games
   'Tap the 3D objects!': 'Додирни предмете!',
-  '{n}s': '{n} с',
+  '{n}s': '{n} сек',
   'Copy this pose!': 'Који је ово покрет?',
   'Correct!': 'Тачно!',
   'Not quite!': 'Скоро!',

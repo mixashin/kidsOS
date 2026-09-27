@@ -1068,8 +1068,7 @@ var KidsGram = (() => {
     if (!text) return;
     input.value = '';
 
-    const s = OS.getSettings();
-    const username = (s.username || t('Me')).replace(/\s/g,'_');
+    const username = (OS.userName() || t('Me')).replace(/\s/g,'_');
 
     if (!state.comments[id]) state.comments[id] = [];
     state.comments[id].push({ u: username, t: text });

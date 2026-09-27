@@ -4,7 +4,6 @@ Lang.add('sr', 'captaincardio', {
 
   // Bridge. The name of the child is in the base form: it is the subject of the sentence
   'Captain says:': 'Капетан каже:',
-  'Cadet': 'Посада',
   'Mission goal ACHIEVED! You are a star, {name}!': 'Циљ је ОСТВАРЕН! Звезда дана: {name}!',
   'Welcome aboard, {name}! Ready for action?': 'На палуби је {name}! Крећемо у акцију?',
   'Rank: {rank}': 'Чин: {rank}',

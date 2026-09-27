@@ -289,7 +289,7 @@
     const pct = Math.min(100, Math.round((state.missionsToday / goal.target) * 100));
     const goalMet = state.missionsToday >= goal.target;
     const rec = getRecommended();
-    const username = (typeof OS !== 'undefined' && OS.getSettings) ? OS.getSettings().username : t('Cadet');
+    const username = OS.userName();
 
     let html = `<div class="cc-bridge">`;
     // Captain greeting

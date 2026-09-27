@@ -834,7 +834,7 @@ var KidsChat = (() => {
   function el(id) { return document.getElementById(id); }
 
   function now() {
-    return new Date().toLocaleTimeString(OS.lang() === 'en' ? [] : OS.locale(), { hour: '2-digit', minute: '2-digit' });
+    return new Date().toLocaleTimeString(OS.locale(), { hour: '2-digit', minute: '2-digit' });
   }
 
   function escHtml(str) { return OS.esc(str); }

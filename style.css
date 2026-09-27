@@ -662,7 +662,7 @@ button { font-family: var(--font); }
   display:flex; align-items:center; justify-content:center;
   font-size:24px; border:2px solid var(--win-body-bg);
 }
-.kg-story-name { font-size:10px; color:var(--text-secondary); white-space:nowrap; max-width:58px; overflow:hidden; text-overflow:ellipsis; text-align:center; }
+.kg-story-name { font-size:10px; line-height:1.2; color:var(--text-secondary); max-width:58px; overflow:hidden; text-overflow:ellipsis; text-align:center; }
 
 /* Feed */
 .kg-feed { flex:1; overflow-y:auto; }
