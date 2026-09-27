@@ -623,7 +623,7 @@
     getWindowOpts() {
       return {
         id: 'captaincardio',
-        title: '🚀 Captain Cardio',
+        title: 'Captain Cardio',
         icon: '🚀',
         width: 480,
         height: 620,

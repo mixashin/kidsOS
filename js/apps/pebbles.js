@@ -485,7 +485,7 @@
     singleInstance: true,
     getWindowOpts() {
       return {
-        id: 'pebbles', title: '🪨 Pebbles', icon: '🪨',
+        id: 'pebbles', title: 'Pebbles', icon: '🪨',
         width: 420, height: 620,
         content: '<div class="pb-wrap" id="pb-wrap"></div>',
       };

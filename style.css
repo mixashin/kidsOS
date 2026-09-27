@@ -100,6 +100,14 @@ html, body {
   position: relative; overflow: hidden;
 }
 
+/* ===== APP PICTURES ===== */
+/* Files in art/icons/. The place that shows a picture sets its size with --app-icon. */
+.app-icon {
+  display: block; flex: none;
+  width: var(--app-icon, 32px); height: var(--app-icon, 32px);
+  user-select: none; -webkit-user-drag: none;
+}
+
 /* ===== DESKTOP ICONS ===== */
 #desktop-icons {
   position: absolute; top: calc(16px + var(--sat)); left: calc(16px + var(--sal));
@@ -115,7 +123,7 @@ html, body {
 }
 .desktop-icon:hover { background: rgba(255,255,255,0.15); }
 .desktop-icon:active { background: rgba(255,255,255,0.25); }
-.desktop-icon .icon-img { font-size: 36px; line-height: 1; }
+.desktop-icon .app-icon { --app-icon: 56px; }
 .desktop-icon span {
   margin-top: 4px; font-size: 12px; color: #fff;
   text-shadow: 0 1px 3px rgba(0,0,0,0.8);
@@ -137,7 +145,8 @@ html, body {
 #taskbar-left { display: flex; align-items: center; }
 #taskbar-center { flex: 1; display: flex; align-items: center; gap: 6px; padding: 0 8px; overflow: hidden; }
 #taskbar-right { display: flex; align-items: center; }
-.tbtn-icon { margin-right: 4px; }
+.tbtn-icon { margin-right: 6px; flex: none; }
+.tbtn-title { overflow: hidden; text-overflow: ellipsis; }
 
 #app-menu-btn {
   background: var(--accent); border: none;
@@ -149,10 +158,12 @@ html, body {
 #app-menu-btn:hover { filter: brightness(1.15); }
 
 .taskbar-app-btn {
+  --app-icon: 24px;
+  display: flex; align-items: center;
   background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.18);
   color: #fff; font-size: 13px; padding: 4px 12px;
-  border-radius: 6px; cursor: pointer; max-width: 140px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  border-radius: 6px; cursor: pointer; max-width: 170px;
+  white-space: nowrap; overflow: hidden;
   transition: background 0.15s;
 }
 .taskbar-app-btn:hover { background: rgba(255,255,255,0.22); }
@@ -195,7 +206,7 @@ html, body {
   transition: background 0.15s;
 }
 .menu-app-item:hover { background: rgba(255,255,255,0.15); }
-.menu-app-item span { font-size: 20px; }
+.menu-app-item .app-icon { --app-icon: 32px; }
 
 .app-menu-footer {
   padding: 10px 16px; border-top: 1px solid rgba(255,255,255,0.1);
@@ -253,10 +264,12 @@ html, body {
 .win-btn.close:hover { background: #e81123; color: #fff; }
 
 .win-title {
-  flex: 1; color: #fff; font-size: 13px; font-weight: 600;
+  --app-icon: 24px;
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px;
+  color: #fff; font-size: 13px; font-weight: 600;
   text-align: left; pointer-events: none;
 }
-.win-title-icon { font-size: 16px; }
+.win-title-icon { font-size: 16px; flex: none; }
 
 /* Window body */
 .win-body {
@@ -3031,13 +3044,13 @@ button { font-family: var(--font); }
     align-content: start;
   }
   .desktop-icon { width: 100%; max-width: 140px; padding: 14px 6px; }
-  .desktop-icon .icon-img { font-size: 60px; }
+  .desktop-icon .app-icon { --app-icon: 72px; }
   .desktop-icon span { font-size: 13px; margin-top: 6px; }
 
   /* Taskbar — icon-only app buttons on mobile */
   .tbtn-title { display: none; }
   .tbtn-icon { margin-right: 0; }
-  .taskbar-app-btn { padding: 4px 8px; min-width: 36px; max-width: 40px; text-align: center; }
+  .taskbar-app-btn { --app-icon: 28px; padding: 4px 8px; min-width: 46px; max-width: 46px; justify-content: center; }
   #taskbar-center { overflow-x: auto; scrollbar-width: none; }
   #taskbar-center::-webkit-scrollbar { display: none; }
   #app-menu-btn { padding: 10px 18px; font-size: 15px; }
@@ -3054,7 +3067,7 @@ button { font-family: var(--font); }
   /* App menu grid — 3 columns on tablet for bigger touch targets */
   .app-menu-grid { grid-template-columns: repeat(3, 1fr); gap: 4px; }
   .menu-app-item { padding: 14px 12px; font-size: 15px; }
-  .menu-app-item span { font-size: 24px; }
+  .menu-app-item .app-icon { --app-icon: 40px; }
 
   /* Windows — no resize handle on touch */
   .win-resize { display: none; }
@@ -3062,7 +3075,7 @@ button { font-family: var(--font); }
   /* Win controls — bigger touch targets */
   .win-btn { width: 40px; height: 32px; font-size: 14px; }
   .win-titlebar { height: 40px; }
-  .win-title { font-size: 14px; }
+  .win-title { font-size: 14px; --app-icon: 28px; }
 
   /* Memory game */
   #memory-grid { grid-template-columns: repeat(4, 70px); gap: 8px; }
@@ -3092,7 +3105,7 @@ button { font-family: var(--font); }
 /* ===== RESPONSIVE — MOBILE (≤768px) ===== */
 @media (max-width: 768px) {
   #desktop-icons { grid-template-columns: repeat(4, 1fr); }
-  .desktop-icon .icon-img { font-size: 52px; }
+  .desktop-icon .app-icon { --app-icon: 64px; }
   .desktop-icon span { font-size: 12px; }
 
   /* Boot screen */
@@ -3122,7 +3135,7 @@ button { font-family: var(--font); }
   /* Desktop icons — 4-column grid, slightly smaller on small phones */
   #desktop-icons { grid-template-columns: repeat(4, 1fr); gap: 4px; top: calc(12px + var(--sat)); left: calc(12px + var(--sal)); right: calc(12px + var(--sar)); }
   .desktop-icon { padding: 8px 2px; }
-  .desktop-icon .icon-img { font-size: 44px; }
+  .desktop-icon .app-icon { --app-icon: 60px; }
   .desktop-icon span { font-size: 11px; }
 
   /* Memory game — tighter */

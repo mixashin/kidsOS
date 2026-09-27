@@ -286,9 +286,11 @@ const OS = (() => {
 
   /* ---- Window Manager ---- */
   function createWindow(opts) {
-    // opts: { id, title, icon, content, width, height, x, y, app }
+    // opts: { id, title, icon, content, width, height, x, y, app, appId }
     const id = opts.id || ('win_' + Date.now());
     if (windowMap[id]) { focusWindow(id); return id; }
+    // A window of an app shows the picture of the app. Each other window shows the text of its options.
+    const picture = opts.appId ? icon(opts.appId) : '';
 
     const win = document.createElement('div');
     win.className = 'window';
@@ -303,7 +305,7 @@ const OS = (() => {
     win.innerHTML = `
       <div class="win-titlebar">
         <div class="win-title">
-          <span class="win-title-icon">${opts.icon||'🪟'}</span> ${opts.title||'Window'}
+          <span class="win-title-icon">${picture || opts.icon || '🪟'}</span> ${opts.title||'Window'}
         </div>
         <div class="win-controls">
           <button class="win-btn minimize" title="Minimize" onclick="OS.minimizeWindow('${id}')">─</button>
@@ -324,7 +326,7 @@ const OS = (() => {
     // Taskbar button
     const btn = document.createElement('button');
     btn.className = 'taskbar-app-btn active';
-    btn.innerHTML = `<span class="tbtn-icon">${opts.icon||''}</span><span class="tbtn-title">${opts.title||'App'}</span>`;
+    btn.innerHTML = `<span class="tbtn-icon">${picture || opts.icon || ''}</span><span class="tbtn-title">${opts.title||'App'}</span>`;
     btn.id = 'tbtn_' + id;
     btn.onclick = () => {
       if (win.classList.contains('minimized')) {
@@ -502,47 +504,53 @@ const OS = (() => {
   /* ---- App Registry ---- */
   // The one list of apps. Desktop icons, app menu, and the About panel come from it.
   // The code of an app is js/apps/<id>.js. It loads when the app opens for the first time.
+  // The picture of an app is art/icons/<id>.webp.
   //   short: label for the desktop icon when the full label is too long
   //   needs: apps whose code this app calls directly
   const APPS = [
-    { id: 'filemanager',    icon: '📁', label: 'Files', needs: ['notepad', 'paint'] },
-    { id: 'notepad',        icon: '📝', label: 'Notepad', needs: ['filemanager'] },
-    { id: 'calculator',     icon: '🔢', label: 'Calculator' },
-    { id: 'paint',          icon: '🎨', label: 'Paint', needs: ['filemanager'] },
-    { id: 'snake',          icon: '🐍', label: 'Snake' },
-    { id: 'memory',         icon: '🃏', label: 'Memory' },
-    { id: 'kidstagram',     icon: '📸', label: 'Kidstagram' },
-    { id: 'chat',           icon: '💬', label: 'KidsChat' },
-    { id: 'minesweeper',    icon: '💣', label: 'Minesweeper' },
-    { id: 'ejob',           icon: '💼', label: 'eJob' },
-    { id: 'kidflix',        icon: '🎬', label: 'Kidflix' },
-    { id: 'tinybank',       icon: '🏦', label: 'TinyBank' },
-    { id: 'chorequest',     icon: '✅', label: 'Chores' },
-    { id: 'treasuremapper', icon: '🗺️', label: 'Maps' },
-    { id: 'snackdash',      icon: '🛵', label: 'SnackDash' },
-    { id: 'zoomer',         icon: '🚗', label: 'Zoomer' },
-    { id: 'soundboard',     icon: '🔊', label: 'Sounds' },
-    { id: 'tinyscanner',    icon: '🔍', label: 'Scanner' },
-    { id: 'sillyskies',     icon: '🌈', label: 'SillySkies' },
-    { id: 'breakout',       icon: '🧱', label: 'Breakout' },
-    { id: 'pong',           icon: '🏓', label: 'Pong' },
-    { id: 'captaincardio',  icon: '🚀', label: 'Captain Cardio', short: 'Cardio' },
-    { id: 'pebbles',        icon: '🪨', label: 'Pebbles' },
-    { id: 'pocketpal',      icon: '🐶', label: 'Pocket Pal' },
-    { id: 'settings',       icon: '⚙️', label: 'Settings' },
+    { id: 'filemanager',    label: 'Files', needs: ['notepad', 'paint'] },
+    { id: 'notepad',        label: 'Notepad', needs: ['filemanager'] },
+    { id: 'calculator',     label: 'Calculator' },
+    { id: 'paint',          label: 'Paint', needs: ['filemanager'] },
+    { id: 'snake',          label: 'Snake' },
+    { id: 'memory',         label: 'Memory' },
+    { id: 'kidstagram',     label: 'Kidstagram' },
+    { id: 'chat',           label: 'KidsChat' },
+    { id: 'minesweeper',    label: 'Minesweeper' },
+    { id: 'ejob',           label: 'eJob' },
+    { id: 'kidflix',        label: 'Kidflix' },
+    { id: 'tinybank',       label: 'TinyBank' },
+    { id: 'chorequest',     label: 'Chores' },
+    { id: 'treasuremapper', label: 'Maps' },
+    { id: 'snackdash',      label: 'SnackDash' },
+    { id: 'zoomer',         label: 'Zoomer' },
+    { id: 'soundboard',     label: 'Sounds' },
+    { id: 'tinyscanner',    label: 'Scanner' },
+    { id: 'sillyskies',     label: 'SillySkies' },
+    { id: 'breakout',       label: 'Breakout' },
+    { id: 'pong',           label: 'Pong' },
+    { id: 'captaincardio',  label: 'Captain Cardio', short: 'Cardio' },
+    { id: 'pebbles',        label: 'Pebbles' },
+    { id: 'pocketpal',      label: 'Pocket Pal' },
+    { id: 'settings',       label: 'Settings' },
   ];
+
+  // The label next to the picture names the app, so alt stays empty
+  function icon(id) {
+    return `<img class="app-icon" src="art/icons/${id}.webp" alt="" draggable="false">`;
+  }
 
   function renderLauncher() {
     const icons = document.getElementById('desktop-icons');
     const menu = document.getElementById('app-menu-grid');
     icons.innerHTML = APPS.map(a => `
       <div class="desktop-icon" data-app="${a.id}" role="button" tabindex="0">
-        <div class="icon-img">${a.icon}</div>
+        <div class="icon-img">${icon(a.id)}</div>
         <span>${a.short || a.label}</span>
       </div>`).join('');
     menu.innerHTML = APPS.map(a => `
       <div class="menu-app-item" data-app="${a.id}" role="button" tabindex="0">
-        <span>${a.icon}</span> ${a.label}
+        ${icon(a.id)} ${a.label}
       </div>`).join('');
 
     const open = e => {
@@ -599,7 +607,7 @@ const OS = (() => {
     if (ids.every(id => apps[id])) return openApp(name);
     Promise.all(ids.map(id => loadScript(id)))
       .then(() => openApp(name))
-      .catch(() => alert(`${entry.icon} ${entry.label} could not open. Try again.`));
+      .catch(() => alert(`${entry.label} could not open. Try again.`));
   }
 
   function openApp(name) {
@@ -623,6 +631,7 @@ const OS = (() => {
 
     const opts = app.getWindowOpts();
     opts.app = app;
+    opts.appId = name; // the window id of some apps is not the app id
     return createWindow(opts);
   }
 
@@ -857,7 +866,7 @@ const OS = (() => {
   }
 
   return {
-    boot, launch, registerApp, APPS,
+    boot, launch, registerApp, APPS, icon,
     createWindow, closeWindow, minimizeWindow, restoreWindow, toggleMaximize, focusWindow,
     toggleAppMenu, shutdown,
     saveSettings, loadSettings, getSettings, applyWallpaper, getWallpapers,
