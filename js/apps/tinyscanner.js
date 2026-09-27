@@ -1,5 +1,7 @@
 /* ===== TinyScanner ===== */
 (() => {
+  const t = OS.texts('tinyscanner');
+
   // --- Data ---
   const PERCENT_MIX = [
     ['84% potato', '10% spaceship', '6% silent but suspicious'],
@@ -159,11 +161,11 @@
   ];
 
   const BADGES = [
-    { name: 'Certified Scientist', emoji: '🔬', req: 5 },
-    { name: 'Potato Detective', emoji: '🥔', req: 10 },
-    { name: 'Glitter Hazard Specialist', emoji: '✨', req: 20 },
-    { name: 'Supreme Scanner', emoji: '👑', req: 30 },
-    { name: 'Master of Nonsense', emoji: '🧙', req: 50 },
+    { id: 'scientist', name: 'Certified Scientist', emoji: '🔬', req: 5 },
+    { id: 'potato', name: 'Potato Detective', emoji: '🥔', req: 10 },
+    { id: 'glitter', name: 'Glitter Hazard Specialist', emoji: '✨', req: 20 },
+    { id: 'supreme', name: 'Supreme Scanner', emoji: '👑', req: 30 },
+    { id: 'nonsense', name: 'Master of Nonsense', emoji: '🧙', req: 50 },
   ];
 
   const HOME_TIPS = [
@@ -248,21 +250,21 @@
   }
 
   function generateResult() {
-    if (mysteryMode) return { type: 'mystery', text: pick(MYSTERY_RESULTS) };
-    if (Math.random() < 0.05) return { type: 'rare', text: pick(RARE_RESULTS) };
+    if (mysteryMode) return { type: 'mystery', text: pick(t.list('tinyscanner.mystery', MYSTERY_RESULTS)) };
+    if (Math.random() < 0.05) return { type: 'rare', text: pick(t.list('tinyscanner.rare', RARE_RESULTS)) };
     const cat = rng(5);
     if (cat === 0) {
-      const mix = pick(PERCENT_MIX);
+      const mix = pick(t.list('tinyscanner.mix', PERCENT_MIX));
       return { type: 'percent', parts: mix, text: mix.join(' / ') };
     }
-    if (cat === 1) return { type: 'official', text: pick(OFFICIAL_NAMES) };
-    if (cat === 2) return { type: 'warning', text: pick(WARNINGS) };
-    if (cat === 3) return { type: 'funfact', text: pick(FUN_FACTS) };
-    return { type: 'quick', text: pick(QUICK_HITS) };
+    if (cat === 1) return { type: 'official', text: pick(t.list('tinyscanner.official', OFFICIAL_NAMES)) };
+    if (cat === 2) return { type: 'warning', text: pick(t.list('tinyscanner.warnings', WARNINGS)) };
+    if (cat === 3) return { type: 'funfact', text: pick(t.list('tinyscanner.facts', FUN_FACTS)) };
+    return { type: 'quick', text: pick(t.list('tinyscanner.quick', QUICK_HITS)) };
   }
 
   function getEarnedBadges() {
-    return BADGES.filter(b => collection.length >= b.req);
+    return t.list('tinyscanner.badges', BADGES).filter(b => collection.length >= b.req);
   }
 
   // --- Render ---
@@ -275,7 +277,7 @@
   }
 
   function renderHome() {
-    if (!homeTip) homeTip = pick(HOME_TIPS);
+    if (!homeTip) homeTip = pick(t.list('tinyscanner.tips', HOME_TIPS));
     return `
     <div class="ts-app">
       <div class="ts-camera">
@@ -289,19 +291,19 @@
           <div class="ts-toggles">
             <label class="ts-toggle" onclick="window._tsToggleSerious()">
               <span class="ts-toggle-check ${seriousMode ? 'active' : ''}"></span>
-              🧐 Serious Mode
+              🧐 ${t('Serious Mode')}
             </label>
-            <button class="ts-mystery-btn" onclick="window._tsMystery()" title="Mystery Mode">🎲</button>
+            <button class="ts-mystery-btn" onclick="window._tsMystery()" title="${t('Mystery Mode')}">🎲</button>
           </div>
-          <button class="ts-scan-btn" onclick="window._tsScan()">🔍 SCAN</button>
-          <button class="ts-collection-btn" onclick="window._tsShowCollection()">📦 My Scans (${collection.length})</button>
+          <button class="ts-scan-btn" onclick="window._tsScan()">🔍 ${t('SCAN')}</button>
+          <button class="ts-collection-btn" onclick="window._tsShowCollection()">📦 ${t('My Scans ({n})', { n: collection.length })}</button>
         </div>
       </div>
     </div>`;
   }
 
   function renderScanning() {
-    const labels = ['Measuring…', 'Sniffing…', 'Calculating…', 'Guessing…'];
+    const labels = [t('Measuring…'), t('Sniffing…'), t('Calculating…'), t('Guessing…')];
     const photoBg = capturedImage ? ` style="background-image:url('${capturedImage}');" ` : '';
     return `
     <div class="ts-app">
@@ -311,7 +313,7 @@
           <div class="ts-scan-beam"></div>
         </div>
         <div class="ts-scan-info">
-          <div class="ts-beep">BEEP… BEEP… boop</div>
+          <div class="ts-beep">${t('BEEP… BEEP… boop')}</div>
           <div class="ts-status">${scanStatus}</div>
           <div class="ts-progress-wrap">
             <div class="ts-progress-bar" style="width:${scanStep * 25}%"></div>
@@ -330,9 +332,9 @@
     let resultHTML;
     if (seriousMode && !isRare && !isMystery) {
       resultHTML = `
-        <div class="ts-serious-header">📋 CLASSIFIED REPORT #${1000 + rng(9000)}</div>
+        <div class="ts-serious-header">📋 ${t('CLASSIFIED REPORT #{n}', { n: 1000 + rng(9000) })}</div>
         <div class="ts-result-text ts-serious">${lastResult.text}</div>
-        <div class="ts-serious-footer">— Department of Tiny Science</div>`;
+        <div class="ts-serious-footer">${t('— Department of Tiny Science')}</div>`;
     } else if (lastResult.type === 'percent') {
       resultHTML = `<div class="ts-result-parts">
         ${lastResult.parts.map((p, i) => `<div class="ts-part" style="animation-delay:${i * 0.15}s">${p}</div>`).join('')}
@@ -343,7 +345,7 @@
 
     let badgeHTML = '';
     if (newBadge) {
-      badgeHTML = `<div class="ts-badge-earned">🏅 Badge Earned: ${newBadge.emoji} ${newBadge.name}!</div>`;
+      badgeHTML = `<div class="ts-badge-earned">🏅 ${t('Badge Earned: {badge}!', { badge: newBadge.emoji + ' ' + newBadge.name })}</div>`;
     }
 
     const photoBg = capturedImage ? ` style="background-image:url('${capturedImage}');" ` : '';
@@ -351,13 +353,13 @@
     <div class="ts-app">
       <div class="ts-result ${capturedImage ? 'ts-has-photo' : ''}"${photoBg}>
         ${capturedImage ? '<div class="ts-photo-overlay"></div>' : ''}
-        <div class="ts-result-header">${isRare ? '✨ RARE SCAN RESULT ✨' : isMystery ? '🎲 MYSTERY RESULT' : '📋 SCAN RESULT'}</div>
+        <div class="ts-result-header">${isRare ? '✨ ' + t('RARE SCAN RESULT') + ' ✨' : isMystery ? '🎲 ' + t('MYSTERY RESULT') : '📋 ' + t('SCAN RESULT')}</div>
         ${resultHTML}
         ${badgeHTML}
         <div class="ts-result-actions">
-          <button class="ts-btn ts-btn-primary" onclick="window._tsBack()">🔍 SCAN AGAIN</button>
-          <button class="ts-btn ts-btn-save" onclick="window._tsSave()">📦 Save</button>
-          <button class="ts-btn ts-btn-sticker" onclick="window._tsSticker()">🏷️ Sticker</button>
+          <button class="ts-btn ts-btn-primary" onclick="window._tsBack()">🔍 ${t('SCAN AGAIN')}</button>
+          <button class="ts-btn ts-btn-save" onclick="window._tsSave()">📦 ${t('Save')}</button>
+          <button class="ts-btn ts-btn-sticker" onclick="window._tsSticker()">🏷️ ${t('Sticker')}</button>
         </div>
       </div>
     </div>`;
@@ -370,15 +372,15 @@
     return `
     <div class="ts-app">
       <div class="ts-sticker-screen">
-        <div class="ts-sticker-title">🏷️ Your Sticker</div>
+        <div class="ts-sticker-title">🏷️ ${t('Your Sticker')}</div>
         <div class="ts-sticker">
-          <div class="ts-sticker-badge">✔️ SCANNED</div>
+          <div class="ts-sticker-badge">✔️ ${t('SCANNED')}</div>
           <div class="ts-sticker-label">${label}</div>
-          <div class="ts-sticker-footer">Certified by TinyScanner™</div>
+          <div class="ts-sticker-footer">${t('Certified by TinyScanner™')}</div>
         </div>
         <div class="ts-result-actions">
-          <button class="ts-btn ts-btn-primary" onclick="window._tsBack()">🔍 SCAN AGAIN</button>
-          <button class="ts-btn ts-btn-save" onclick="window._tsBack()">⬅️ Back</button>
+          <button class="ts-btn ts-btn-primary" onclick="window._tsBack()">🔍 ${t('SCAN AGAIN')}</button>
+          <button class="ts-btn ts-btn-save" onclick="window._tsBack()">⬅️ ${t('Back')}</button>
         </div>
       </div>
     </div>`;
@@ -391,7 +393,7 @@
 
     let cardsHTML;
     if (collection.length === 0) {
-      cardsHTML = '<div class="ts-empty">No scans yet! Go scan something silly.</div>';
+      cardsHTML = '<div class="ts-empty">' + t('No scans yet! Go scan something silly.') + '</div>';
     } else {
       cardsHTML = collection.slice().reverse().map(item => `
         <div class="ts-scan-card ${item.rare ? 'ts-card-rare' : ''}">
@@ -405,7 +407,7 @@
       <div class="ts-collection">
         <div class="ts-col-header">
           <button class="ts-back-btn" onclick="window._tsBack()">⬅️</button>
-          <span>📦 My Scans (${collection.length})</span>
+          <span>📦 ${t('My Scans ({n})', { n: collection.length })}</span>
         </div>
         ${badgesHTML}
         <div class="ts-col-grid">${cardsHTML}</div>
@@ -426,13 +428,13 @@
     mysteryMode = isMystery;
     screen = 'scanning';
     scanStep = 0;
-    scanStatus = isMystery ? pick(MYSTERY_STATUSES) : pick(SCAN_STATUSES);
+    scanStatus = isMystery ? pick(t.list('tinyscanner.mystery-status', MYSTERY_STATUSES)) : pick(t.list('tinyscanner.status', SCAN_STATUSES));
     newBadge = null;
     rerender();
 
     scanInterval = setInterval(() => {
       scanStep++;
-      scanStatus = isMystery ? pick(MYSTERY_STATUSES) : pick(SCAN_STATUSES);
+      scanStatus = isMystery ? pick(t.list('tinyscanner.mystery-status', MYSTERY_STATUSES)) : pick(t.list('tinyscanner.status', SCAN_STATUSES));
       if (scanStep >= 4) {
         clearInterval(scanInterval);
         scanInterval = null;
@@ -462,15 +464,15 @@
       text: lastResult.text,
       type: lastResult.type,
       rare: lastResult.type === 'rare',
-      date: new Date().toLocaleDateString(),
+      date: new Date().toLocaleDateString(OS.locale()),
     });
     saveCollection();
     // Check for new badge
-    const badge = BADGES.find(b => b.req === collection.length);
+    const badge = t.list('tinyscanner.badges', BADGES).find(b => b.req === collection.length);
     if (badge) { newBadge = badge; rerender(); return; }
     // Flash saved
     const btn = document.querySelector('.ts-btn-save');
-    if (btn) { btn.textContent = '✅ Saved!'; btn.disabled = true; }
+    if (btn) { btn.textContent = '✅ ' + t('Saved!'); btn.disabled = true; }
   };
 
   window._tsSticker = function () {
@@ -486,7 +488,7 @@
 
   window._tsBack = function () {
     screen = 'home';
-    homeTip = pick(HOME_TIPS);
+    homeTip = pick(t.list('tinyscanner.tips', HOME_TIPS));
     rerender();
   };
 
@@ -496,7 +498,7 @@
     getWindowOpts() {
       return {
         id: 'tinyscanner',
-        title: 'TinyScanner',
+        title: t('TinyScanner'),
         icon: '🔍',
         width: 420,
         height: 540,

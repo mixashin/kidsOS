@@ -1,102 +1,104 @@
 /* ===== Treasure Mapper — Parody Maps App ===== */
 (() => {
+  const t = OS.texts('treasuremapper');
+
   /* ---- Data Constants ---- */
   const LOCATIONS = [
-    { id: 'pillowfort', name: 'The Grand Pillow Fort', emoji: '\u{1F3F0}', category: 'Forts', status: 'Open \u2022 Fluffy',
+    { id: 'pillowfort', name: 'The Grand Pillow Fort', short: 'The Grand', emoji: '\u{1F3F0}', category: 'Forts', status: 'Open \u2022 Fluffy',
       desc: 'A legendary fortress built from 847 pillows. Rumor has it, no parent has ever breached its walls.',
       mapStyle: 'indoor',
       reviews: [
-        { user: 'SirNapsALot', stars: 5, text: 'Best nap of my life. 10/10 would pillow again.' },
-        { user: 'FortInspector42', stars: 4, text: 'Structural integrity is questionable but the vibes are immaculate.' },
-        { user: 'BlanketBoss', stars: 5, text: 'Added my blanket. Now it\'s a pillow-blanket hybrid fortress.' },
+        { id: 'pillowfort-1', user: 'SirNapsALot', stars: 5, text: 'Best nap of my life. 10/10 would pillow again.' },
+        { id: 'pillowfort-2', user: 'FortInspector42', stars: 4, text: 'Structural integrity is questionable but the vibes are immaculate.' },
+        { id: 'pillowfort-3', user: 'BlanketBoss', stars: 5, text: 'Added my blanket. Now it\'s a pillow-blanket hybrid fortress.' },
       ] },
-    { id: 'fridgemore', name: 'Mount Fridgemore', emoji: '\u{1F9CA}', category: 'Landmarks', status: 'Open \u2022 Cold',
+    { id: 'fridgemore', name: 'Mount Fridgemore', short: 'Mount Fridgemore', emoji: '\u{1F9CA}', category: 'Landmarks', status: 'Open \u2022 Cold',
       desc: 'A towering fridge carved with the faces of legendary snack presidents. Always cold. Always judging your food choices.',
       mapStyle: 'kitchen',
       reviews: [
-        { user: 'SnackHiker', stars: 5, text: 'The view from the top shelf is breathtaking.' },
-        { user: 'CheeseExplorer', stars: 4, text: 'Found ancient cheese. Carbon dating says it\'s from last Tuesday.' },
-        { user: 'IceCubeKid', stars: 3, text: 'Too cold. Wore three jackets. Would come back.' },
+        { id: 'fridgemore-1', user: 'SnackHiker', stars: 5, text: 'The view from the top shelf is breathtaking.' },
+        { id: 'fridgemore-2', user: 'CheeseExplorer', stars: 4, text: 'Found ancient cheese. Carbon dating says it\'s from last Tuesday.' },
+        { id: 'fridgemore-3', user: 'IceCubeKid', stars: 3, text: 'Too cold. Wore three jackets. Would come back.' },
       ] },
-    { id: 'couchcanyon', name: 'Couch Cushion Canyon', emoji: '\u{1F6CB}\uFE0F', category: 'Nature', status: 'Open \u2022 Squishy',
+    { id: 'couchcanyon', name: 'Couch Cushion Canyon', short: 'Couch Cushion', emoji: '\u{1F6CB}\uFE0F', category: 'Nature', status: 'Open \u2022 Squishy',
       desc: 'A vast canyon formed between couch cushions. Home to lost remote controls, 47 coins, and one very confused sock.',
       mapStyle: 'indoor',
       reviews: [
-        { user: 'CanyonCrawler', stars: 5, text: 'Found my TV remote from 2019. Life-changing expedition.' },
-        { user: 'PennyHunter', stars: 4, text: 'Rich vein of loose change in the east cushion.' },
-        { user: 'DustBunnyFan', stars: 5, text: 'The dust bunnies here are ENORMOUS. Beautiful wildlife.' },
+        { id: 'couchcanyon-1', user: 'CanyonCrawler', stars: 5, text: 'Found my TV remote from 2019. Life-changing expedition.' },
+        { id: 'couchcanyon-2', user: 'PennyHunter', stars: 4, text: 'Rich vein of loose change in the east cushion.' },
+        { id: 'couchcanyon-3', user: 'DustBunnyFan', stars: 5, text: 'The dust bunnies here are ENORMOUS. Beautiful wildlife.' },
       ] },
-    { id: 'skybase', name: 'Sky Base Alpha', emoji: '\u{1F333}', category: 'Bases', status: 'Open \u2022 High Up',
+    { id: 'skybase', name: 'Sky Base Alpha', short: 'Sky Base', emoji: '\u{1F333}', category: 'Bases', status: 'Open \u2022 High Up',
       desc: 'A treehouse so high, birds ask for directions. Features a rope ladder, lookout tower, and a "No Adults" sign.',
       mapStyle: 'outdoor',
       reviews: [
-        { user: 'TreeTopTom', stars: 5, text: 'I can see my house from here. Also my neighbor\'s cat.' },
-        { user: 'RopeLadderPro', stars: 4, text: 'The climb is worth it. Bring snacks.' },
-        { user: 'BirdWatcher99', stars: 5, text: 'A bird tried to move in. We now have a roommate.' },
+        { id: 'skybase-1', user: 'TreeTopTom', stars: 5, text: 'I can see my house from here. Also my neighbor\'s cat.' },
+        { id: 'skybase-2', user: 'RopeLadderPro', stars: 4, text: 'The climb is worth it. Bring snacks.' },
+        { id: 'skybase-3', user: 'BirdWatcher99', stars: 5, text: 'A bird tried to move in. We now have a roommate.' },
       ] },
-    { id: 'sanddesert', name: 'The Great Sand Desert', emoji: '\u{1F3D6}\uFE0F', category: 'Nature', status: 'Open \u2022 Sandy',
+    { id: 'sanddesert', name: 'The Great Sand Desert', short: 'The Great', emoji: '\u{1F3D6}\uFE0F', category: 'Nature', status: 'Open \u2022 Sandy',
       desc: 'Also known as "the sandbox." Stretches an entire 6 feet across. Many explorers have gotten sand in their shoes here.',
       mapStyle: 'outdoor',
       reviews: [
-        { user: 'SandCastleKing', stars: 5, text: 'Built a 3-story castle. It was glorious for 4 minutes.' },
-        { user: 'DesertSurvivor', stars: 4, text: 'Ran out of juice boxes on the expedition. Nearly didn\'t make it.' },
-        { user: 'ShoeSandHater', stars: 3, text: 'Sand. In. Everything. Still had fun though.' },
+        { id: 'sanddesert-1', user: 'SandCastleKing', stars: 5, text: 'Built a 3-story castle. It was glorious for 4 minutes.' },
+        { id: 'sanddesert-2', user: 'DesertSurvivor', stars: 4, text: 'Ran out of juice boxes on the expedition. Nearly didn\'t make it.' },
+        { id: 'sanddesert-3', user: 'ShoeSandHater', stars: 3, text: 'Sand. In. Everything. Still had fun though.' },
       ] },
-    { id: 'garage', name: 'The Forbidden Garage', emoji: '\u{1F527}', category: 'Mystery', status: 'Restricted \u2022 Spooky',
+    { id: 'garage', name: 'The Forbidden Garage', short: 'The Forbidden', emoji: '\u{1F527}', category: 'Mystery', status: 'Restricted \u2022 Spooky',
       desc: 'Nobody knows what lurks in the back of the garage. Some say tools. Some say spiders. Some say both.',
       mapStyle: 'garage',
       reviews: [
-        { user: 'BraveExplorer', stars: 4, text: 'Found dad\'s "secret" candy stash behind the toolbox.' },
-        { user: 'SpiderScout', stars: 3, text: 'The spider in the corner is named Gerald. He\'s chill.' },
-        { user: 'GarageMyth', stars: 5, text: 'There\'s a bicycle from 1997 in there. It\'s a museum.' },
+        { id: 'garage-1', user: 'BraveExplorer', stars: 4, text: 'Found dad\'s "secret" candy stash behind the toolbox.' },
+        { id: 'garage-2', user: 'SpiderScout', stars: 3, text: 'The spider in the corner is named Gerald. He\'s chill.' },
+        { id: 'garage-3', user: 'GarageMyth', stars: 5, text: 'There\'s a bicycle from 1997 in there. It\'s a museum.' },
       ] },
-    { id: 'bubblebath', name: 'Lake Bubble Bath', emoji: '\u{1F6C1}', category: 'Water', status: 'Open \u2022 Bubbly',
+    { id: 'bubblebath', name: 'Lake Bubble Bath', short: 'Lake Bubble', emoji: '\u{1F6C1}', category: 'Water', status: 'Open \u2022 Bubbly',
       desc: 'A serene lake filled entirely with bubbles. Visibility: zero. Fun: maximum. Pruney fingers: guaranteed.',
       mapStyle: 'water',
       reviews: [
-        { user: 'BubbleCaptain', stars: 5, text: 'Sailed my rubber duck across the entire lake. Epic voyage.' },
-        { user: 'SplashKid', stars: 5, text: 'Made a bubble beard. Became the bubble king.' },
-        { user: 'PruneThumb', stars: 4, text: 'My fingers look like raisins now. Worth it.' },
+        { id: 'bubblebath-1', user: 'BubbleCaptain', stars: 5, text: 'Sailed my rubber duck across the entire lake. Epic voyage.' },
+        { id: 'bubblebath-2', user: 'SplashKid', stars: 5, text: 'Made a bubble beard. Became the bubble king.' },
+        { id: 'bubblebath-3', user: 'PruneThumb', stars: 4, text: 'My fingers look like raisins now. Worth it.' },
       ] },
-    { id: 'narniacloset', name: 'The Narnia Closet', emoji: '\u{1F6AA}', category: 'Mystery', status: 'Open \u2022 Magical',
+    { id: 'narniacloset', name: 'The Narnia Closet', short: 'The Narnia', emoji: '\u{1F6AA}', category: 'Mystery', status: 'Open \u2022 Magical',
       desc: 'Step through the coats and you might find a magical land. Or just more coats. Results vary.',
       mapStyle: 'indoor',
       reviews: [
-        { user: 'CoatExplorer', stars: 5, text: 'Didn\'t find Narnia but found my winter jacket. Win!' },
-        { user: 'MagicSeeker', stars: 4, text: 'Thought I heard a lion. It was the cat.' },
-        { user: 'ClosetKid', stars: 5, text: 'Best hiding spot during hide and seek. Undefeated.' },
+        { id: 'narniacloset-1', user: 'CoatExplorer', stars: 5, text: 'Didn\'t find Narnia but found my winter jacket. Win!' },
+        { id: 'narniacloset-2', user: 'MagicSeeker', stars: 4, text: 'Thought I heard a lion. It was the cat.' },
+        { id: 'narniacloset-3', user: 'ClosetKid', stars: 5, text: 'Best hiding spot during hide and seek. Undefeated.' },
       ] },
-    { id: 'wildbackyard', name: 'The Wild Backyard', emoji: '\u{1F33F}', category: 'Nature', status: 'Open \u2022 Untamed',
+    { id: 'wildbackyard', name: 'The Wild Backyard', short: 'The Wild', emoji: '\u{1F33F}', category: 'Nature', status: 'Open \u2022 Untamed',
       desc: 'A wilderness of unmowed grass, mysterious bugs, and at least one garden gnome with a suspicious expression.',
       mapStyle: 'outdoor',
       reviews: [
-        { user: 'BugCollector', stars: 5, text: 'Found 14 different bugs. Named them all Steve.' },
-        { user: 'GnomeWatcher', stars: 4, text: 'That gnome moved. I SWEAR it moved.' },
-        { user: 'GrassExplorer', stars: 5, text: 'The tall grass section is basically a jungle safari.' },
+        { id: 'wildbackyard-1', user: 'BugCollector', stars: 5, text: 'Found 14 different bugs. Named them all Steve.' },
+        { id: 'wildbackyard-2', user: 'GnomeWatcher', stars: 4, text: 'That gnome moved. I SWEAR it moved.' },
+        { id: 'wildbackyard-3', user: 'GrassExplorer', stars: 5, text: 'The tall grass section is basically a jungle safari.' },
       ] },
-    { id: 'underbedabyss', name: 'The Underbed Abyss', emoji: '\u{1F6CF}\uFE0F', category: 'Mystery', status: 'Open \u2022 Dark',
+    { id: 'underbedabyss', name: 'The Underbed Abyss', short: 'The Underbed', emoji: '\u{1F6CF}\uFE0F', category: 'Mystery', status: 'Open \u2022 Dark',
       desc: 'A vast, dark void beneath the bed. Contains: missing socks, forgotten toys, and possibly a portal to another dimension.',
       mapStyle: 'indoor',
       reviews: [
-        { user: 'AbyssDiver', stars: 5, text: 'Found my favorite toy from 3 years ago. Emotional reunion.' },
-        { user: 'DustExplorer', stars: 3, text: 'The dust bunnies have formed a civilization down here.' },
-        { user: 'SockDetective', stars: 4, text: 'Found 23 missing socks. The mystery deepens.' },
+        { id: 'underbedabyss-1', user: 'AbyssDiver', stars: 5, text: 'Found my favorite toy from 3 years ago. Emotional reunion.' },
+        { id: 'underbedabyss-2', user: 'DustExplorer', stars: 3, text: 'The dust bunnies have formed a civilization down here.' },
+        { id: 'underbedabyss-3', user: 'SockDetective', stars: 4, text: 'Found 23 missing socks. The mystery deepens.' },
       ] },
-    { id: 'confroomk', name: 'Conference Room K', emoji: '\u{1F37D}\uFE0F', category: 'Food', status: 'Open \u2022 Delicious',
+    { id: 'confroomk', name: 'Conference Room K', short: 'Conference Room', emoji: '\u{1F37D}\uFE0F', category: 'Food', status: 'Open \u2022 Delicious',
       desc: 'The kitchen table, rebranded as a very important conference room. All meetings involve cookies.',
       mapStyle: 'kitchen',
       reviews: [
-        { user: 'CookieChief', stars: 5, text: 'Best conference ever. Agenda: cookies. Minutes: delicious.' },
-        { user: 'MeetingKid', stars: 5, text: 'Proposed more snack breaks. Motion passed unanimously.' },
-        { user: 'TableBoss', stars: 4, text: 'The chair is too tall but the cookies make up for it.' },
+        { id: 'confroomk-1', user: 'CookieChief', stars: 5, text: 'Best conference ever. Agenda: cookies. Minutes: delicious.' },
+        { id: 'confroomk-2', user: 'MeetingKid', stars: 5, text: 'Proposed more snack breaks. Motion passed unanimously.' },
+        { id: 'confroomk-3', user: 'TableBoss', stars: 4, text: 'The chair is too tall but the cookies make up for it.' },
       ] },
-    { id: 'swingstation', name: 'Swing Set Space Station', emoji: '\u{1F3A2}', category: 'Bases', status: 'Open \u2022 Orbiting',
+    { id: 'swingstation', name: 'Swing Set Space Station', short: 'Swing Set', emoji: '\u{1F3A2}', category: 'Bases', status: 'Open \u2022 Orbiting',
       desc: 'Pump your legs hard enough and you\'ll reach outer space. Scientists say this is false. Scientists are wrong.',
       mapStyle: 'outdoor',
       reviews: [
-        { user: 'SpaceSwinger', stars: 5, text: 'Almost touched the sky. My personal best: 47 degrees.' },
-        { user: 'OrbitKid', stars: 5, text: 'I definitely left Earth\'s atmosphere for a second there.' },
-        { user: 'SwingPhysics', stars: 4, text: 'Gravity is just a suggestion when you swing high enough.' },
+        { id: 'swingstation-1', user: 'SpaceSwinger', stars: 5, text: 'Almost touched the sky. My personal best: 47 degrees.' },
+        { id: 'swingstation-2', user: 'OrbitKid', stars: 5, text: 'I definitely left Earth\'s atmosphere for a second there.' },
+        { id: 'swingstation-3', user: 'SwingPhysics', stars: 4, text: 'Gravity is just a suggestion when you swing high enough.' },
       ] },
   ];
 
@@ -108,7 +110,7 @@
   ];
 
   const VOICES = [
-    { id: 'pirate', name: 'Captain Blunderpants', emoji: '\u{1F3F4}\u200D\u2620\uFE0F',
+    { id: 'pirate', name: 'Captain Blunderpants', short: 'Captain', emoji: '\u{1F3F4}\u200D\u2620\uFE0F',
       steps: [
         'Arrr! Set sail straight ahead, ye landlubber! Past the kitchen reef!',
         'Hard to port! That means LEFT, ya soggy biscuit!',
@@ -118,7 +120,7 @@
         'Sail through the hallway strait! Mind the cat — she be guarding the passage!',
         'Land ho! Yer destination be right ahead! Drop anchor, matey!',
       ] },
-    { id: 'robot', name: 'NavBot 3000', emoji: '\u{1F916}',
+    { id: 'robot', name: 'NavBot 3000', short: 'NavBot', emoji: '\u{1F916}',
       steps: [
         'BEEP BOOP. Proceed forward 12.7 steps. Error margin: plus or minus a wiggle.',
         'CALCULATING... Turn left. LEFT. Your OTHER left. RECALCULATING.',
@@ -128,7 +130,7 @@
         'SCANNING HALLWAY... Clear of hostiles. Proceed with caution. Or don\'t. I\'m a robot.',
         'DESTINATION REACHED. Mission complete. NavBot 3000 powering down celebration mode. PARTY BEEP.',
       ] },
-    { id: 'unicorn', name: 'Sparkle McHorn', emoji: '\u{1F984}',
+    { id: 'unicorn', name: 'Sparkle McHorn', short: 'Sparkle', emoji: '\u{1F984}',
       steps: [
         'OMG hi! Go straight and follow the sparkle trail! It\'s SO pretty! \u2728',
         'Ooh ooh! Turn left here! I left some glitter as a marker! You\'re welcome! \u{1F496}',
@@ -138,7 +140,7 @@
         'Almost there! I can feel the rainbow energy getting STRONGER! Gallop faster!',
         'WE MADE IT! Group hug! That was the most magical journey EVER! \u{1F31F}',
       ] },
-    { id: 'dramatic', name: 'Sir Overly Dramatic', emoji: '\u{1F3AD}',
+    { id: 'dramatic', name: 'Sir Overly Dramatic', short: 'Sir', emoji: '\u{1F3AD}',
       steps: [
         '*gasp* The journey BEGINS! Step forward... into the UNKNOWN! *dramatic music*',
         'A CROSSROADS! Choose LEFT or face eternal— just go left, honestly.',
@@ -151,14 +153,14 @@
   ];
 
   const HAZARDS = [
-    { emoji: '\u{1F408}', name: 'Cat Blockade', msg: 'A cat is sitting in the middle of the path. It will not move. Ever.' },
-    { emoji: '\u{1F9F1}', name: 'Lego Minefield', msg: 'WARNING: Loose Legos detected. Proceed barefoot at your own risk.' },
-    { emoji: '\u{1F9E6}', name: 'Sock Storm', msg: 'A whirlwind of lost socks is blocking the route. Visibility: one sock.' },
-    { emoji: '\u{1F6BF}', name: 'Sprinkler Ambush', msg: 'The garden sprinkler has gone rogue. It shows no mercy.' },
-    { emoji: '\u{1F4A4}', name: 'Sleeping Parent Zone', msg: 'Extreme quiet required. One creak and it\'s all over.' },
-    { emoji: '\u{1F9F9}', name: 'Vacuum Monster Sighting', msg: 'The vacuum has been spotted nearby. RUN.' },
-    { emoji: '\u{1F436}', name: 'Excited Dog Alert', msg: 'A very excited dog wants to play RIGHT NOW. Delay expected: 20 min.' },
-    { emoji: '\u{1F50A}', name: 'Sibling Radar Active', msg: 'Your sibling knows where you\'re going. Evasive maneuvers advised.' },
+    { id: 'cat', emoji: '\u{1F408}', name: 'Cat Blockade', msg: 'A cat is sitting in the middle of the path. It will not move. Ever.' },
+    { id: 'lego', emoji: '\u{1F9F1}', name: 'Lego Minefield', msg: 'WARNING: Loose Legos detected. Proceed barefoot at your own risk.' },
+    { id: 'sock', emoji: '\u{1F9E6}', name: 'Sock Storm', msg: 'A whirlwind of lost socks is blocking the route. Visibility: one sock.' },
+    { id: 'sprinkler', emoji: '\u{1F6BF}', name: 'Sprinkler Ambush', msg: 'The garden sprinkler has gone rogue. It shows no mercy.' },
+    { id: 'parent', emoji: '\u{1F4A4}', name: 'Sleeping Parent Zone', msg: 'Extreme quiet required. One creak and it\'s all over.' },
+    { id: 'vacuum', emoji: '\u{1F9F9}', name: 'Vacuum Monster Sighting', msg: 'The vacuum has been spotted nearby. RUN.' },
+    { id: 'dog', emoji: '\u{1F436}', name: 'Excited Dog Alert', msg: 'A very excited dog wants to play RIGHT NOW. Delay expected: 20 min.' },
+    { id: 'sibling', emoji: '\u{1F50A}', name: 'Sibling Radar Active', msg: 'Your sibling knows where you\'re going. Evasive maneuvers advised.' },
   ];
 
   const TRAFFIC_UPDATES = [
@@ -184,29 +186,29 @@
   ];
 
   const DAILY_QUESTS = [
-    { emoji: '\u{1F3F0}', task: 'Visit any Forts location', check: s => s.visitedPlaces.some(p => LOCATIONS.find(l => l.id === p && l.category === 'Forts')) },
-    { emoji: '\u{1F50D}', task: 'Navigate using the Secret Tunnel Route', check: s => s.completedRoutes.some(r => r.route === 'tunnel') },
-    { emoji: '\u{1F984}', task: 'Use Sparkle McHorn as your navigator', check: s => s.completedRoutes.some(r => r.voice === 'unicorn') },
-    { emoji: '\u{1F30F}', task: 'Visit 2 different places today', check: s => s.visitedPlaces.length >= 2 },
-    { emoji: '\u{1F3F4}\u200D\u2620\uFE0F', task: 'Complete a navigation with Captain Blunderpants', check: s => s.completedRoutes.some(r => r.voice === 'pirate') },
+    { id: 'forts', emoji: '\u{1F3F0}', task: 'Visit any Forts location', check: s => s.visitedPlaces.some(p => LOCATIONS.find(l => l.id === p && l.category === 'Forts')) },
+    { id: 'tunnel', emoji: '\u{1F50D}', task: 'Navigate using the Secret Tunnel Route', check: s => s.completedRoutes.some(r => r.route === 'tunnel') },
+    { id: 'unicorn', emoji: '\u{1F984}', task: 'Use Sparkle McHorn as your navigator', check: s => s.completedRoutes.some(r => r.voice === 'unicorn') },
+    { id: 'two-places', emoji: '\u{1F30F}', task: 'Visit 2 different places today', check: s => s.visitedPlaces.length >= 2 },
+    { id: 'pirate', emoji: '\u{1F3F4}\u200D\u2620\uFE0F', task: 'Complete a navigation with Captain Blunderpants', check: s => s.completedRoutes.some(r => r.voice === 'pirate') },
   ];
 
   const EXPLORE_CATEGORIES = [
-    { name: 'Best Hiding Spots', emoji: '\u{1F648}', filter: l => ['pillowfort', 'narniacloset', 'underbedabyss'].includes(l.id) },
-    { name: 'Snack Routes', emoji: '\u{1F36A}', filter: l => ['confroomk', 'fridgemore', 'couchcanyon'].includes(l.id) },
-    { name: 'Outdoor Adventures', emoji: '\u{1F333}', filter: l => ['skybase', 'sanddesert', 'wildbackyard', 'swingstation'].includes(l.id) },
-    { name: 'Spooky Places', emoji: '\u{1F47B}', filter: l => ['garage', 'underbedabyss', 'narniacloset'].includes(l.id) },
-    { name: 'Water World', emoji: '\u{1F30A}', filter: l => ['bubblebath', 'sanddesert'].includes(l.id) },
-    { name: 'Top Rated', emoji: '\u2B50', filter: () => true },
+    { id: 'hiding', name: 'Best Hiding Spots', emoji: '\u{1F648}', filter: l => ['pillowfort', 'narniacloset', 'underbedabyss'].includes(l.id) },
+    { id: 'snack', name: 'Snack Routes', emoji: '\u{1F36A}', filter: l => ['confroomk', 'fridgemore', 'couchcanyon'].includes(l.id) },
+    { id: 'outdoor', name: 'Outdoor Adventures', emoji: '\u{1F333}', filter: l => ['skybase', 'sanddesert', 'wildbackyard', 'swingstation'].includes(l.id) },
+    { id: 'spooky', name: 'Spooky Places', emoji: '\u{1F47B}', filter: l => ['garage', 'underbedabyss', 'narniacloset'].includes(l.id) },
+    { id: 'water', name: 'Water World', emoji: '\u{1F30A}', filter: l => ['bubblebath', 'sanddesert'].includes(l.id) },
+    { id: 'top', name: 'Top Rated', emoji: '\u2B50', filter: () => true },
   ];
 
   const TREASURE_TYPES = [
-    { emoji: '\u{1F48E}', name: 'Diamond of Destiny' },
-    { emoji: '\u{1F451}', name: 'Golden Crown' },
-    { emoji: '\u{1F36B}', name: 'Chocolate Treasure Chest' },
-    { emoji: '\u{1F3C6}', name: 'Trophy of Awesomeness' },
-    { emoji: '\u{1F52E}', name: 'Magic Crystal Ball' },
-    { emoji: '\u{1F30C}', name: 'Star Map Fragment' },
+    { id: 'diamond', emoji: '\u{1F48E}', name: 'Diamond of Destiny' },
+    { id: 'crown', emoji: '\u{1F451}', name: 'Golden Crown' },
+    { id: 'chocolate', emoji: '\u{1F36B}', name: 'Chocolate Treasure Chest' },
+    { id: 'trophy', emoji: '\u{1F3C6}', name: 'Trophy of Awesomeness' },
+    { id: 'crystal', emoji: '\u{1F52E}', name: 'Magic Crystal Ball' },
+    { id: 'star-map', emoji: '\u{1F30C}', name: 'Star Map Fragment' },
   ];
 
   const CLUE_TEMPLATES = [
@@ -232,6 +234,7 @@
   /* ---- Map Drawing — Pirate Treasure Map Style ---- */
   const MAP_THEMES = {
     indoor: { // Captain's Cabin
+      id: 'indoor',
       parchment: '#e8d5b7', parchmentDark: 'rgba(100,70,30,0.15)',
       inkColor: '#3e2723', inkLight: 'rgba(62,39,35,0.25)',
       trailColor: '#6d4c2a', trailTraveled: '#3e2723',
@@ -240,6 +243,7 @@
       mapLabels: ["Captain's Quarters", 'Rum Cellar', "Crow's Nest", 'Treasure Hold', 'The Brig', 'Map Room'],
     },
     outdoor: { // Jungle Island
+      id: 'outdoor',
       parchment: '#e2d5b3', parchmentDark: 'rgba(90,70,20,0.18)',
       inkColor: '#33291a', inkLight: 'rgba(51,41,26,0.25)',
       trailColor: '#7a5c30', trailTraveled: '#4a3520',
@@ -248,6 +252,7 @@
       mapLabels: ['Skull Rock', 'Monkey Bay', "Dead Man's Cove", 'Parrot Ridge', 'Shipwreck Shore', 'Jungle Trail'],
     },
     kitchen: { // Galley & Provisions
+      id: 'kitchen',
       parchment: '#ede0c4', parchmentDark: 'rgba(110,80,30,0.12)',
       inkColor: '#3e2c15', inkLight: 'rgba(62,44,21,0.22)',
       trailColor: '#8a6530', trailTraveled: '#4a3520',
@@ -256,6 +261,7 @@
       mapLabels: ['The Galley', 'Provision Store', 'Grog Barrel', "Cook's Corner", 'Spice Hold', 'Mess Deck'],
     },
     water: { // The High Seas
+      id: 'water',
       parchment: '#ddd5c0', parchmentDark: 'rgba(80,70,40,0.18)',
       inkColor: '#2c3e50', inkLight: 'rgba(44,62,80,0.2)',
       trailColor: '#5d4e37', trailTraveled: '#2c1f10',
@@ -264,6 +270,7 @@
       mapLabels: ["Kraken's Deep", 'Siren Strait', "Davy Jones' Locker", 'Mermaid Lagoon', 'Storm Passage', 'Coral Reef'],
     },
     garage: { // The Shipyard
+      id: 'garage',
       parchment: '#d8cfc0', parchmentDark: 'rgba(70,60,40,0.18)',
       inkColor: '#37474f', inkLight: 'rgba(55,71,79,0.22)',
       trailColor: '#5d4e37', trailTraveled: '#2c1f10',
@@ -368,10 +375,10 @@
     ctx.stroke();
     // Cardinal points
     const dirs = [
-      { a: -Math.PI / 2, l: 'N', fill: true },
-      { a: Math.PI / 2,  l: 'S', fill: false },
-      { a: 0,            l: 'E', fill: false },
-      { a: Math.PI,      l: 'W', fill: false },
+      { a: -Math.PI / 2, l: t('compass|N'), fill: true },
+      { a: Math.PI / 2,  l: t('compass|S'), fill: false },
+      { a: 0,            l: t('compass|E'), fill: false },
+      { a: Math.PI,      l: t('compass|W'), fill: false },
     ];
     for (const d of dirs) {
       const tip = { x: cx + Math.cos(d.a) * r * 0.85, y: cy + Math.sin(d.a) * r * 0.85 };
@@ -387,11 +394,11 @@
       else { ctx.strokeStyle = theme.inkColor; ctx.lineWidth = 1; ctx.stroke(); }
       // Label
       const ld = r * 1.2;
-      ctx.font = `bold ${Math.max(7, Math.round(r * 0.35))}px serif`;
+      ctx.font = `bold ${Math.max(7, Math.round(r * 0.35))}px Nunito, serif`;
       ctx.fillStyle = theme.inkColor;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(d.l, cx + Math.cos(d.a) * ld, cy + Math.sin(d.a) * ld);
+      ctx.fillText(d.l, cx + Math.cos(d.a) * ld, cy + Math.sin(d.a) * ld, r);
     }
     // Gold center dot
     ctx.beginPath();
@@ -452,7 +459,7 @@
 
   /* -- Helper: map labels -- */
   function drawMapLabels(ctx, W, H, theme, rand) {
-    ctx.font = 'italic 8px serif';
+    ctx.font = 'italic 8px Nunito, serif';
     ctx.fillStyle = theme.inkLight;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -462,7 +469,7 @@
       ctx.save();
       ctx.translate(lx, ly);
       ctx.rotate((rand() - 0.5) * 0.3);
-      ctx.fillText(theme.mapLabels[i], 0, 0);
+      ctx.fillText(theme.mapLabels[i], 0, 0, 90);
       ctx.restore();
     }
   }
@@ -486,13 +493,13 @@
     // "Here be dragons" on water/outdoor themes
     if (theme.waterColor) {
       ctx.save();
-      ctx.font = 'italic 7px serif';
+      ctx.font = 'italic 7px Nunito, serif';
       ctx.fillStyle = theme.inkLight;
       ctx.globalAlpha = 0.4;
       const hx = W * (0.15 + rand() * 0.3), hy = H * (0.7 + rand() * 0.2);
       ctx.translate(hx, hy);
       ctx.rotate(-0.1 + rand() * 0.2);
-      ctx.fillText('Here be dragons', 0, 0);
+      ctx.fillText(t('Here be dragons'), 0, 0, 100);
       ctx.restore();
     }
   }
@@ -547,7 +554,8 @@
     const ctx = canvas.getContext('2d');
     const W = canvas.width;
     const H = canvas.height;
-    const theme = MAP_THEMES[mapStyle] || MAP_THEMES.indoor;
+    // The labels of the map come in the language of the app
+    const theme = t.list('treasuremapper.maps', [MAP_THEMES[mapStyle] || MAP_THEMES.indoor])[0];
     const rand = seedRand(placeId);
 
     // 1. Parchment background
@@ -569,10 +577,10 @@
     const pathPoints = [];
     const numPts = 7;
     for (let i = 0; i < numPts; i++) {
-      const t = i / (numPts - 1);
+      const f = i / (numPts - 1);
       pathPoints.push({
-        x: 30 + t * (W - 80) + (rand() - 0.5) * 40,
-        y: H - 30 - t * (H - 60) + (rand() - 0.5) * 30,
+        x: 30 + f * (W - 80) + (rand() - 0.5) * 40,
+        y: H - 30 - f * (H - 60) + (rand() - 0.5) * 30,
       });
     }
 
@@ -620,9 +628,9 @@
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('\u2693', start.x, start.y - 14);
-    ctx.font = 'bold 6px serif';
+    ctx.font = 'bold 6px Nunito, serif';
     ctx.fillStyle = theme.inkColor;
-    ctx.fillText('START', start.x, start.y + 10);
+    ctx.fillText(t('START'), start.x, start.y + 10, 40);
 
     // 10. Torn edges (drawn last)
     drawTornEdges(ctx, W, H, rand);
@@ -631,6 +639,18 @@
   /* ---- Helpers ---- */
   function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
   function $(sel) { return body ? body.querySelector(sel) : null; }
+
+  /* ---- Lists in the language of the app ---- */
+  const placeList = () => t.list('treasuremapper.places', LOCATIONS);
+  const routeList = () => t.list('treasuremapper.routes', ROUTE_TYPES);
+  const voiceList = () => t.list('treasuremapper.voices', VOICES);
+  const hazardList = () => t.list('treasuremapper.hazards', HAZARDS);
+  const trafficList = () => t.list('treasuremapper.traffic', TRAFFIC_UPDATES);
+  const tipList = () => t.list('treasuremapper.tips', BANNER_TIPS);
+  const badgeList = list => t.list('treasuremapper.badges', list);
+  const exploreList = () => t.list('treasuremapper.explore', EXPLORE_CATEGORIES);
+  const treasureList = () => t.list('treasuremapper.treasures', TREASURE_TYPES);
+  const clueList = () => t.list('treasuremapper.clues', CLUE_TEMPLATES);
 
   /* ---- State ---- */
   let winId = null;
@@ -687,8 +707,8 @@
   window._tmGo = function(s, data) {
     screen = s;
     if (data !== undefined) {
-      if (s === 'place') selectedPlace = LOCATIONS.find(l => l.id === data);
-      if (s === 'explore') exploreCategory = data !== null ? EXPLORE_CATEGORIES[data] : null;
+      if (s === 'place') selectedPlace = placeList().find(l => l.id === data);
+      if (s === 'explore') exploreCategory = data !== null ? exploreList()[data] : null;
     }
     render();
   };
@@ -717,7 +737,7 @@
   };
 
   window._tmNextStep = function() {
-    const voice = VOICES.find(v => v.id === selectedVoice);
+    const voice = voiceList().find(v => v.id === selectedVoice);
     if (navStep < voice.steps.length - 1) {
       navStep++;
       render();
@@ -776,7 +796,7 @@
 
   window._tmHuntAddClue = function(idx) {
     if (currentHunt && currentHunt.clues.length < 3) {
-      currentHunt.clues.push(CLUE_TEMPLATES[idx]);
+      currentHunt.clues.push(clueList()[idx]);
       render();
     }
   };
@@ -824,19 +844,20 @@
   }
 
   function renderHome() {
+    // The search looks in the names that the child sees
     const places = searchQuery
-      ? LOCATIONS.filter(l => l.name.toLowerCase().includes(searchQuery))
-      : LOCATIONS.slice(0, 6);
-    const earnedBadges = BADGES.filter(b => persisted.badges.includes(b.id));
+      ? placeList().filter(l => l.name.toLowerCase().includes(searchQuery))
+      : placeList().slice(0, 6);
+    const earnedBadges = badgeList(BADGES).filter(b => persisted.badges.includes(b.id));
     body.innerHTML = `
       <div class="tm-wrap">
         <div class="tm-header">
-          <span class="tm-logo">\u{1F5FA}\uFE0F Treasure Mapper</span>
+          <span class="tm-logo">\u{1F5FA}\uFE0F ${t('Treasure Mapper')}</span>
           <span class="tm-coins">\u{1FA99} ${persisted.mapCoins}</span>
         </div>
         <div class="tm-content">
           <div class="tm-search-wrap">
-            <input class="tm-search" type="text" placeholder="\u{1F50D} Search silly places..."
+            <input class="tm-search" type="text" placeholder="\u{1F50D} ${t('Search silly places...')}"
               value="${OS.esc(searchQuery)}" oninput="window._tmSearch(this.value)">
           </div>
           <div class="tm-places-grid">
@@ -851,22 +872,22 @@
           ${!searchQuery ? `
           <div class="tm-quick-row">
             <button class="tm-quick-btn" onclick="window._tmGo('explore', null)">
-              <span>\u{1F30D}</span> Explore
+              <span>\u{1F30D}</span> ${t('Explore')}
             </button>
             <button class="tm-quick-btn" onclick="window._tmHuntStart()">
-              <span>\u{1F4DC}</span> Treasure Hunt
+              <span>\u{1F4DC}</span> ${t('Treasure Hunt')}
             </button>
           </div>
           <div class="tm-bottom-row">
             <button class="tm-bottom-btn" onclick="window._tmGo('lists')">
-              \u{1F4CB} My Lists
+              \u{1F4CB} ${t('My Lists')}
             </button>
             <button class="tm-bottom-btn" onclick="window._tmGo('vault')">
-              \u{1F3C6} Vault
+              \u{1F3C6} ${t('Vault')}
             </button>
           </div>
-          <div class="tm-banner" id="tm-banner">${BANNER_TIPS[bannerIdx]}</div>
-          <div class="tm-traffic">${TRAFFIC_UPDATES[trafficIdx]}</div>
+          <div class="tm-banner" id="tm-banner">${tipList()[bannerIdx]}</div>
+          <div class="tm-traffic">${trafficList()[trafficIdx]}</div>
           ${earnedBadges.length > 0 ? `<div class="tm-badges-row">${earnedBadges.map(b => `<span class="tm-badge-small" title="${b.name}">${b.emoji}</span>`).join('')}</div>` : ''}
           ` : ''}
         </div>
@@ -876,7 +897,7 @@
   function renderPlace() {
     if (!selectedPlace) { screen = 'home'; render(); return; }
     const p = selectedPlace;
-    const hazard = pick(HAZARDS);
+    const hazard = pick(hazardList());
     const isSaved = persisted.savedLists.includes(p.id);
     body.innerHTML = `
       <div class="tm-wrap">
@@ -893,10 +914,10 @@
           <div class="tm-place-desc">${p.desc}</div>
           <div class="tm-action-row">
             <button class="tm-action-btn tm-action-navigate" onclick="window._tmGo('routes')">
-              \u{1F9ED} Navigate
+              \u{1F9ED} ${t('Navigate')}
             </button>
             <button class="tm-action-btn tm-action-save" onclick="window._tm${isSaved ? 'Remove' : 'Save'}Place('${p.id}')">
-              ${isSaved ? '\u2705 Saved' : '\u{1F4BE} Save'}
+              ${isSaved ? '\u2705 ' + t('Saved') : '\u{1F4BE} ' + t('Save')}
             </button>
           </div>
           <div class="tm-hazard">
@@ -906,8 +927,8 @@
               <div class="tm-hazard-msg">${hazard.msg}</div>
             </div>
           </div>
-          <div class="tm-reviews-title">\u2B50 Reviews</div>
-          ${p.reviews.map(r => `
+          <div class="tm-reviews-title">\u2B50 ${t('Reviews')}</div>
+          ${t.list('treasuremapper.reviews', p.reviews).map(r => `
             <div class="tm-review">
               <div class="tm-review-header">
                 <span class="tm-review-user">${r.user}</span>
@@ -928,16 +949,16 @@
       <div class="tm-wrap">
         <div class="tm-header">
           <button class="tm-back" onclick="window._tmGo('place','${selectedPlace.id}')">\u2190</button>
-          <span class="tm-header-title">Choose Route</span>
+          <span class="tm-header-title">${t('Choose Route')}</span>
           <span></span>
         </div>
         <div class="tm-content">
           <div class="tm-dest-banner">
             <span>${selectedPlace.emoji}</span> ${selectedPlace.name}
           </div>
-          <div class="tm-section-label">Route</div>
+          <div class="tm-section-label">${t('Route')}</div>
           <div class="tm-routes-list">
-            ${ROUTE_TYPES.map(r => `
+            ${routeList().map(r => `
               <div class="tm-route-card ${selectedRoute === r.id ? 'tm-route-selected' : ''}"
                    onclick="window._tmSelectRoute('${r.id}')">
                 <div class="tm-route-emoji">${r.emoji}</div>
@@ -948,37 +969,37 @@
               </div>
             `).join('')}
           </div>
-          <div class="tm-section-label">Navigator Voice</div>
+          <div class="tm-section-label">${t('Navigator Voice')}</div>
           <div class="tm-voice-row">
-            ${VOICES.map(v => `
+            ${voiceList().map(v => `
               <button class="tm-voice-btn ${selectedVoice === v.id ? 'tm-voice-selected' : ''}"
                       onclick="window._tmSelectVoice('${v.id}')">
                 <span>${v.emoji}</span>
-                <small>${v.name.split(' ')[0]}</small>
+                <small>${v.short}</small>
               </button>
             `).join('')}
           </div>
           <button class="tm-start-btn" onclick="window._tmStartNav()">
-            \u{1F680} Start Navigation
+            \u{1F680} ${t('Start Navigation')}
           </button>
         </div>
       </div>`;
   }
 
   function renderNavigation() {
-    const voice = VOICES.find(v => v.id === selectedVoice);
-    const route = ROUTE_TYPES.find(r => r.id === selectedRoute);
+    const voice = voiceList().find(v => v.id === selectedVoice);
+    const route = routeList().find(r => r.id === selectedRoute);
     if (!voice || !route) { screen = 'home'; render(); return; }
     const progress = ((navStep + 1) / voice.steps.length);
     const showHazard = navStep === 2 || navStep === 4;
-    const hazard = showHazard ? pick(HAZARDS) : null;
+    const hazard = showHazard ? pick(hazardList()) : null;
     const mapId = selectedPlace ? selectedPlace.id : 'default';
     const mapStyle = selectedPlace ? (selectedPlace.mapStyle || 'indoor') : 'indoor';
     body.innerHTML = `
       <div class="tm-wrap">
         <div class="tm-header tm-header-nav">
           <span class="tm-header-title">${route.emoji} ${route.name}</span>
-          <span class="tm-nav-step-count">Step ${navStep + 1}/${voice.steps.length}</span>
+          <span class="tm-nav-step-count">${t('Step {n}/{total}', { n: navStep + 1, total: voice.steps.length })}</span>
         </div>
         <div class="tm-content">
           <div class="tm-nav-progress">
@@ -997,9 +1018,9 @@
             <span>${hazard.emoji}</span> ${hazard.name}: ${hazard.msg}
           </div>` : ''}
           <button class="tm-next-btn" onclick="window._tmNextStep()">
-            ${navStep < voice.steps.length - 1 ? '\u27A1\uFE0F Next Step' : '\u{1F3C1} Arrive!'}
+            ${navStep < voice.steps.length - 1 ? '\u27A1\uFE0F ' + t('Next Step') : '\u{1F3C1} ' + t('Arrive!')}
           </button>
-          <div class="tm-traffic tm-traffic-nav">${pick(TRAFFIC_UPDATES)}</div>
+          <div class="tm-traffic tm-traffic-nav">${pick(trafficList())}</div>
         </div>
       </div>`;
     // Draw the map after DOM is ready
@@ -1012,26 +1033,27 @@
   function renderArrived() {
     const data = window._tmArrivedData || { coins: 0, newBadges: [] };
     const place = selectedPlace;
-    const route = ROUTE_TYPES.find(r => r.id === selectedRoute);
-    const voice = VOICES.find(v => v.id === selectedVoice);
+    const route = routeList().find(r => r.id === selectedRoute);
+    const voice = voiceList().find(v => v.id === selectedVoice);
+    const coinText = t('+{n} {coins}!', { n: data.coins, coins: t.plural(data.coins, 'Map Coin', 'Map Coins') });
     body.innerHTML = `
       <div class="tm-wrap">
         <div class="tm-content tm-arrived">
           <div class="tm-arrived-emoji tm-bounce">${place ? place.emoji : '\u{1F389}'}</div>
-          <div class="tm-arrived-title">You Made It!</div>
-          <div class="tm-arrived-place">${place ? place.name : 'Destination'}</div>
+          <div class="tm-arrived-title">${t('You Made It!')}</div>
+          <div class="tm-arrived-place">${place ? place.name : t('Destination')}</div>
           <div class="tm-arrived-details">
             ${route ? `<span>${route.emoji} ${route.name}</span>` : ''}
             ${voice ? `<span>${voice.emoji} ${voice.name}</span>` : ''}
           </div>
-          <div class="tm-arrived-coins">\u{1FA99} +${data.coins} Map Coins!</div>
+          <div class="tm-arrived-coins">\u{1FA99} ${coinText}</div>
           ${data.newBadges.length > 0 ? `
             <div class="tm-arrived-badges">
-              <div>New Badges!</div>
-              ${data.newBadges.map(b => `<div class="tm-new-badge">${b.emoji} ${b.name}</div>`).join('')}
+              <div>${t('New Badges!')}</div>
+              ${badgeList(data.newBadges).map(b => `<div class="tm-new-badge">${b.emoji} ${b.name}</div>`).join('')}
             </div>` : ''}
           <button class="tm-start-btn" onclick="window._tmGo('home')">
-            \u{1F3E0} Done
+            \u{1F3E0} ${t('Done')}
           </button>
         </div>
       </div>`;
@@ -1039,12 +1061,12 @@
 
   function renderTreasure() {
     if (!currentHunt) { screen = 'home'; render(); return; }
-    const steps = ['Name & Start', 'Add Clues', 'Pick Treasure', 'Summary'];
+    const steps = [t('Name & Start'), t('Add Clues'), t('Pick Treasure'), t('Summary')];
     body.innerHTML = `
       <div class="tm-wrap">
         <div class="tm-header">
           <button class="tm-back" onclick="${huntStep > 0 ? 'window._tmHuntBack()' : "window._tmGo('home')"}">\u2190</button>
-          <span class="tm-header-title">Treasure Hunt</span>
+          <span class="tm-header-title">${t('Treasure Hunt')}</span>
           <span></span>
         </div>
         <div class="tm-content">
@@ -1061,27 +1083,27 @@
     switch (huntStep) {
       case 0: return `
         <div class="tm-hunt-field">
-          <label>Hunt Name</label>
-          <input class="tm-input" type="text" placeholder="e.g. Super Secret Treasure Hunt"
+          <label>${t('Hunt Name')}</label>
+          <input class="tm-input" type="text" placeholder="${t('e.g. Super Secret Treasure Hunt')}"
             value="${OS.esc(currentHunt.name)}" oninput="window._tmHuntSetName(this.value)">
         </div>
         <div class="tm-hunt-field">
-          <label>Starting Place</label>
+          <label>${t('Starting Place')}</label>
           <div class="tm-hunt-places">
-            ${LOCATIONS.slice(0, 6).map(l => `
+            ${placeList().slice(0, 6).map(l => `
               <button class="tm-treasure-btn ${currentHunt.startPlace === l.id ? 'tm-treasure-btn-active' : ''}"
                       onclick="window._tmHuntSetStart('${l.id}')">
-                ${l.emoji} ${l.name.split(' ').slice(0, 2).join(' ')}
+                ${l.emoji} ${l.short}
               </button>
             `).join('')}
           </div>
         </div>
         <button class="tm-start-btn" onclick="window._tmHuntNext()" ${!currentHunt.name ? 'disabled' : ''}>
-          Next \u27A1\uFE0F
+          ${t('Next')} \u27A1\uFE0F
         </button>`;
       case 1: return `
         <div class="tm-hunt-field">
-          <label>Clues (${currentHunt.clues.length}/3)</label>
+          <label>${t('Clues ({n}/3)', { n: currentHunt.clues.length })}</label>
           ${currentHunt.clues.map((c, i) => `
             <div class="tm-clue-item">
               <span>\u{1F4DC} ${c}</span>
@@ -1090,50 +1112,50 @@
           `).join('')}
           ${currentHunt.clues.length < 3 ? `
           <div class="tm-clue-templates">
-            ${CLUE_TEMPLATES.map((c, i) => `
+            ${clueList().map((c, i) => `
               <button class="tm-treasure-btn" onclick="window._tmHuntAddClue(${i})">+ ${c}</button>
             `).join('')}
           </div>` : ''}
         </div>
         <button class="tm-start-btn" onclick="window._tmHuntNext()" ${currentHunt.clues.length === 0 ? 'disabled' : ''}>
-          Next \u27A1\uFE0F
+          ${t('Next')} \u27A1\uFE0F
         </button>`;
       case 2: return `
         <div class="tm-hunt-field">
-          <label>Choose Treasure</label>
+          <label>${t('Choose Treasure')}</label>
           <div class="tm-treasure-grid">
-            ${TREASURE_TYPES.map((t, i) => `
+            ${treasureList().map((tr, i) => `
               <button class="tm-treasure-pick ${currentHunt.treasureType === i ? 'tm-treasure-pick-active' : ''}"
                       onclick="window._tmHuntSetTreasure(${i})">
-                <span class="tm-treasure-pick-emoji">${t.emoji}</span>
-                <span class="tm-treasure-pick-name">${t.name}</span>
+                <span class="tm-treasure-pick-emoji">${tr.emoji}</span>
+                <span class="tm-treasure-pick-name">${tr.name}</span>
               </button>
             `).join('')}
           </div>
         </div>
         <button class="tm-start-btn" onclick="window._tmHuntNext()" ${currentHunt.treasureType === null ? 'disabled' : ''}>
-          Next \u27A1\uFE0F
+          ${t('Next')} \u27A1\uFE0F
         </button>`;
       case 3: {
-        const startLoc = LOCATIONS.find(l => l.id === currentHunt.startPlace);
-        const treasure = currentHunt.treasureType !== null ? TREASURE_TYPES[currentHunt.treasureType] : null;
+        const startLoc = placeList().find(l => l.id === currentHunt.startPlace);
+        const treasure = currentHunt.treasureType !== null ? treasureList()[currentHunt.treasureType] : null;
         return `
         <div class="tm-hunt-summary">
           <div class="tm-hunt-summary-row">
-            <strong>Name:</strong> ${OS.esc(currentHunt.name || 'Unnamed Hunt')}
+            <strong>${t('Name:')}</strong> ${OS.esc(currentHunt.name || t('Unnamed Hunt'))}
           </div>
           <div class="tm-hunt-summary-row">
-            <strong>Start:</strong> ${startLoc ? startLoc.emoji + ' ' + startLoc.name : 'Not set'}
+            <strong>${t('Start:')}</strong> ${startLoc ? startLoc.emoji + ' ' + startLoc.name : t('Not set')}
           </div>
           <div class="tm-hunt-summary-row">
-            <strong>Clues:</strong> ${currentHunt.clues.length}
+            <strong>${t('Clues:')}</strong> ${currentHunt.clues.length}
           </div>
           <div class="tm-hunt-summary-row">
-            <strong>Treasure:</strong> ${treasure ? treasure.emoji + ' ' + treasure.name : 'Not set'}
+            <strong>${t('Treasure:')}</strong> ${treasure ? treasure.emoji + ' ' + treasure.name : t('Not set')}
           </div>
         </div>
         <button class="tm-start-btn" onclick="window._tmHuntSave()">
-          \u{1F4BE} Save Treasure Hunt (+50 coins!)
+          \u{1F4BE} ${t('Save Treasure Hunt (+50 coins!)')}
         </button>`;
       }
       default: return '';
@@ -1146,12 +1168,12 @@
         <div class="tm-wrap">
           <div class="tm-header">
             <button class="tm-back" onclick="window._tmGo('home')">\u2190</button>
-            <span class="tm-header-title">Explore</span>
+            <span class="tm-header-title">${t('Explore')}</span>
             <span></span>
           </div>
           <div class="tm-content">
             <div class="tm-explore-grid">
-              ${EXPLORE_CATEGORIES.map((c, i) => `
+              ${exploreList().map((c, i) => `
                 <div class="tm-explore-card" onclick="window._tmGo('explore', ${i})">
                   <div class="tm-explore-emoji">${c.emoji}</div>
                   <div class="tm-explore-name">${c.name}</div>
@@ -1161,7 +1183,7 @@
           </div>
         </div>`;
     } else {
-      const filtered = LOCATIONS.filter(exploreCategory.filter);
+      const filtered = placeList().filter(exploreCategory.filter);
       body.innerHTML = `
         <div class="tm-wrap">
           <div class="tm-header">
@@ -1185,70 +1207,74 @@
   }
 
   function renderLists() {
-    const savedPlaces = persisted.savedLists.map(id => LOCATIONS.find(l => l.id === id)).filter(Boolean);
+    // The word form 'clues' two times: the English text stays "1 clues", as before. Serbian has its 3 forms
+    const all = placeList();
+    const savedPlaces = persisted.savedLists.map(id => all.find(l => l.id === id)).filter(Boolean);
     body.innerHTML = `
       <div class="tm-wrap">
         <div class="tm-header">
           <button class="tm-back" onclick="window._tmGo('home')">\u2190</button>
-          <span class="tm-header-title">My Lists</span>
+          <span class="tm-header-title">${t('My Lists')}</span>
           <span></span>
         </div>
         <div class="tm-content">
-          <div class="tm-section-label">\u{1F4CD} Saved Places</div>
+          <div class="tm-section-label">\u{1F4CD} ${t('Saved Places')}</div>
           ${savedPlaces.length > 0 ? savedPlaces.map(l => `
             <div class="tm-list-item" onclick="window._tmGo('place','${l.id}')">
               <span class="tm-list-emoji">${l.emoji}</span>
               <span class="tm-list-name">${l.name}</span>
               <button class="tm-list-remove" onclick="event.stopPropagation();window._tmRemovePlace('${l.id}')">\u2716</button>
             </div>
-          `).join('') : '<div class="tm-empty">No saved places yet. Explore and save some!</div>'}
-          <div class="tm-section-label" style="margin-top:16px">\u{1F4DC} Treasure Hunts</div>
+          `).join('') : '<div class="tm-empty">' + t('No saved places yet. Explore and save some!') + '</div>'}
+          <div class="tm-section-label" style="margin-top:16px">\u{1F4DC} ${t('Treasure Hunts')}</div>
           ${persisted.treasureHunts.length > 0 ? persisted.treasureHunts.map(h => `
             <div class="tm-list-item">
               <span class="tm-list-emoji">${h.treasure.emoji}</span>
               <span class="tm-list-name">${OS.esc(h.name)}</span>
-              <span class="tm-list-clues">${h.clues.length} clues</span>
+              <span class="tm-list-clues">${t('{n} {clues}', { n: h.clues.length, clues: t.plural(h.clues.length, 'clues', 'clues') })}</span>
             </div>
-          `).join('') : '<div class="tm-empty">No treasure hunts created yet.</div>'}
+          `).join('') : '<div class="tm-empty">' + t('No treasure hunts created yet.') + '</div>'}
         </div>
       </div>`;
   }
 
   function renderVault() {
-    const quest = DAILY_QUESTS[new Date().getDate() % DAILY_QUESTS.length];
+    const quests = t.list('treasuremapper.quests', DAILY_QUESTS);
+    const quest = quests[new Date().getDate() % quests.length];
     const questDone = quest.check(persisted);
     const recentTrips = persisted.completedRoutes.slice().reverse();
+    const places = placeList(), routes = routeList();
     body.innerHTML = `
       <div class="tm-wrap">
         <div class="tm-header">
           <button class="tm-back" onclick="window._tmGo('home')">\u2190</button>
-          <span class="tm-header-title">\u{1F3C6} Vault</span>
+          <span class="tm-header-title">\u{1F3C6} ${t('Vault')}</span>
           <span></span>
         </div>
         <div class="tm-content">
           <div class="tm-vault-stats">
             <div class="tm-vault-stat">
               <div class="tm-vault-stat-num">${persisted.totalTrips}</div>
-              <div class="tm-vault-stat-label">Trips</div>
+              <div class="tm-vault-stat-label">${t('Trips')}</div>
             </div>
             <div class="tm-vault-stat">
               <div class="tm-vault-stat-num">\u{1FA99} ${persisted.mapCoins}</div>
-              <div class="tm-vault-stat-label">Coins</div>
+              <div class="tm-vault-stat-label">${t('Coins')}</div>
             </div>
             <div class="tm-vault-stat">
               <div class="tm-vault-stat-num">${persisted.visitedPlaces.length}</div>
-              <div class="tm-vault-stat-label">Places</div>
+              <div class="tm-vault-stat-label">${t('Places')}</div>
             </div>
           </div>
-          <div class="tm-section-label">\u{1F4CB} Daily Quest</div>
+          <div class="tm-section-label">\u{1F4CB} ${t('Daily Quest')}</div>
           <div class="tm-quest-card ${questDone ? 'tm-quest-done' : ''}">
             <span>${quest.emoji}</span>
             <span>${quest.task}</span>
             <span>${questDone ? '\u2705' : '\u{1F6AB}'}</span>
           </div>
-          <div class="tm-section-label">\u{1F396}\uFE0F Badges</div>
+          <div class="tm-section-label">\u{1F396}\uFE0F ${t('Badges')}</div>
           <div class="tm-vault-badges">
-            ${BADGES.map(b => {
+            ${badgeList(BADGES).map(b => {
               const earned = persisted.badges.includes(b.id);
               return `<div class="tm-vault-badge ${earned ? '' : 'tm-badge-locked'}" title="${b.name}">
                 <div>${earned ? b.emoji : '\u{1F512}'}</div>
@@ -1257,13 +1283,13 @@
             }).join('')}
           </div>
           ${recentTrips.length > 0 ? `
-          <div class="tm-section-label">\u{1F5FA}\uFE0F Recent Trips</div>
-          ${recentTrips.map(t => {
-            const place = LOCATIONS.find(l => l.id === t.place);
-            const route = ROUTE_TYPES.find(r => r.id === t.route);
+          <div class="tm-section-label">\u{1F5FA}\uFE0F ${t('Recent Trips')}</div>
+          ${recentTrips.map(trip => {
+            const place = places.find(l => l.id === trip.place);
+            const route = routes.find(r => r.id === trip.route);
             return `<div class="tm-trip-card">
               <span>${place ? place.emoji : '\u{1F4CD}'}</span>
-              <span>${place ? place.name : 'Unknown'}</span>
+              <span>${place ? place.name : t('Unknown')}</span>
               <span>${route ? route.emoji : ''}</span>
             </div>`;
           }).join('')}` : ''}
@@ -1275,7 +1301,7 @@
   OS.registerApp('treasuremapper', {
     singleInstance: true,
     getWindowOpts() {
-      return { id: 'treasuremapper', title: 'Treasure Mapper', icon: '\u{1F5FA}\uFE0F', width: 440, height: 560, content: '' };
+      return { id: 'treasuremapper', title: t('title|Treasure Mapper'), icon: '\u{1F5FA}\uFE0F', width: 440, height: 560, content: '' };
     },
     onOpen(id) {
       winId = id;
@@ -1290,17 +1316,18 @@
       currentHunt = null;
       huntStep = 0;
       exploreCategory = null;
-      bannerIdx = Math.floor(Math.random() * BANNER_TIPS.length);
-      trafficIdx = Math.floor(Math.random() * TRAFFIC_UPDATES.length);
+      bannerIdx = Math.floor(Math.random() * tipList().length);
+      trafficIdx = Math.floor(Math.random() * trafficList().length);
       render();
 
       bannerInterval = setInterval(() => {
-        bannerIdx = (bannerIdx + 1) % BANNER_TIPS.length;
+        const tips = tipList(), traffic = trafficList();
+        bannerIdx = (bannerIdx + 1) % tips.length;
         const el = body ? body.querySelector('#tm-banner') : null;
-        if (el) el.textContent = BANNER_TIPS[bannerIdx];
-        trafficIdx = (trafficIdx + 1) % TRAFFIC_UPDATES.length;
+        if (el) el.textContent = tips[bannerIdx];
+        trafficIdx = (trafficIdx + 1) % traffic.length;
         const tel = body ? body.querySelector('.tm-traffic:not(.tm-traffic-nav)') : null;
-        if (tel) tel.textContent = TRAFFIC_UPDATES[trafficIdx];
+        if (tel) tel.textContent = traffic[trafficIdx];
       }, 6000);
     },
     onClose() {
