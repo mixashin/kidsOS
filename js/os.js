@@ -159,7 +159,7 @@ const OS = (() => {
     overlay.className = 'update-popup-overlay';
     overlay.innerHTML = `
       <div class="update-popup">
-        <div class="update-popup-icon">🐧</div>
+        <div class="update-popup-icon"><img src="art/mascot/hello.webp" alt="" draggable="false"></div>
         <div class="update-popup-title">${msg.title}</div>
         <div class="update-popup-body">${msg.body}</div>
         <div class="update-popup-version">${newVer && newVer !== version ? `v${esc(version)} → v${esc(newVer)}${build ? ' (build ' + esc(build) + ')' : ''}` : ''}</div>

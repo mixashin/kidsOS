@@ -156,7 +156,7 @@ OS.registerApp('settings', {
       <div class="settings-panel" id="panel-about">
         <h2>ℹ️ About KidsOS</h2>
         <div style="display:flex;flex-direction:column;gap:12px;padding:8px 0">
-          <div style="font-size:48px;text-align:center">🐧</div>
+          <div style="text-align:center"><img src="art/mascot/hello.webp" alt="" draggable="false" style="width:96px;height:96px"></div>
           <div style="text-align:center">
             <strong style="font-size:22px">KidsOS</strong><br>
             <span style="color:var(--text-muted)">Version ${OS.VERSION}</span>

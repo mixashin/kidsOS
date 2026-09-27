@@ -78,7 +78,8 @@ html, body {
 #boot-screen.fade-out { opacity: 0; pointer-events: none; }
 
 #boot-content { text-align: center; color: #fff; }
-#boot-logo { font-size: 80px; animation: pulse 1.5s infinite; }
+#boot-logo { animation: pulse 1.5s infinite; }
+#boot-logo img { display: block; width: 160px; height: 160px; margin: 0 auto; }
 #boot-title { font-size: 48px; font-weight: 700; margin: 10px 0 4px; color: #5b8cff; }
 #boot-subtitle { font-size: 18px; color: #aaa; margin-bottom: 30px; }
 #boot-bar-wrap {
@@ -156,6 +157,7 @@ html, body {
   display: flex; align-items: center; gap: 6px;
 }
 #app-menu-btn:hover { filter: brightness(1.15); }
+#app-menu-btn img { display: block; width: 28px; height: 28px; border-radius: 8px; }
 
 .taskbar-app-btn {
   --app-icon: 24px;
@@ -2226,7 +2228,8 @@ button { font-family: var(--font); }
   transform: translateY(30px) scale(.95); transition: transform .35s cubic-bezier(.22,1,.36,1);
 }
 .update-popup-overlay.visible .update-popup { transform: translateY(0) scale(1); }
-.update-popup-icon { font-size: 56px; margin-bottom: 8px; animation: up-bounce 1.2s ease infinite alternate; }
+.update-popup-icon { margin-bottom: 8px; animation: up-bounce 1.2s ease infinite alternate; }
+.update-popup-icon img { display: block; width: 96px; height: 96px; margin: 0 auto; }
 @keyframes up-bounce { 0%{transform:translateY(0)} 100%{transform:translateY(-8px)} }
 .update-popup-title { font: bold 20px/1.3 sans-serif; color: #fff; margin-bottom: 10px; }
 .update-popup-body { font: 15px/1.5 sans-serif; color: #b0bec5; margin-bottom: 14px; }
@@ -3109,7 +3112,7 @@ button { font-family: var(--font); }
   .desktop-icon span { font-size: 12px; }
 
   /* Boot screen */
-  #boot-logo { font-size: 56px; }
+  #boot-logo img { width: 120px; height: 120px; }
   #boot-title { font-size: 32px; }
   #boot-subtitle { font-size: 14px; }
 
