@@ -20,7 +20,7 @@ const OUT = resolve(ROOT, arg('out') || 'dist');
 
 // The site. Every other file in the repo stays out of the deployment.
 const SITE = ['index.html', 'style.css', 'manifest.json', 'js', 'icons', 'art', 'vendor', 'media'];
-const EXCLUDE = ['icons/generate-icons.html', 'media/screenshot1.jpg', 'media/screenshot2.jpg'];
+const EXCLUDE = ['media/screenshot1.jpg', 'media/screenshot2.jpg'];
 // Larger files are cached on first use, not downloaded at install
 const LAZY_BYTES = 2 * 1024 * 1024;
 
