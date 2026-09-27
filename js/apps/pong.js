@@ -38,7 +38,7 @@ const PongApp = (() => {
     const PADDLE_THICK = 22;
     const PADDLE_SPEED = 1500 / HZ;
     const SPEED_START = 430 / HZ;
-    const SPEED_UP = 1.07;          // at each paddle hit. No limit: each rally gets faster until a player misses
+    const SPEED_UP = 1.05;          // at each paddle hit. No limit: each rally gets faster until a player misses
     const SPEED_GUARD = 4800 / HZ;  // guard for the numbers only. The ball crosses the court in 0.2 s at this speed
     const SERVE_STEPS = HZ;         // one second before each serve
     const WIN_SCORE = 5;
@@ -53,20 +53,19 @@ const PongApp = (() => {
     // Pong+ power-ups. The player who hit the ball last gets it, and uses it at the next hit.
     //   fire   fireball: the shot is faster
     //   zap    lightning: the paddle that returns this shot cannot move for a moment
-    //   split  the shot becomes two balls
-    // One power-up acts at once, for both players:
+    // Two power-ups act at once, for both players:
+    //   split  the ball becomes two balls, one goes to each player
     //   wall   a wall of bricks comes up in the middle. A ball that hits a brick removes it.
     const ITEMS = ['fire', 'zap', 'split', 'wall'];
     const FIRE = 1.5;
     const STUN_STEPS = Math.round(1.2 * HZ);
-    const SPLIT_SLOPE = 0.5;        // the two balls leave to two sides
     const WALL_COLS = 3, WALL_ROWS = 5;
     const BRICK_W = 36, BRICK_GAP = 4;
     const WALL_LIFE = 20 * HZ;      // bricks that are left go away, so the game cannot get stuck
     const SUB_STEP = 10;            // a fast ball moves in parts of this length, so it cannot jump over a brick
     const ITEM_R = 38;
     const ITEM_LIFE = 10 * HZ;      // a power-up that nobody takes goes away
-    const ITEM_WAIT = [15 * HZ, 15 * HZ]; // a power-up appears after 15 to 30 s of play: [minimum, random part]
+    const ITEM_WAIT = [8 * HZ, 8 * HZ]; // a power-up appears after 8 to 16 s of play: [minimum, random part]
 
     // mulberry32: small seeded random number generator
     function random(state) {
@@ -200,7 +199,6 @@ const PongApp = (() => {
       b.x = face + (i === 0 ? BALL_R : -BALL_R);
       b.y = Math.max(BALL_R, Math.min(H - BALL_R, yHit));
       let slope = offset * 0.9;                     // where the ball meets the paddle sets the direction
-      let twin = null;
       if (state.style === 'plus') {
         const power = state.power[i];
         state.power[i] = null;
@@ -214,16 +212,8 @@ const PongApp = (() => {
           slope += b.spin * 0.35;
           say(state, 'spin', b);
         }
-        if (power === 'split') {
-          twin = newBall(state, { ...b, id: state.ballId + 1, spin: 0 });
-          b.spin = 0;
-          aim(twin, i === 0 ? 1 : -1, slope - SPLIT_SLOPE);
-          slope += SPLIT_SLOPE;
-          say(state, 'split', b);
-        }
       }
       aim(b, i === 0 ? 1 : -1, slope);
-      if (twin) state.balls.push(twin);
       state.rally++;
       say(state, 'hit', b);
     }
@@ -297,7 +287,11 @@ const PongApp = (() => {
           say(state, 'pickup', state.item);
           nextItemIn(state);
           if (type === 'wall') raiseWall(state);
-          else state.power[b.owner] = type;
+          else if (type === 'split') {
+            // The new ball is the mirror of this ball, so each player gets one. It moves from the next step on.
+            state.balls.push(newBall(state, { ...b, id: state.ballId + 1, vx: -b.vx, vy: -b.vy, spin: -b.spin, zap: false, owner: 1 - b.owner }));
+            say(state, 'split', b);
+          } else state.power[b.owner] = type;
         }
       }
 
@@ -597,7 +591,8 @@ const PongApp = (() => {
     overlay.classList.remove('pg-show');
     root.classList.add('pg-playing');
     root.classList.toggle('pg-classic', style === 'classic');
-    loop.start();
+    // Two players: the game waits for a tap, so the two children are ready
+    if (players === 2) { render(1); setPaused(true, '👆'); } else loop.start();
   }
 
   function showMenu() {
@@ -622,13 +617,13 @@ const PongApp = (() => {
     render(1);
   }
 
-  function setPaused(value) {
+  function setPaused(value, logo = '⏸') {
     paused = value;
     if (paused) {
       loop.stop();
       overlay.innerHTML = `
         <div class="pg-panel">
-          <div class="pg-logo">⏸</div>
+          <div class="pg-logo">${logo}</div>
           <button class="pg-btn" data-act="resume" style="--pg-c:${COLORS[0]}"><span>▶</span>${T.resume}</button>
           <button class="pg-btn pg-btn-plain" data-act="menu"><span>🏠</span>${T.menu}</button>
         </div>`;
