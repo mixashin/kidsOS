@@ -36,7 +36,7 @@ function kfGenreName(id) {
 }
 
 function kfMovies() { return t.list('kidflix.films', KF_MOVIES); }
-const kfNumber = n => n.toLocaleString(OS.locale());
+const kfNumber = n => OS.lang() === 'en' ? String(n) : n.toLocaleString(OS.locale());
 
 /* ---- Seeded RNG (same pattern as Kidstagram) ---- */
 function kfRng(seed) {
@@ -209,8 +209,8 @@ OS.registerApp('kidflix', {
   getFilteredMovies() {
     return kfMovies().filter(m => {
       if (this.activeGenre !== 'all' && m.genreId !== this.activeGenre) return false;
-      if (this.searchQuery && !m.title.toLowerCase().includes(this.searchQuery) &&
-          !m.desc.toLowerCase().includes(this.searchQuery)) return false;
+      if (this.searchQuery && !OS.holds(m.title, this.searchQuery) &&
+          !OS.holds(m.desc, this.searchQuery)) return false;
       return true;
     });
   },

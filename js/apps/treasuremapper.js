@@ -846,7 +846,7 @@
   function renderHome() {
     // The search looks in the names that the child sees
     const places = searchQuery
-      ? placeList().filter(l => l.name.toLowerCase().includes(searchQuery))
+      ? placeList().filter(l => OS.holds(l.name, searchQuery))
       : placeList().slice(0, 6);
     const earnedBadges = badgeList(BADGES).filter(b => persisted.badges.includes(b.id));
     body.innerHTML = `

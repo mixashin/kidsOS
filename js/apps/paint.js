@@ -229,7 +229,7 @@ var PaintApp = (() => {
       if (!input || !input.trim()) return;
       let name = input.trim().replace(/[/\\:*?"<>|]/g, '_');
       if (!name.toLowerCase().endsWith('.png')) name += '.png';
-      FM.saveNewFile('pictures', name, dataURL);
+      if (!FM.saveNewFile('pictures', name, dataURL)) { alert(t('Could not save the picture.')); return; }
       currentFile = { name };
       // Update window title
       const win = canvas.closest('.window');

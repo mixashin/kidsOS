@@ -146,7 +146,7 @@ var NotepadApp = {
       if (!name || !name.trim()) return;
       const safeName = name.trim().replace(/[/\\:*?"<>|]/g, '_');
       const finalName = safeName.includes('.') ? safeName : safeName + '.txt';
-      FM.saveNewFile('documents', finalName, content);
+      if (!FM.saveNewFile('documents', finalName, content)) { alert(t('Could not save file. It may have been deleted.')); return; }
       wrap.dataset.filepath = 'documents';
       wrap.dataset.filename = finalName;
       // Update window title

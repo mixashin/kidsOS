@@ -162,7 +162,7 @@
     if (offset === 1) return t('Tomorrow');
     const d = new Date();
     d.setDate(d.getDate() + offset);
-    const name = new Intl.DateTimeFormat(OS.locale(), { weekday: 'long' }).format(d);
+    const name = new Intl.DateTimeFormat(OS.textLocale(), { weekday: 'long' }).format(d);
     return name.charAt(0).toUpperCase() + name.slice(1);
   }
 

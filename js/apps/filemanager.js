@@ -122,7 +122,7 @@ var FM = (() => {
   // A folder of the system has a key in the stored data, and a name that the child sees
   function shownName(name, path = currentPath) {
     const names = { documents: t('folder|documents'), pictures: t('folder|pictures'), music: t('folder|music'), videos: t('folder|videos'), trash: t('folder|trash') };
-    return path === 'home' && Object.hasOwn(names, name) ? names[name] : name;
+    return path === 'home' && Object.prototype.hasOwnProperty.call(names, name) ? names[name] : name;
   }
 
   function pathLabel(p) {
@@ -319,6 +319,11 @@ var FM = (() => {
   // Save a brand new file into a folder
   function saveNewFile(fsPath, name, content) {
     const fs = loadFS();
+    // Notepad and Paint save into a folder of the system. If the child deleted that folder or gave it a new name, make it again
+    if (['documents', 'pictures'].includes(fsPath) && !getNodeInFS(fs, fsPath)) {
+      if (!fs.home.children) fs.home.children = {};
+      fs.home.children[fsPath] = { type: 'folder', children: {} };
+    }
     const node = getNodeInFS(fs, fsPath);
     if (!node) return false;
     if (!node.children) node.children = {};

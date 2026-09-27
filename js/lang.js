@@ -109,6 +109,16 @@ const Lang = (() => {
     });
   }
 
+  // Search: true if the text holds the typed letters. In Serbian, a child with a Latin keyboard
+  // can type a Cyrillic name with Latin letters ("tvrdjava", "tvrđava", "tvrdava"). English: plain search
+  const LATIN = { а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', ђ: 'd', е: 'e', ж: 'z', з: 'z', и: 'i', ј: 'j', к: 'k', л: 'l', љ: 'lj', м: 'm', н: 'n', њ: 'nj', о: 'o', п: 'p', р: 'r', с: 's', т: 't', ћ: 'c', у: 'u', ф: 'f', х: 'h', ц: 'c', ч: 'c', џ: 'dz', ш: 's', đ: 'd', ž: 'z', č: 'c', ć: 'c', š: 's' };
+  const latin = s => s.toLowerCase().replace(/[а-џđžčćš]/g, c => has(LATIN, c) ? LATIN[c] : c).replace(/dj/g, 'd');
+  function holds(text, typed) {
+    const q = String(typed).trim().toLowerCase();
+    if (!q || String(text).toLowerCase().includes(q)) return true;
+    return current !== 'en' && latin(String(text)).includes(latin(q));
+  }
+
   // The text function of one app
   function texts(app) {
     const t = (key, values) => text(app, key, values);
@@ -118,7 +128,7 @@ const Lang = (() => {
   }
 
   return {
-    set, add, valid, texts,
+    set, add, valid, texts, holds,
     get code() { return current; },
     get locale() { return LOCALES[current]; },
     get missing() { return [...missing]; },

@@ -65,8 +65,8 @@ OS.registerApp('settings', {
         <div class="settings-group">
           <label>${t('Language')}</label>
           <div class="lang-options">
-            <div class="lang-option ${OS.lang() === 'en' ? 'active' : ''}" data-lang="en" role="button" tabindex="0" onclick="SettingsApp.setLanguage('en')">English</div>
-            <div class="lang-option ${OS.lang() === 'sr' ? 'active' : ''}" data-lang="sr" lang="sr-Cyrl" role="button" tabindex="0" onclick="SettingsApp.setLanguage('sr')">Српски</div>
+            <button type="button" class="lang-option ${OS.lang() === 'en' ? 'active' : ''}" data-lang="en" onclick="SettingsApp.setLanguage('en')">English</button>
+            <button type="button" class="lang-option ${OS.lang() === 'sr' ? 'active' : ''}" data-lang="sr" lang="sr-Cyrl" onclick="SettingsApp.setLanguage('sr')">Српски</button>
           </div>
         </div>
         <div class="settings-group">

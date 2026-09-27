@@ -302,7 +302,7 @@ const OS = (() => {
         <div class="update-popup-icon"><img src="art/mascot/parcel.webp" alt="" draggable="false"></div>
         <div class="update-popup-title">${msg.title}</div>
         <div class="update-popup-body">${msg.body}</div>
-        <div class="update-popup-version">${newVer && newVer !== version ? `v${esc(version)} → v${esc(newVer)}${build ? ' (' + esc(build) + ')' : ''}` : ''}</div>
+        <div class="update-popup-version">${newVer && newVer !== version ? `v${esc(version)} → v${esc(newVer)}${build ? ' ' + t('(build {build})', { build: esc(build) }) : ''}` : ''}</div>
         <div class="update-popup-buttons">
           <button class="update-popup-btn update-popup-later" id="update-later-btn">${t('Later')}</button>
           <button class="update-popup-btn update-popup-go" id="update-go-btn">🚀 ${t('Update Now!')}</button>
@@ -1098,6 +1098,10 @@ const OS = (() => {
     texts: Lang.texts, lang: () => Lang.code, setLanguage, missingTexts: () => Lang.missing,
     // First parameter for the date and number functions. English gives undefined: the device decides the form, as in each release before
     locale: () => Lang.code === 'en' ? undefined : Lang.locale,
+    // For a number or a day name that was a fixed English text before release 0.31.0: English does not depend on the device
+    textLocale: () => Lang.code === 'en' ? 'en-US' : Lang.locale,
+    // Search in a text that the child sees. Serbian: Latin letters find a Cyrillic text
+    holds: (text, typed) => Lang.holds(text, typed),
     createWindow, closeWindow, minimizeWindow, restoreWindow, toggleMaximize, focusWindow,
     toggleAppMenu, shutdown,
     saveSettings, loadSettings, getSettings, applyWallpaper, getWallpapers,

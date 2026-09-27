@@ -72,6 +72,7 @@ Lang.add('sr', 'os', {
   'Tap to restart': 'Додирни за нови почетак',
 
   // New release
+  '(build {build})': '({build})',
   'Later': 'Касније',
   'Update Now!': 'Узми нову верзију!',
   'Updating...': 'Стиже нова верзија...',

@@ -32,6 +32,7 @@ Lang.add('sr', 'paint', {
   'Save': 'Сачувај',
   'Download': 'Преузми',
   'Saved': 'Сачувано',
+  'Could not save the picture.': 'Слика није сачувана.',
   'Save as (filename):': 'Сачувај као (име фајла):',
   // Name of a new file. The file type (.png) is in the code
   'drawing': 'цртеж',

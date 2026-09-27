@@ -593,7 +593,7 @@ function kgGame(ctx, W, H, rng, v) {
     for(let i=0;i<40;i++) kgCircle(ctx, rng()*W, rng()*H*0.6, rng()*1.5+0.5, '#fff');
     // HUD bar
     kgRect(ctx, 0, 0, W, H*0.12, 'rgba(0,0,0,0.5)');
-    kgText(ctx, t('SCORE: {n}', { n: (42800).toLocaleString(OS.locale()) }), W*0.38, H*0.06, 14, '#fff', null, W*0.7);
+    kgText(ctx, t('SCORE: {n}', { n: (42800).toLocaleString(OS.textLocale()) }), W*0.38, H*0.06, 14, '#fff', null, W*0.7);
     kgText(ctx, '❤️❤️❤️', W*0.82, H*0.06, 12);
     // Platforms
     [[0.05,0.75,0.25,0.05],[0.35,0.6,0.2,0.05],[0.62,0.72,0.22,0.05],[0.18,0.48,0.18,0.05],[0.55,0.42,0.15,0.05]].forEach(([x,y,w,h]) => {
@@ -632,7 +632,7 @@ function kgGame(ctx, W, H, rng, v) {
     for(let i=0;i<60;i++) kgCircle(ctx, rng()*W, rng()*H, rng()*2, `rgba(255,255,255,${0.3+rng()*0.7})`);
     // HUD
     kgRect(ctx, 0, 0, W, H*0.1, 'rgba(0,0,0,0.6)');
-    kgText(ctx, '⭐ ' + (8250).toLocaleString(OS.locale()), W*0.22, H*0.05, 13, '#ffd600', null, W*0.3);
+    kgText(ctx, '⭐ ' + (8250).toLocaleString(OS.textLocale()), W*0.22, H*0.05, 13, '#ffd600', null, W*0.3);
     kgText(ctx, t('LEVEL {n}', { n: 7 }), W*0.5, H*0.05, 13, '#fff', null, W*0.25);
     kgText(ctx, '❤️❤️', W*0.82, H*0.05, 12);
     // Enemies
@@ -697,7 +697,7 @@ function kgGame(ctx, W, H, rng, v) {
     ctx.beginPath(); ctx.moveTo(W*0.83,H*0.22); ctx.lineTo(W*0.77,H*0.27); ctx.stroke();
     // Score/HUD
     kgRect(ctx, 0, 0, W, H*0.1, 'rgba(121,85,72,0.3)');
-    kgText(ctx, '💎 ' + (1450).toLocaleString(OS.locale()) + '    ⚔️ ' + t('LVL {n}', { n: 12 }) + '    ❤️❤️❤️', W*0.5, H*0.055, 12, '#4e342e', null, W - 32);
+    kgText(ctx, '💎 ' + (1450).toLocaleString(OS.textLocale()) + '    ⚔️ ' + t('LVL {n}', { n: 12 }) + '    ❤️❤️❤️', W*0.5, H*0.055, 12, '#4e342e', null, W - 32);
   }
 }
 

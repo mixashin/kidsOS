@@ -152,7 +152,7 @@
   /* ---- Helpers ---- */
   function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
   function $(sel) { return body ? body.querySelector(sel) : null; }
-  const number = n => n.toLocaleString(OS.locale());
+  const number = n => OS.lang() === 'en' ? String(n) : n.toLocaleString(OS.locale());
   const coins = n => t('{n} {coins}', { n, coins: t.plural(n, 'coin', 'coins') });
   const banners = () => t.list('snackdash.banners', BANNERS);
 

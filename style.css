@@ -1058,6 +1058,7 @@ button { font-family: var(--font); }
   color: var(--text-primary); transition: all 0.15s;
   display: flex; align-items: center; justify-content: center; gap: 6px;
 }
+button.lang-option { font-family: inherit; }
 .theme-option:hover, .lang-option:hover { border-color: var(--accent); }
 .theme-option.active, .lang-option.active { border-color: var(--accent); background: var(--hover-bg); }
 
