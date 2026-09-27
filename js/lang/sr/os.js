@@ -1,0 +1,90 @@
+/* Serbian texts of the shell: home, app names, windows, messages, start and shut down screen */
+Lang.add('sr', 'os', {
+  // Names of the apps
+  'Files': 'Фајлови',
+  'Notepad': 'Свеска',
+  'Calculator': 'Калкулатор',
+  'Paint': 'Бојанка',
+  'Snake': 'Змијица',
+  'Memory': 'Меморија',
+  'Kidstagram': 'Кидстаграм',
+  'KidsChat': 'Ћаскање',
+  'Minesweeper': 'Миноловац',
+  'eJob': 'еПосао',
+  'Kidflix': 'Кидфликс',
+  'TinyBank': 'Касица',
+  'Chores': 'Обавезе',
+  'Maps': 'Мапе',
+  'SnackDash': 'СнекДеш',
+  'Zoomer': 'Зумер',
+  'Sounds': 'Звуци',
+  'Scanner': 'Скенер',
+  'SillySkies': 'Шашаво време',
+  'Breakout': 'Циглице',
+  'Pong': 'Понг',
+  'Captain Cardio': 'Капетан Кардио',
+  'Pebbles': 'Каменко',
+  'Pocket Pal': 'Џепни друг',
+  'Settings': 'Подешавања',
+  // Short names for the tile on the home
+  'Cardio': 'Кардио',
+  'tile|SillySkies': 'Време',
+  'tile|Pocket Pal': 'Џепко',
+  '{app} could not open. Try again.': 'Апликација {app} не може да се отвори. Пробај поново.',
+
+  // Home and menu
+  'Hello!': 'Здраво!',
+  'Hello, {name}!': 'Здраво, {name}!',
+  'KidsUser': 'Дете',
+  'Apps': 'Апликације',
+  'Shutdown': 'Угаси',
+  'Home': 'Почетна',
+  'Giggle Coins': 'Кикотићи',
+  'Giggle Coin / Giggle Coins': ['кикотић', 'кикотића', 'кикотића'],
+  '+{n} {coins}!': '+{n} {coins}!',
+
+  // Windows
+  'Window': 'Прозор',
+  'App': 'Апликација',
+  'Minimize': 'Смањи',
+  'Maximize': 'Увећај',
+  'Close': 'Затвори',
+  'Resize': 'Промени величину',
+
+  // Wallpapers and colors
+  'Meadow': 'Ливада',
+  'Forest': 'Шума',
+  'Seaside': 'Море',
+  'Sunset': 'Залазак',
+  'Night': 'Ноћ',
+  'Rain': 'Киша',
+  'Sky': 'Небо',
+  'Leaf': 'Лист',
+  'Plum': 'Шљива',
+  'Persimmon': 'Каки',
+  'Rose': 'Ружа',
+  'Amber': 'Ћилибар',
+
+  // Start and shut down
+  'Learning Computing the Fun Way!': 'Учимо рачунар кроз игру!',
+  'Shutting down KidsOS...': 'KidsOS се гаси...',
+  'Goodbye!': 'Довиђења!',
+  'Tap to restart': 'Додирни за нови почетак',
+
+  // New release
+  'Later': 'Касније',
+  'Update Now!': 'Узми нову верзију!',
+  'Updating...': 'Стиже нова верзија...',
+  "Your files & data won't be touched!": 'Твоји фајлови и подаци остају на месту!',
+}, {
+  'os.updates': {
+    penguin: { title: '🐧 Пингвин експрес пошта!', body: 'Нова верзија KidsOS-а се догегала до тебе! Пингвин стрпљиво чека.' },
+    rocket: { title: '🚀 Хјустоне, имамо нову верзију!', body: 'Контрола лета је приметила нову верзију KidsOS-а у орбити. Крећемо са преузимањем?' },
+    cookies: { title: '🍪 Врући колачићи из рерне!', body: 'Нова тура побољшања за KidsOS је управо испечена. Остаје топла док не дођеш по њу!' },
+    unicorn: { title: '🦄 Једнорог доноси нову верзију!', body: 'Чаробни једнорог је протрчао и оставио нову верзију KidsOS-а. Шљокице те чекају!' },
+    parcel: { title: '🎁 Пакет изненађења!', body: 'Вилењаци из KidsOS-а су радили прековремено! Нова верзија је упакована и чека те!' },
+    wizard: { title: '🧙 Чаробњак има нову верзију!', body: 'Чаробњак је смућкао нову чаролију, то јест верзију! Махни штапићем (додирни дугме) и готово!' },
+    frog: { title: '🐸 Крекет! Нова верзија!', body: 'Жабица је доскакутала са новом верзијом KidsOS-а на леђима. Пољуби дугме и гледај чаролију!' },
+    rock: { title: '🎸 Рокенрол верзија!', body: 'KidsOS је издао нови албум, то јест нову ВЕРЗИЈУ. Одврни до даске кад дође време!' },
+  },
+});

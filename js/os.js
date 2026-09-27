@@ -4,6 +4,8 @@ const OS = (() => {
   let version = 'dev';
 
   let zCounter = 100;
+  // Texts of the shell. The Serbian table is js/lang/sr/os.js.
+  const t = Lang.texts('os');
   let windowMap = {};     // id -> { el, taskbarBtn, app }
   let focusHistory = [];  // ordered list of window ids, most recent last
   // Values of a new device
@@ -12,6 +14,7 @@ const OS = (() => {
     wallpaper: 'meadow',
     theme: 'light',
     accentColor: '#4F8FC0',
+    language: 'en',      // 'en' or 'sr'. A change needs a new start of the app
     timeOffset: 0,       // minutes offset from real time
     dateOverride: null,
   };
@@ -154,6 +157,12 @@ const OS = (() => {
     loadSettings();
     applyTheme();
     applyWallpaper();
+    // A language file that does not load: the shell shows English texts
+    loadLanguage('os').then(start);
+  }
+
+  function start() {
+    shellTexts();
     updateMenuUsername();
     renderLauncher();
     applyMode();
@@ -193,14 +202,14 @@ const OS = (() => {
   // is complete, a popup shows. "Update" switches to the new release and reloads.
   // No pressure wording here: children must not learn to press urgent prompts.
   const UPDATE_MESSAGES = [
-    { title: '🐧 Penguin Express Delivery!', body: 'A shiny new version of KidsOS just waddled in! The penguin will wait until you are ready.' },
-    { title: '🚀 Houston, We Have an Update!', body: 'Mission Control has detected a newer version of KidsOS orbiting nearby. Initiate download sequence?' },
-    { title: '🍪 Fresh Cookies from the Oven!', body: 'A fresh batch of KidsOS improvements just came out of the oven. They stay warm until you are ready!' },
-    { title: '🦄 Unicorn Update Available!', body: 'A magical unicorn galloped by and dropped off a new version of KidsOS. The sparkles will wait for you!' },
-    { title: '🎁 Surprise Package!', body: 'The KidsOS elves have been working overtime! A brand new update is wrapped up and ready for you!' },
-    { title: '🧙 Wizard Update Detected!', body: 'The update wizard has conjured a new spell — er, version! Wave your wand (click the button) to apply it!' },
-    { title: '🐸 Ribbit! New Version!', body: 'A little frog just hopped in with a new KidsOS update on its back. Kiss the button to transform your OS!' },
-    { title: '🎸 Rock & Roll Update!', body: 'KidsOS just dropped a new album — wait, we mean VERSION. Turn it up to 11 when you are ready!' },
+    { id: 'penguin', title: '🐧 Penguin Express Delivery!', body: 'A shiny new version of KidsOS just waddled in! The penguin will wait until you are ready.' },
+    { id: 'rocket', title: '🚀 Houston, We Have an Update!', body: 'Mission Control has detected a newer version of KidsOS orbiting nearby. Initiate download sequence?' },
+    { id: 'cookies', title: '🍪 Fresh Cookies from the Oven!', body: 'A fresh batch of KidsOS improvements just came out of the oven. They stay warm until you are ready!' },
+    { id: 'unicorn', title: '🦄 Unicorn Update Available!', body: 'A magical unicorn galloped by and dropped off a new version of KidsOS. The sparkles will wait for you!' },
+    { id: 'parcel', title: '🎁 Surprise Package!', body: 'The KidsOS elves have been working overtime! A brand new update is wrapped up and ready for you!' },
+    { id: 'wizard', title: '🧙 Wizard Update Detected!', body: 'The update wizard has conjured a new spell — er, version! Wave your wand (click the button) to apply it!' },
+    { id: 'frog', title: '🐸 Ribbit! New Version!', body: 'A little frog just hopped in with a new KidsOS update on its back. Kiss the button to transform your OS!' },
+    { id: 'rock', title: '🎸 Rock & Roll Update!', body: 'KidsOS just dropped a new album — wait, we mean VERSION. Turn it up to 11 when you are ready!' },
   ];
 
   let swReg = null;
@@ -283,7 +292,8 @@ const OS = (() => {
 
   function showUpdatePopup(newVer, build) {
     // Pick a random funny message
-    const msg = UPDATE_MESSAGES[Math.floor(Math.random() * UPDATE_MESSAGES.length)];
+    const messages = t.list('os.updates', UPDATE_MESSAGES);
+    const msg = messages[Math.floor(Math.random() * messages.length)];
 
     const overlay = document.createElement('div');
     overlay.className = 'update-popup-overlay';
@@ -292,12 +302,12 @@ const OS = (() => {
         <div class="update-popup-icon"><img src="art/mascot/parcel.webp" alt="" draggable="false"></div>
         <div class="update-popup-title">${msg.title}</div>
         <div class="update-popup-body">${msg.body}</div>
-        <div class="update-popup-version">${newVer && newVer !== version ? `v${esc(version)} → v${esc(newVer)}${build ? ' (build ' + esc(build) + ')' : ''}` : ''}</div>
+        <div class="update-popup-version">${newVer && newVer !== version ? `v${esc(version)} → v${esc(newVer)}${build ? ' (' + esc(build) + ')' : ''}` : ''}</div>
         <div class="update-popup-buttons">
-          <button class="update-popup-btn update-popup-later" id="update-later-btn">Later</button>
-          <button class="update-popup-btn update-popup-go" id="update-go-btn">🚀 Update Now!</button>
+          <button class="update-popup-btn update-popup-later" id="update-later-btn">${t('Later')}</button>
+          <button class="update-popup-btn update-popup-go" id="update-go-btn">🚀 ${t('Update Now!')}</button>
         </div>
-        <div class="update-popup-note">Your files & data won't be touched!</div>
+        <div class="update-popup-note">${t("Your files & data won't be touched!")}</div>
       </div>
     `;
     document.body.appendChild(overlay);
@@ -312,7 +322,7 @@ const OS = (() => {
 
     document.getElementById('update-go-btn').onclick = () => {
       const btn = document.getElementById('update-go-btn');
-      btn.textContent = '⏳ Updating...';
+      btn.textContent = '⏳ ' + t('Updating...');
       btn.disabled = true;
       applyUpdate();
     };
@@ -401,8 +411,12 @@ const OS = (() => {
     // The top bar and the taskbar have a clock each
     const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    const time = now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-    const date = `${days[now.getDay()]} ${String(now.getDate()).padStart(2,'0')} ${months[now.getMonth()]}`;
+    const english = Lang.code === 'en';
+    // English: format of the device, as in each release before. Other language: format of that language
+    const time = now.toLocaleTimeString(english ? [] : Lang.locale, {hour:'2-digit',minute:'2-digit'});
+    const date = english
+      ? `${days[now.getDay()]} ${String(now.getDate()).padStart(2,'0')} ${months[now.getMonth()]}`
+      : new Intl.DateTimeFormat(Lang.locale, { weekday: 'short', day: 'numeric', month: 'short' }).format(now);
     document.querySelectorAll('.clock-time').forEach(el => { el.textContent = time; });
     document.querySelectorAll('.clock-date').forEach(el => { el.textContent = date; });
   }
@@ -434,18 +448,18 @@ const OS = (() => {
 
     win.innerHTML = `
       <div class="win-titlebar">
-        <button class="win-btn home" title="Home" aria-label="Home" onclick="OS.goHome()"></button>
+        <button class="win-btn home" title="${t('Home')}" aria-label="${t('Home')}" onclick="OS.goHome()"></button>
         <div class="win-title">
-          <span class="win-title-icon">${picture || opts.icon || '🪟'}</span> ${opts.title||'Window'}
+          <span class="win-title-icon">${picture || opts.icon || '🪟'}</span> ${opts.title || t('Window')}
         </div>
         <div class="win-controls">
-          <button class="win-btn minimize" title="Minimize" onclick="OS.minimizeWindow('${id}')">─</button>
-          <button class="win-btn maximize" title="Maximize" onclick="OS.toggleMaximize('${id}')">□</button>
-          <button class="win-btn close" title="Close" onclick="OS.closeWindow('${id}')">✕</button>
+          <button class="win-btn minimize" title="${t('Minimize')}" onclick="OS.minimizeWindow('${id}')">─</button>
+          <button class="win-btn maximize" title="${t('Maximize')}" onclick="OS.toggleMaximize('${id}')">□</button>
+          <button class="win-btn close" title="${t('Close')}" onclick="OS.closeWindow('${id}')">✕</button>
         </div>
       </div>
       <div class="win-body" id="win-body-${id}">${opts.content||''}</div>
-      <div class="win-resize" title="Resize"></div>
+      <div class="win-resize" title="${t('Resize')}"></div>
     `;
 
     document.getElementById('windows-container').appendChild(win);
@@ -457,9 +471,9 @@ const OS = (() => {
     // Taskbar button
     const btn = document.createElement('button');
     btn.className = 'taskbar-app-btn active';
-    btn.innerHTML = `<span class="tbtn-icon">${picture || opts.icon || ''}</span><span class="tbtn-title">${opts.title||'App'}</span>`;
+    btn.innerHTML = `<span class="tbtn-icon">${picture || opts.icon || ''}</span><span class="tbtn-title">${opts.title || t('App')}</span>`;
     btn.id = 'tbtn_' + id;
-    btn.setAttribute('aria-label', opts.title || 'App'); // a narrow screen hides the title text
+    btn.setAttribute('aria-label', opts.title || t('App')); // a narrow screen hides the title text
     btn.onclick = () => {
       if (win.classList.contains('minimized')) {
         restoreWindow(id);
@@ -676,6 +690,25 @@ const OS = (() => {
     { id: 'settings',       label: 'Settings' },
   ];
 
+  // Name of an app in the language of the device. tile: the short name for the tile on the home.
+  // The keys are literals here, so the tool for the language work finds them. label in APPS is the English name.
+  let names = null;
+  function appName(id, tile) {
+    names = names || {
+      full: {
+        filemanager: t('Files'), notepad: t('Notepad'), calculator: t('Calculator'), paint: t('Paint'),
+        snake: t('Snake'), memory: t('Memory'), kidstagram: t('Kidstagram'), chat: t('KidsChat'),
+        minesweeper: t('Minesweeper'), ejob: t('eJob'), kidflix: t('Kidflix'), tinybank: t('TinyBank'),
+        chorequest: t('Chores'), treasuremapper: t('Maps'), snackdash: t('SnackDash'), zoomer: t('Zoomer'),
+        soundboard: t('Sounds'), tinyscanner: t('Scanner'), sillyskies: t('SillySkies'), breakout: t('Breakout'),
+        pong: t('Pong'), captaincardio: t('Captain Cardio'), pebbles: t('Pebbles'), pocketpal: t('Pocket Pal'),
+        settings: t('Settings'),
+      },
+      tile: { captaincardio: t('Cardio'), sillyskies: t('tile|SillySkies'), pocketpal: t('tile|Pocket Pal') },
+    };
+    return (tile && names.tile[id]) || names.full[id] || id;
+  }
+
   // The label next to the picture names the app, so alt stays empty
   function icon(id) {
     return `<img class="app-icon" src="art/icons/${id}.webp" alt="" draggable="false">`;
@@ -687,11 +720,11 @@ const OS = (() => {
     icons.innerHTML = APPS.map(a => `
       <div class="desktop-icon" data-app="${a.id}" role="button" tabindex="0">
         <div class="icon-img">${icon(a.id)}</div>
-        <span>${a.short || a.label}</span>
+        <span>${appName(a.id, true)}</span>
       </div>`).join('');
     menu.innerHTML = APPS.map(a => `
       <div class="menu-app-item" data-app="${a.id}" role="button" tabindex="0">
-        ${icon(a.id)} ${a.label}
+        ${icon(a.id)} ${appName(a.id)}
       </div>`).join('');
 
     const open = e => {
@@ -721,7 +754,8 @@ const OS = (() => {
     const key = `${dir}/${id}`;
     return scriptLoads[key] ||= new Promise((resolve, reject) => {
       const s = document.createElement('script');
-      s.src = `js/${key}.js?v=${version}`;
+      // data-build comes from the build and exists at the start. version comes from version.json a moment later
+      s.src = `js/${key}.js?v=${document.documentElement.dataset.build || version}`;
       s.onload = resolve;
       s.onerror = () => {
         delete scriptLoads[key]; // a later tap tries again
@@ -730,6 +764,13 @@ const OS = (() => {
       };
       document.head.appendChild(s);
     });
+  }
+
+  // Language file of the shell ('os') or of an app. English needs no file.
+  // The promise never fails: with no file the texts are English.
+  function loadLanguage(id) {
+    if (Lang.code === 'en') return Promise.resolve();
+    return loadScript(`${Lang.code}/${id}`, 'lang').catch(() => console.warn('KidsOS: no language file for', id));
   }
 
   // The app and every app it needs, directly or through another app
@@ -746,9 +787,10 @@ const OS = (() => {
     if (!entry) { console.warn('Unknown app:', name); return; }
     const ids = [...withNeeds(name)];
     if (ids.every(id => apps[id])) return openApp(name);
-    Promise.all(ids.map(id => loadScript(id)))
+    // The texts of an app load before its code: the code can read a text at the time it loads
+    Promise.all(ids.map(id => loadLanguage(id).then(() => loadScript(id))))
       .then(() => openApp(name))
-      .catch(() => alert(`${entry.label} could not open. Try again.`));
+      .catch(() => alert(t('{app} could not open. Try again.', { app: appName(name) })));
   }
 
   function openApp(name) {
@@ -790,11 +832,15 @@ const OS = (() => {
     settings.accentColor = old >= 0 ? ACCENT_COLORS[old].hex : now ? now.hex : DEFAULTS.accentColor;
     if (settings.theme !== 'dark') settings.theme = 'light';
     if (typeof settings.username !== 'string' || !settings.username.trim()) settings.username = DEFAULTS.username;
+    settings.language = Lang.valid(settings.language);
+    Lang.set(settings.language);
+    document.documentElement.lang = settings.language === 'sr' ? 'sr-Cyrl' : 'en';
   }
 
   function saveSettings(newSettings) {
     Object.assign(settings, newSettings);
     if (!WALLPAPERS.some(w => w.id === settings.wallpaper)) settings.wallpaper = DEFAULTS.wallpaper;
+    settings.language = Lang.valid(settings.language);
     localStorage.setItem('kidsOS_settings', JSON.stringify(settings));
     applyTheme();
     applyWallpaper();
@@ -802,6 +848,12 @@ const OS = (() => {
   }
 
   function getSettings() { return settings; }
+
+  // The texts of the open screens are in the old language, so the app starts again
+  function setLanguage(code) {
+    saveSettings({ language: code });
+    location.reload();
+  }
 
   // look: value for the CSS property background-image
   const WALLPAPERS = [
@@ -838,15 +890,40 @@ const OS = (() => {
     document.getElementById('desktop').style.backgroundImage = (settings.theme === 'dark' ? NIGHT_LAYER + ', ' : '') + paper.look;
   }
 
-  function getWallpapers() { return WALLPAPERS; }
+  // name: in the language of the device
+  function getWallpapers() {
+    const names = { meadow: t('Meadow'), forest: t('Forest'), seaside: t('Seaside'), sunset: t('Sunset'), night: t('Night'), rain: t('Rain') };
+    return WALLPAPERS.map(w => ({ ...w, name: names[w.id] }));
+  }
+
+  function accentColors() {
+    const names = { Sky: t('Sky'), Leaf: t('Leaf'), Plum: t('Plum'), Persimmon: t('Persimmon'), Rose: t('Rose'), Amber: t('Amber') };
+    return ACCENT_COLORS.map(c => ({ ...c, name: names[c.name] }));
+  }
+
+  // Name of the child for a text. A new device has the name KidsUser: the app shows it in the language of the device
+  function userName() {
+    return settings.username === DEFAULTS.username ? t('KidsUser') : settings.username;
+  }
 
   function updateMenuUsername() {
-    const name = settings.username || 'User';
+    const name = userName();
     const el = document.getElementById('menu-username');
     if (el) el.textContent = '👤 ' + name;
     // KidsUser is the name of a new device: no name in the greeting
     const hello = document.getElementById('hello-text');
-    if (hello) hello.textContent = name === 'KidsUser' ? 'Hello!' : `Hello, ${name}!`;
+    if (hello) hello.textContent = settings.username === DEFAULTS.username ? t('Hello!') : t('Hello, {name}!', { name });
+  }
+
+  // Texts of the markup in index.html
+  function shellTexts() {
+    const set = (selector, text) => document.querySelectorAll(selector).forEach(el => { el.textContent = text; });
+    const label = (selector, text) => document.querySelectorAll(selector).forEach(el => el.setAttribute('aria-label', text));
+    document.getElementById('app-menu-btn').lastChild.textContent = ' ' + t('Apps');
+    set('.app-menu-footer button', '⏻ ' + t('Shutdown'));
+    set('#boot-subtitle', t('Learning Computing the Fun Way!'));
+    label('#home-btn', t('Home'));
+    label('[data-coins]', t('Giggle Coins'));
   }
 
   /* ---- Shutdown ---- */
@@ -855,13 +932,13 @@ const OS = (() => {
     if (!overlay) {
       overlay = document.createElement('div');
       overlay.id = 'shutdown-overlay';
-      overlay.innerHTML = 'Shutting down KidsOS...';
+      overlay.textContent = t('Shutting down KidsOS...');
       document.body.appendChild(overlay);
     }
     overlay.classList.add('show');
     setTimeout(() => {
       // Installed fullscreen app has no refresh button, so a tap must restart
-      overlay.innerHTML = '<div><img src="art/mascot/sleep.webp" alt="" draggable="false">Goodbye!<br><small>Tap to restart</small></div>';
+      overlay.innerHTML = '<div><img src="art/mascot/sleep.webp" alt="" draggable="false">' + t('Goodbye!') + '<br><small>' + t('Tap to restart') + '</small></div>';
       overlay.onclick = () => location.reload();
     }, 1500);
   }
@@ -988,7 +1065,7 @@ const OS = (() => {
     tb.balance = (tb.balance || 0) + amount;
     tb.totalEarned = (tb.totalEarned || 0) + amount;
     const d = new Date();
-    const dateStr = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const dateStr = d.toLocaleDateString(Lang.code === 'en' ? undefined : Lang.locale, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
     tb.history = tb.history || [];
     tb.history.unshift({ emoji: emoji || '🪙', text: description || (source + ': +' + amount), amount: amount, date: dateStr });
     if (tb.history.length > 30) tb.history.pop();
@@ -1005,7 +1082,7 @@ const OS = (() => {
     toast.className = 'gc-toast';
     toast.innerHTML = '<div class="gc-toast-icon">' + (emoji || '🪙') + '</div>'
       + '<div class="gc-toast-body">'
-      + '<div class="gc-toast-title">+' + amount + ' Giggle Coins!</div>'
+      + '<div class="gc-toast-title">' + t('+{n} {coins}!', { n: amount, coins: t.plural(amount, 'Giggle Coin', 'Giggle Coins') }) + '</div>'
       + (description ? '<div class="gc-toast-desc">' + esc(description) + '</div>' : '')
       + '</div>';
     document.body.appendChild(toast);
@@ -1017,14 +1094,15 @@ const OS = (() => {
   }
 
   return {
-    boot, launch, registerApp, APPS, icon, mode, goHome,
+    boot, launch, registerApp, APPS, appName, icon, mode, goHome,
+    texts: Lang.texts, lang: () => Lang.code, locale: () => Lang.locale, setLanguage, missingTexts: () => Lang.missing,
     createWindow, closeWindow, minimizeWindow, restoreWindow, toggleMaximize, focusWindow,
     toggleAppMenu, shutdown,
     saveSettings, loadSettings, getSettings, applyWallpaper, getWallpapers,
     showContextMenu, removeContextMenu,
-    updateMenuUsername,
+    updateMenuUsername, userName,
     getStorageUsage, factoryReset, isStandalone,
-    applyTheme, ACCENT_COLORS,
+    applyTheme, ACCENT_COLORS, accentColors,
     get VERSION() { return version; },
     checkForUpdate, applyUpdate, _nukeAndReload,
     awardCoins, esc, createLoop,

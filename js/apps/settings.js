@@ -1,11 +1,13 @@
 /* ===== Settings App ===== */
+const t = OS.texts('settings');
+
 OS.registerApp('settings', {
   singleInstance: true,
 
   getWindowOpts() {
     return {
       id: 'settings',
-      title: 'Settings',
+      title: t('Settings'),
       icon: '⚙️',
       width: 560,
       height: 420,
@@ -21,7 +23,7 @@ OS.registerApp('settings', {
            style="background:${wp.look} center / cover"
            onclick="SettingsApp.selectWallpaper('${wp.id}', this)"><b>${wp.name}</b></div>`).join('');
 
-    const accentSwatches = OS.ACCENT_COLORS.map(c => `
+    const accentSwatches = OS.accentColors().map(c => `
       <div class="accent-option ${s.accentColor === c.hex ? 'active' : ''}"
            style="background:${c.hex}" data-color="${c.hex}"
            onclick="SettingsApp.setAccent('${c.hex}')"
@@ -35,138 +37,145 @@ OS.registerApp('settings', {
     <div class="settings-wrap">
       <div class="settings-sidebar">
         <div class="settings-sidebar-item active" onclick="SettingsApp.showPanel('personalize', this)">
-          🖼️ Appearance
+          🖼️ ${t('Appearance')}
         </div>
         <div class="settings-sidebar-item" onclick="SettingsApp.showPanel('datetime', this)">
-          🕐 Date &amp; Time
+          🕐 ${t('Date & Time')}
         </div>
         <div class="settings-sidebar-item" onclick="SettingsApp.showPanel('account', this)">
-          👤 Account
+          👤 ${t('Account')}
         </div>
         <div class="settings-sidebar-item" onclick="SettingsApp.showPanel('storage', this)">
-          💾 Storage
+          💾 ${t('Storage')}
         </div>
         <div class="settings-sidebar-item" onclick="SettingsApp.showPanel('updates', this)">
-          🔄 Updates
+          🔄 ${t('Updates')}
         </div>
         <div class="settings-sidebar-item" onclick="SettingsApp.showPanel('about', this)">
-          ℹ️ About
+          ℹ️ ${t('About')}
         </div>
       </div>
 
       <!-- Appearance Panel -->
       <div class="settings-panel active" id="panel-personalize">
-        <h2>🖼️ Appearance</h2>
+        <h2>🖼️ ${t('Appearance')}</h2>
         <div class="settings-group">
-          <label>Wallpaper</label>
+          <label>${t('Language')}</label>
+          <div class="lang-options">
+            <div class="lang-option ${OS.lang() === 'en' ? 'active' : ''}" data-lang="en" role="button" tabindex="0" onclick="SettingsApp.setLanguage('en')">English</div>
+            <div class="lang-option ${OS.lang() === 'sr' ? 'active' : ''}" data-lang="sr" lang="sr-Cyrl" role="button" tabindex="0" onclick="SettingsApp.setLanguage('sr')">Српски</div>
+          </div>
+        </div>
+        <div class="settings-group">
+          <label>${t('Wallpaper')}</label>
           <div class="wallpaper-grid">${gradientPreviews}</div>
         </div>
         <div class="settings-group">
-          <label>Theme</label>
+          <label>${t('Theme')}</label>
           <div class="theme-options">
             <div class="theme-option ${s.theme !== 'dark' ? 'active' : ''}" onclick="SettingsApp.setTheme('light')">
-              <span>☀️</span> Day
+              <span>☀️</span> ${t('Day')}
             </div>
             <div class="theme-option ${s.theme === 'dark' ? 'active' : ''}" onclick="SettingsApp.setTheme('dark')">
-              <span>🌙</span> Night
+              <span>🌙</span> ${t('theme|Night')}
             </div>
           </div>
         </div>
         <div class="settings-group">
-          <label>Accent Color</label>
+          <label>${t('Accent Color')}</label>
           <div class="accent-options">${accentSwatches}</div>
         </div>
       </div>
 
       <!-- Date & Time Panel -->
       <div class="settings-panel" id="panel-datetime">
-        <h2>🕐 Date &amp; Time</h2>
+        <h2>🕐 ${t('Date & Time')}</h2>
         <div class="settings-group">
-          <label>Set Time (HH:MM)</label>
+          <label>${t('Set Time (HH:MM)')}</label>
           <input type="time" id="settings-time" value="${timeStr}">
         </div>
         <div class="settings-group">
-          <label>Set Date</label>
+          <label>${t('Set Date')}</label>
           <input type="date" id="settings-date" value="${dateStr}">
         </div>
-        <button class="settings-btn" onclick="SettingsApp.saveDateTime()">Apply Date &amp; Time</button>
+        <button class="settings-btn" onclick="SettingsApp.saveDateTime()">${t('Apply Date & Time')}</button>
         <br><br>
-        <button class="settings-btn" style="background:#888" onclick="SettingsApp.resetDateTime()">Reset to Real Time</button>
+        <button class="settings-btn" style="background:#888" onclick="SettingsApp.resetDateTime()">${t('Reset to Real Time')}</button>
       </div>
 
       <!-- Account Panel -->
       <div class="settings-panel" id="panel-account">
-        <h2>👤 Account</h2>
+        <h2>👤 ${t('Account')}</h2>
         <div class="settings-group">
-          <label>Username</label>
-          <input type="text" id="settings-username" value="${OS.esc(s.username || 'KidsUser')}"
-                 placeholder="Enter your name" maxlength="20">
+          <label>${t('Username')}</label>
+          <input type="text" id="settings-username" value="${OS.esc(OS.userName())}"
+                 placeholder="${t('Enter your name')}" maxlength="20">
         </div>
-        <button class="settings-btn" onclick="SettingsApp.saveUsername()">Save Username</button>
+        <button class="settings-btn" onclick="SettingsApp.saveUsername()">${t('Save Username')}</button>
         <div style="margin-top:20px;padding:12px;background:var(--surface-bg);border-radius:8px">
-          <strong>Current User:</strong> ${OS.esc(s.username || 'KidsUser')}
+          <strong>${t('Current User:')}</strong> ${OS.esc(OS.userName())}
         </div>
       </div>
 
       <!-- Storage Panel -->
       <div class="settings-panel" id="panel-storage">
-        <h2>💾 Storage</h2>
+        <h2>💾 ${t('Storage')}</h2>
         <div class="settings-group">
-          <label>Storage Usage</label>
+          <label>${t('Storage Usage')}</label>
           <div id="storage-usage-list" class="storage-usage-list"></div>
         </div>
         <div class="settings-group">
-          <button class="settings-btn" onclick="SettingsApp.refreshStorage()">🔄 Refresh</button>
+          <button class="settings-btn" onclick="SettingsApp.refreshStorage()">🔄 ${t('Refresh')}</button>
         </div>
         <hr style="border:none;border-top:1px solid var(--border-color);margin:16px 0">
         <div class="settings-group">
-          <label style="color:#c00">Factory Reset</label>
+          <label style="color:#c00">${t('Factory Reset')}</label>
           <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">
-            This will erase <b>all</b> your saved data: files, settings, chat history, game scores, and Kidstagram data. This cannot be undone!
+            ${t('This will erase <b>all</b> your saved data: files, settings, chat history, game scores, and Kidstagram data. This cannot be undone!')}
           </p>
-          <button class="settings-btn settings-btn-danger" onclick="SettingsApp.factoryReset()">🗑️ Factory Reset</button>
+          <button class="settings-btn settings-btn-danger" onclick="SettingsApp.factoryReset()">🗑️ ${t('Factory Reset')}</button>
         </div>
       </div>
 
       <!-- Updates Panel -->
       <div class="settings-panel" id="panel-updates">
-        <h2>🔄 Updates</h2>
+        <h2>🔄 ${t('Updates')}</h2>
         <div class="settings-group">
           <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">
-            Check if a newer version of KidsOS is available. Requires an internet connection.
+            ${t('Check if a newer version of KidsOS is available. Requires an internet connection.')}
           </p>
           <div id="update-status" style="padding:12px;background:var(--surface-bg);border-radius:8px;font-size:13px;color:var(--text-secondary);margin-bottom:12px">
-            Current version: v${OS.VERSION} — Not checked yet
+            ${t('Current version: v{version} — Not checked yet', { version: OS.VERSION })}
           </div>
-          <button class="settings-btn" id="update-check-btn" onclick="SettingsApp.checkForUpdate()">🔍 Check for Updates</button>
-          <button class="settings-btn" id="update-apply-btn" onclick="SettingsApp.applyUpdate()" style="display:none;margin-left:8px;background:#4caf50">⬇️ Update Now</button>
+          <button class="settings-btn" id="update-check-btn" onclick="SettingsApp.checkForUpdate()">🔍 ${t('Check for Updates')}</button>
+          <button class="settings-btn" id="update-apply-btn" onclick="SettingsApp.applyUpdate()" style="display:none;margin-left:8px;background:#4caf50">⬇️ ${t('Update Now')}</button>
         </div>
         <hr style="border:none;border-top:1px solid var(--border-color);margin:16px 0">
         <div class="settings-group">
-          <label>Force Reload</label>
+          <label>${t('Force Reload')}</label>
           <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">
-            Clear all cached files and reload KidsOS. Use this if the app feels stuck on an old version.
+            ${t('Clear all cached files and reload KidsOS. Use this if the app feels stuck on an old version.')}
           </p>
-          <button class="settings-btn" style="background:#ff9800" onclick="SettingsApp.forceReload()">🔁 Force Reload</button>
+          <button class="settings-btn" style="background:#ff9800" onclick="SettingsApp.forceReload()">🔁 ${t('Force Reload')}</button>
         </div>
       </div>
 
       <!-- About Panel -->
       <div class="settings-panel" id="panel-about">
-        <h2>ℹ️ About KidsOS</h2>
+        <h2>ℹ️ ${t('About KidsOS')}</h2>
         <div style="display:flex;flex-direction:column;gap:12px;padding:8px 0">
           <div style="text-align:center"><img src="art/mascot/hello.webp" alt="" draggable="false" style="width:96px;height:96px"></div>
           <div style="text-align:center">
             <strong style="font-size:22px">KidsOS</strong><br>
-            <span style="color:var(--text-muted)">Version ${OS.VERSION}</span>
+            <span style="color:var(--text-muted)">${t('Version {version}', { version: OS.VERSION })}</span>
           </div>
           <div style="background:var(--surface-bg);border-radius:8px;padding:14px;font-size:14px;color:var(--text-primary);line-height:1.8">
-            <b>KidsOS</b> is a fun, educational operating system simulator designed to help children learn how to use computers!<br><br>
-            🎯 <b>Apps included:</b><br>
-            ${OS.APPS.map(a => a.label).join(' · ')}
+            ${t('<b>KidsOS</b> is a fun, educational operating system simulator designed to help children learn how to use computers!')}<br><br>
+            🎯 <b>${t('Apps included:')}</b><br>
+            ${OS.APPS.map(a => OS.appName(a.id)).join(' · ')}
           </div>
-          <div style="text-align:center;color:var(--text-muted);font-size:13px">Built with HTML, CSS &amp; JavaScript ❤️</div>
-          <button class="settings-btn settings-btn-danger" style="align-self:center" onclick="OS.shutdown()">⏻ Shut down</button>
+          <div style="text-align:center;color:var(--text-muted);font-size:13px">${t('Built with HTML, CSS & JavaScript')} ❤️</div>
+          <button class="settings-btn settings-btn-danger" style="align-self:center" onclick="OS.shutdown()">⏻ ${t('Shut down')}</button>
         </div>
       </div>
     </div>`;
@@ -200,6 +209,14 @@ const SettingsApp = {
     });
   },
 
+  // The texts of the open screens are in the old language, so the app starts again.
+  // The question is in both languages: the person who changes the language can read one of them.
+  setLanguage(code) {
+    if (code === OS.lang()) return;
+    if (!confirm('Change the language? The app starts again.\n\nПромена језика? Апликација се покреће поново.')) return;
+    OS.setLanguage(code);
+  },
+
   selectWallpaper(id, el) {
     document.querySelectorAll('.wp-option').forEach(w => w.classList.remove('selected'));
     if (el) el.classList.add('selected');
@@ -221,7 +238,7 @@ const SettingsApp = {
     const offset = setMinutes - realMinutes;
 
     OS.saveSettings({ timeOffset: offset, dateOverride: dateVal });
-    alert('Date & Time updated! ✅');
+    alert(t('Date & Time updated!') + ' ✅');
   },
 
   resetDateTime() {
@@ -231,25 +248,31 @@ const SettingsApp = {
     const dateEl = document.getElementById('settings-date');
     if (timeEl) timeEl.value = now.toTimeString().slice(0,5);
     if (dateEl) dateEl.value = now.toISOString().slice(0,10);
-    alert('Time reset to real time ✅');
+    alert(t('Time reset to real time') + ' ✅');
   },
 
   refreshStorage() {
     const usage = OS.getStorageUsage();
     const labels = {
-      'kidsOS_settings': '⚙️ Settings',
-      'kidsOS_fs': '📁 Files',
-      'kidsOS_chat': '💬 KidsChat',
-      'kidsOS_snakeHi': '🐍 Snake High Score',
-      'kidsOS_kidstagram': '📸 Kidstagram',
-      'kidsOS_tinyscanner': '🔍 TinyScanner',
+      'kidsOS_settings': '⚙️ ' + t('Settings'),
+      'kidsOS_fs': '📁 ' + t('Files'),
+      'kidsOS_chat': '💬 ' + t('KidsChat'),
+      'kidsOS_snakeHi': '🐍 ' + t('Snake High Score'),
+      'kidsOS_kidstagram': '📸 ' + t('Kidstagram'),
+      'kidsOS_tinyscanner': '🔍 ' + t('TinyScanner'),
+    };
+    // Each other key: the name of the app that owns it (kidsOS_tinybank, kidsOS_kidflix)
+    const owner = key => {
+      const rest = key.replace('kidsOS_', '').toLowerCase();
+      const app = OS.APPS.find(a => rest === a.id || rest.startsWith(a.id));
+      return app ? OS.appName(app.id) : OS.esc(key);
     };
     const el = document.getElementById('storage-usage-list');
     if (!el) return;
 
     function fmt(bytes) {
-      if (bytes < 1024) return bytes + ' B';
-      return (bytes / 1024).toFixed(1) + ' KB';
+      if (bytes < 1024) return bytes + ' ' + t('B');
+      return (bytes / 1024).toFixed(1) + ' ' + t('KB');
     }
 
     let html = '';
@@ -257,22 +280,25 @@ const SettingsApp = {
       const bytes = usage.breakdown[key];
       const pct = usage.total > 0 ? (bytes / usage.total * 100) : 0;
       html += `<div class="storage-row">
-        <span class="storage-label">${labels[key] || key}</span>
+        <span class="storage-label">${labels[key] || owner(key)}</span>
         <div class="storage-bar-wrap">
           <div class="storage-bar" style="width:${Math.max(pct, 2)}%"></div>
         </div>
         <span class="storage-size">${fmt(bytes)}</span>
       </div>`;
     });
-    html += `<div class="storage-total">Total: <b>${fmt(usage.total)}</b></div>`;
+    html += `<div class="storage-total">${t('Total:')} <b>${fmt(usage.total)}</b></div>`;
     el.innerHTML = html;
   },
 
   factoryReset() {
-    if (!confirm('⚠️ Are you sure you want to factory reset?\n\nThis will delete ALL your saved data:\n• Files & documents\n• Settings & wallpaper\n• Chat history\n• Game scores\n• Kidstagram data\n\nThis cannot be undone!')) return;
-    if (!confirm('🗑️ Last chance! Really erase everything?')) return;
+    if (!confirm('⚠️ ' + t('Are you sure you want to factory reset?\n\nThis will delete ALL your saved data:\n• Files & documents\n• Settings & wallpaper\n• Chat history\n• Game scores\n• Kidstagram data\n\nThis cannot be undone!'))) return;
+    if (!confirm('🗑️ ' + t('Last chance! Really erase everything?'))) return;
+    const other = OS.lang() !== 'en';
     OS.factoryReset(); // also closes all windows
-    alert('✅ Factory reset complete!\nKidsOS has been restored to defaults.');
+    alert('✅ ' + t('Factory reset complete!\nKidsOS has been restored to defaults.'));
+    // A new device has English. The texts on the screen are in the old language: start again
+    if (other) location.reload();
   },
 
   checkForUpdate() {
@@ -281,23 +307,23 @@ const SettingsApp = {
     const checkBtn = document.getElementById('update-check-btn');
     if (!statusEl) return;
 
-    statusEl.innerHTML = '🔍 Checking for updates...';
+    statusEl.innerHTML = '🔍 ' + t('Checking for updates...');
     checkBtn.disabled = true;
 
     OS.checkForUpdate().then(remote => {
       const local = OS.VERSION;
 
       if (remote.available) {
-        statusEl.innerHTML = `✅ <b>Update available!</b><br>
-          <span style="font-size:12px">Current: v${local} → New: v${OS.esc(remote.version)}</span>
-          ${remote.build ? '<br><span style="font-size:12px;color:#888">Build: ' + OS.esc(remote.build) + '</span>' : ''}`;
+        statusEl.innerHTML = `✅ <b>${t('Update available!')}</b><br>
+          <span style="font-size:12px">${t('Current: v{now} → New: v{next}', { now: OS.esc(local), next: OS.esc(remote.version) })}</span>
+          ${remote.build ? '<br><span style="font-size:12px;color:#888">' + t('Build: {build}', { build: OS.esc(remote.build) }) + '</span>' : ''}`;
         applyBtn.style.display = 'inline-block';
       } else {
-        statusEl.innerHTML = `👍 KidsOS is up to date! <span style="font-size:12px">(v${local})</span>`;
+        statusEl.innerHTML = `👍 ${t('KidsOS is up to date!')} <span style="font-size:12px">(v${OS.esc(local)})</span>`;
         applyBtn.style.display = 'none';
       }
     }).catch(() => {
-      statusEl.innerHTML = '❌ Could not check for updates. Are you online?';
+      statusEl.innerHTML = '❌ ' + t('Could not check for updates. Are you online?');
     }).finally(() => {
       checkBtn.disabled = false;
     });
@@ -305,12 +331,12 @@ const SettingsApp = {
 
   applyUpdate() {
     const applyBtn = document.getElementById('update-apply-btn');
-    if (applyBtn) { applyBtn.textContent = '⏳ Updating...'; applyBtn.disabled = true; }
+    if (applyBtn) { applyBtn.textContent = '⏳ ' + t('Updating...'); applyBtn.disabled = true; }
     OS.applyUpdate();
   },
 
   forceReload() {
-    if (!confirm('This will clear all cached app files and reload KidsOS.\nYour saved data (files, settings, chat) will NOT be affected.\n\nProceed?')) return;
+    if (!confirm(t('This will clear all cached app files and reload KidsOS.\nYour saved data (files, settings, chat) will NOT be affected.\n\nProceed?'))) return;
     OS._nukeAndReload();
   },
 
@@ -318,9 +344,9 @@ const SettingsApp = {
     const el = document.getElementById('settings-username');
     if (!el) return;
     const name = el.value.trim();
-    if (!name) { alert('Please enter a username!'); return; }
+    if (!name) { alert(t('Please enter a username!')); return; }
     OS.saveSettings({ username: name });
     OS.updateMenuUsername();
-    alert(`Username saved: "${name}" ✅`);
+    alert(t('Username saved: "{name}"', { name }) + ' ✅');
   },
 };
