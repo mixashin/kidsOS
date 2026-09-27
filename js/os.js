@@ -36,6 +36,7 @@ const OS = (() => {
     document.documentElement.dataset.mode = mode();
     updateFront();
     fitHome();
+    Object.values(windowMap).forEach(fitStage);
   }
 
   // front is 'app' when a window is in view, and 'home' when not
@@ -77,6 +78,26 @@ const OS = (() => {
     grid.style.rowGap = f.scroll ? '10px' : Math.max(4, Math.floor((height - f.rows * (f.icon + label)) / (f.rows + 1))) + 'px';
     if (f.scroll) grid.style.alignContent = 'start';
     grid.classList.toggle('small-labels', f.icon < 90);
+  }
+
+  /* ---- Stage (touch mode) ---- */
+  // An app has a design for a small window. In full screen its body keeps about that size
+  // and gets a scale, so each text and each control of the app is larger.
+  function fitStage(w) {
+    const body = w.el.querySelector('.win-body');
+    const on = mode() === 'touch' && w.stage;
+    body.classList.toggle('staged', on);
+    if (!on) {
+      body.style.width = body.style.height = body.style.zoom = '';
+      return;
+    }
+    const frameW = w.el.clientWidth;
+    const frameH = w.el.clientHeight - w.el.querySelector('.win-titlebar').offsetHeight;
+    if (frameW <= 0 || frameH <= 0) return; // app is in the dock: it gets its size when it comes back
+    const k = Math.max(1, Math.min(2, frameW / w.design.width, frameH / w.design.height));
+    body.style.width = Math.min(frameW / k, w.design.width * 1.25) + 'px';
+    body.style.height = frameH / k + 'px';
+    body.style.zoom = k;
   }
 
   /* ---- Coin counter ---- */
@@ -364,7 +385,8 @@ const OS = (() => {
 
   /* ---- Window Manager ---- */
   function createWindow(opts) {
-    // opts: { id, title, icon, content, width, height, x, y, app, appId }
+    // opts: { id, title, icon, content, width, height, x, y, app, appId, stage }
+    //   stage: false  the body fills the screen in touch mode with no scale (for an app that scales itself)
     const id = opts.id || ('win_' + Date.now());
     if (windowMap[id]) { focusWindow(id); return id; }
     // A window of an app shows the picture of the app. Each other window shows the text of its options.
@@ -419,9 +441,15 @@ const OS = (() => {
     };
     document.getElementById('taskbar-center').appendChild(btn);
 
-    windowMap[id] = { el: win, taskbarBtn: btn, app: opts.app, maximized: false, prevRect: null };
+    windowMap[id] = {
+      el: win, taskbarBtn: btn, app: opts.app, maximized: false, prevRect: null,
+      stage: opts.stage !== false,
+      // The title bar of a window in mouse mode has 36 px
+      design: { width: opts.width || 480, height: (opts.height || 360) - 36 },
+    };
     focusWindow(id);
     updateFront();
+    fitStage(windowMap[id]); // before the app starts, so the app sees its final size
 
     if (opts.app && opts.app.onOpen) opts.app.onOpen(id);
     return id;
@@ -479,6 +507,7 @@ const OS = (() => {
     w.el.classList.remove('minimized');
     focusWindow(id);
     updateFront();
+    fitStage(w);
     if (w.app && w.app.onRestore) w.app.onRestore(id);
   }
 

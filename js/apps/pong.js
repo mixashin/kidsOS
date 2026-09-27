@@ -1341,6 +1341,7 @@ OS.registerApp('pong', {
       id: 'pong',
       title: 'Pong',
       icon: '🏓',
+      stage: false, // Pong fits its court to the window
       width: 760,
       height: 520,
       content: PongApp.getHTML(),
