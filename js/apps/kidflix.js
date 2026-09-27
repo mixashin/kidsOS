@@ -1,29 +1,42 @@
 /* ===== Kidflix — Netflix-style Movie App ===== */
+// All app files share one scope for a top-level const. The block keeps `t` inside this file.
+{
+const t = OS.texts('kidflix');
 
 const KF_MOVIES = [
-  { id:1, title:'Frozen Chicken',            parody:'Frozen',                        genre:'Comedy',    emoji:'🐔', rating:9.1, year:2023, duration:'1h 32m',
+  { id:1, title:'Frozen Chicken',            parody:'Frozen',                        genreId:'comedy',    emoji:'🐔', rating:9.1, year:2023, duration:'1h 32m',
     colors:['#00bcd4','#e1f5fe','#4fc3f7'], desc:'A brave chicken discovers she has the magical power to freeze everything she touches. Can she save the farm before it becomes an ice rink?' },
-  { id:2, title:'Finding Memo',              parody:'Finding Nemo',                  genre:'Adventure', emoji:'📝', rating:8.7, year:2024, duration:'1h 28m',
+  { id:2, title:'Finding Memo',              parody:'Finding Nemo',                  genreId:'adventure', emoji:'📝', rating:8.7, year:2024, duration:'1h 28m',
     colors:['#1565c0','#0d47a1','#42a5f5'], desc:'When a forgetful office worker loses an important memo, he must journey across the entire building — from the mailroom to the rooftop — to find it before the big meeting!' },
-  { id:3, title:'The Lion Bling',            parody:'The Lion King',                 genre:'Comedy',    emoji:'👑', rating:9.3, year:2023, duration:'1h 45m',
+  { id:3, title:'The Lion Bling',            parody:'The Lion King',                 genreId:'comedy',    emoji:'👑', rating:9.3, year:2023, duration:'1h 45m',
     colors:['#ff8f00','#ffb300','#fff176'], desc:'A young lion inherits the fanciest crown in the savanna. But can he learn that true royalty is about heart, not bling?' },
-  { id:4, title:'Toy Snory',                 parody:'Toy Story',                     genre:'Comedy',    emoji:'😴', rating:8.5, year:2022, duration:'1h 22m',
+  { id:4, title:'Toy Snory',                 parody:'Toy Story',                     genreId:'comedy',    emoji:'😴', rating:8.5, year:2022, duration:'1h 22m',
     colors:['#7b1fa2','#9c27b0','#ce93d8'], desc:'When bedtime hits, the toys don\'t come alive — they fall asleep and SNORE incredibly loudly! The kid must figure out why every toy sounds like a chainsaw.' },
-  { id:5, title:'Shrek But Tiny',            parody:'Shrek',                         genre:'Fantasy',   emoji:'🧅', rating:9.0, year:2024, duration:'1h 38m',
+  { id:5, title:'Shrek But Tiny',            parody:'Shrek',                         genreId:'fantasy',   emoji:'🧅', rating:9.0, year:2024, duration:'1h 38m',
     colors:['#388e3c','#66bb6a','#a5d6a7'], desc:'Shrek wakes up one morning and he\'s only 3 inches tall! Now he must navigate his swamp like a jungle while Donkey accidentally almost steps on him every five minutes.' },
-  { id:6, title:'Spider-Man: No Way Homework', parody:'Spider-Man: No Way Home',     genre:'Action',    emoji:'🕷️', rating:8.9, year:2024, duration:'1h 52m',
+  { id:6, title:'Spider-Man: No Way Homework', parody:'Spider-Man: No Way Home',     genreId:'action',    emoji:'🕷️', rating:8.9, year:2024, duration:'1h 52m',
     colors:['#d32f2f','#1565c0','#ef5350'], desc:'Peter Parker uses his spider powers for one thing only: avoiding homework. But when all the homework in the city disappears, he realizes school might actually matter.' },
-  { id:7, title:'Turning Bread',             parody:'Turning Red',                   genre:'Comedy',    emoji:'🍞', rating:8.4, year:2023, duration:'1h 25m',
+  { id:7, title:'Turning Bread',             parody:'Turning Red',                   genreId:'comedy',    emoji:'🍞', rating:8.4, year:2023, duration:'1h 25m',
     colors:['#e65100','#ff9800','#ffcc02'], desc:'Every time Mei gets embarrassed, she doesn\'t turn into a panda — she turns into a giant loaf of bread. Her friends must help her stay calm before the school talent show!' },
-  { id:8, title:'Minions: Rise of Broccoli', parody:'Minions: Rise of Gru',          genre:'Comedy',    emoji:'🥦', rating:8.2, year:2022, duration:'1h 18m',
+  { id:8, title:'Minions: Rise of Broccoli', parody:'Minions: Rise of Gru',          genreId:'comedy',    emoji:'🥦', rating:8.2, year:2022, duration:'1h 18m',
     colors:['#2e7d32','#fdd835','#81c784'], desc:'The Minions accidentally create a broccoli monster in the lab. Now it\'s growing out of control and the only way to stop it is... to eat it all!' },
-  { id:9, title:'Encanto But Louder',        parody:'Encanto',                       genre:'Musical',   emoji:'🔊', rating:8.8, year:2024, duration:'1h 40m',
+  { id:9, title:'Encanto But Louder',        parody:'Encanto',                       genreId:'musical',   emoji:'🔊', rating:8.8, year:2024, duration:'1h 40m',
     colors:['#ad1457','#f06292','#ffd54f'], desc:'The Madrigal family\'s magical house gets a new gift: everything is 10x louder! Whispers become shouts, footsteps become earthquakes, and sneezes shatter windows.' },
-  { id:10, title:'The Super Mario Plumbers', parody:'The Super Mario Bros. Movie',   genre:'Adventure', emoji:'🪠', rating:9.2, year:2024, duration:'1h 35m',
+  { id:10, title:'The Super Mario Plumbers', parody:'The Super Mario Bros. Movie',   genreId:'adventure', emoji:'🪠', rating:9.2, year:2024, duration:'1h 35m',
     colors:['#d32f2f','#1976d2','#4caf50'], desc:'Mario and Luigi are actual plumbers this time. No princesses, no castles — just a really, really clogged toilet that leads to another dimension.' },
 ];
 
-const KF_GENRES = ['All','Comedy','Adventure','Action','Fantasy','Musical'];
+const KF_GENRES = ['all','comedy','adventure','action','fantasy','musical'];
+
+function kfGenreName(id) {
+  return {
+    all: t('All'), comedy: t('Comedy'), adventure: t('Adventure'),
+    action: t('Action'), fantasy: t('Fantasy'), musical: t('Musical'),
+  }[id];
+}
+
+function kfMovies() { return t.list('kidflix.films', KF_MOVIES); }
+const kfNumber = n => n.toLocaleString(OS.locale());
 
 /* ---- Seeded RNG (same pattern as Kidstagram) ---- */
 function kfRng(seed) {
@@ -111,12 +124,12 @@ function kfDrawPoster(canvas, movie) {
   if (line) lines.push(line);
   const lineH = fontSize * 1.25;
   const startY = H * 0.82 - (lines.length - 1) * lineH / 2;
-  lines.forEach((l, i) => ctx.fillText(l, W / 2, startY + i * lineH));
+  lines.forEach((l, i) => ctx.fillText(l, W / 2, startY + i * lineH, W - 8));
 
   // Rating badge
   ctx.fillStyle = '#fdd835';
   ctx.font = `bold ${Math.floor(fontSize * 0.7)}px sans-serif`;
-  ctx.fillText('★ ' + movie.rating, W / 2, H * 0.95);
+  ctx.fillText('★ ' + kfNumber(movie.rating), W / 2, H * 0.95, W - 8);
 }
 
 /* ---- App Registration ---- */
@@ -132,14 +145,14 @@ OS.registerApp('kidflix', {
   },
 
   getWindowOpts() {
-    return { id: 'kidflix', title: 'Kidflix', icon: '🎬', width: 700, height: 520, content: this.getHTML() };
+    return { id: 'kidflix', title: t('Kidflix'), icon: '🎬', width: 700, height: 520, content: this.getHTML() };
   },
 
   getHTML() {
     return `<div class="kf-wrap">
       <div class="kf-header">
-        <span class="kf-logo">KIDFLIX</span>
-        <input class="kf-search" type="text" placeholder="Search movies..." />
+        <span class="kf-logo">${t('KIDFLIX')}</span>
+        <input class="kf-search" type="text" placeholder="${t('Search movies...')}" />
       </div>
       <div class="kf-tabs" id="kf-tabs"></div>
       <div class="kf-content" id="kf-content">
@@ -153,7 +166,7 @@ OS.registerApp('kidflix', {
     if (!this.state.liked) this.state.liked = [];
     if (!this.state.watched) this.state.watched = [];
     this.bodyId = 'win-body-' + winId;
-    this.activeGenre = 'All';
+    this.activeGenre = 'all';
     this.searchQuery = '';
     this.renderTabs();
     this.renderGrid();
@@ -182,7 +195,7 @@ OS.registerApp('kidflix', {
     const tabs = body.querySelector('#kf-tabs');
     if (!tabs) return;
     tabs.innerHTML = KF_GENRES.map(g =>
-      `<button class="kf-tab${g === this.activeGenre ? ' kf-tab-active' : ''}" data-genre="${g}">${g}</button>`
+      `<button class="kf-tab${g === this.activeGenre ? ' kf-tab-active' : ''}" data-genre="${g}">${kfGenreName(g)}</button>`
     ).join('');
     tabs.querySelectorAll('.kf-tab').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -194,8 +207,8 @@ OS.registerApp('kidflix', {
   },
 
   getFilteredMovies() {
-    return KF_MOVIES.filter(m => {
-      if (this.activeGenre !== 'All' && m.genre !== this.activeGenre) return false;
+    return kfMovies().filter(m => {
+      if (this.activeGenre !== 'all' && m.genreId !== this.activeGenre) return false;
       if (this.searchQuery && !m.title.toLowerCase().includes(this.searchQuery) &&
           !m.desc.toLowerCase().includes(this.searchQuery)) return false;
       return true;
@@ -211,7 +224,7 @@ OS.registerApp('kidflix', {
     const liked = this.state.liked;
 
     content.innerHTML = `<div class="kf-grid" id="kf-grid">
-      ${movies.length === 0 ? '<div class="kf-empty">No movies found</div>' :
+      ${movies.length === 0 ? `<div class="kf-empty">${t('No movies found')}</div>` :
         movies.map(m => `
         <div class="kf-card" data-id="${m.id}">
           <div class="kf-poster">
@@ -221,7 +234,7 @@ OS.registerApp('kidflix', {
           <div class="kf-card-info">
             <div class="kf-card-title">${m.title}</div>
             <div class="kf-card-meta">
-              <span class="kf-card-genre">${m.genre}</span>
+              <span class="kf-card-genre">${kfGenreName(m.genreId)}</span>
               <span class="kf-card-year">${m.year}</span>
             </div>
           </div>
@@ -231,7 +244,7 @@ OS.registerApp('kidflix', {
     // Draw posters
     content.querySelectorAll('.kf-card').forEach(card => {
       const id = +card.dataset.id;
-      const movie = KF_MOVIES.find(m => m.id === id);
+      const movie = movies.find(m => m.id === id);
       const canvas = card.querySelector('.kf-poster-canvas');
       if (movie && canvas) kfDrawPoster(canvas, movie);
       card.addEventListener('click', () => this.openPlayer(id));
@@ -243,7 +256,7 @@ OS.registerApp('kidflix', {
     if (!body) return;
     const content = body.querySelector('#kf-content');
     if (!content) return;
-    const m = KF_MOVIES.find(mv => mv.id === movieId);
+    const m = kfMovies().find(mv => mv.id === movieId);
     if (!m) return;
 
     // Mark as watched
@@ -255,11 +268,11 @@ OS.registerApp('kidflix', {
     const isLiked = this.state.liked.includes(movieId);
 
     content.innerHTML = `<div class="kf-player">
-      <button class="kf-back-btn" id="kf-back">← Back to Browse</button>
+      <button class="kf-back-btn" id="kf-back">← ${t('Back to Browse')}</button>
       <div class="kf-video-wrap">
         <video class="kf-video" controls preload="metadata">
           <source src="media/placeholder.mp4" type="video/mp4">
-          Your browser does not support video.
+          ${t('Your browser does not support video.')}
         </video>
       </div>
       <div class="kf-movie-info">
@@ -268,10 +281,10 @@ OS.registerApp('kidflix', {
           <div class="kf-movie-titles">
             <h2 class="kf-movie-title">${m.title}</h2>
             <div class="kf-movie-meta">
-              <span class="kf-badge">${m.genre}</span>
+              <span class="kf-badge">${kfGenreName(m.genreId)}</span>
               <span>${m.year}</span>
               <span>${m.duration}</span>
-              <span class="kf-rating">★ ${m.rating}</span>
+              <span class="kf-rating">★ ${kfNumber(m.rating)}</span>
             </div>
           </div>
           <button class="kf-like-btn${isLiked ? ' kf-liked' : ''}" data-id="${m.id}">
@@ -279,7 +292,7 @@ OS.registerApp('kidflix', {
           </button>
         </div>
         <p class="kf-movie-desc">${m.desc}</p>
-        <div class="kf-movie-parody">Inspired by: <em>${m.parody}</em></div>
+        <div class="kf-movie-parody">${t('Inspired by:')} <em>${m.parody}</em></div>
       </div>
     </div>`;
 
@@ -311,3 +324,4 @@ OS.registerApp('kidflix', {
     this.state = null;
   },
 });
+}

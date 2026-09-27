@@ -1,5 +1,7 @@
 /* ===== SillySkies — Fake Kids Weather App ===== */
 (() => {
+  const t = OS.texts('sillyskies');
+
   /* ---- Data Constants ---- */
   const PLACES = [
     { id: 'pillowtown', name: 'Pillow Town', emoji: '\u{1F6CF}\uFE0F' },
@@ -9,39 +11,40 @@
   ];
 
   const WEATHER_TYPES = [
-    { name: 'Meatball Blizzard', emoji: '\u{1F9C6}', feelsLike: 'a fridge full of pasta', warning: 'Meatball Advisory!', bring: ['Spaghetti umbrella', 'Sauce boots', 'Parmesan helmet'], wear: 'Full pasta armor' },
-    { name: 'Rainbow Drizzle', emoji: '\u{1F308}', feelsLike: 'a unicorn sneezed', bring: ['Glitter bucket', 'Color catcher', 'Rainbow jar'], wear: 'Sparkly raincoat' },
-    { name: 'Sneezing Fog', emoji: '\u{1F32B}\uFE0F', feelsLike: 'walking inside a tissue', warning: 'Gesundheit Zone!', bring: ['Tissue scarf', 'Nose plugs', 'Fog horn'], wear: 'Anti-sneeze goggles' },
-    { name: 'Gummy Bear Heatwave', emoji: '\u{1F525}', feelsLike: 'a melted candy store', bring: ['Gummy fan', 'Sugar sunscreen', 'Popsicle sword'], wear: 'Gummy bear swimsuit' },
-    { name: 'Sock Tornado', emoji: '\u{1F32A}\uFE0F', feelsLike: 'laundry day went wrong', warning: 'Missing Socks Alert!', bring: ['Sock lasso', 'Clothespin shield', 'Lint roller'], wear: 'Double socks on each foot' },
-    { name: 'Pancake Clouds', emoji: '\u{1F95E}', feelsLike: 'breakfast in the sky', bring: ['Syrup bottle', 'Butter parachute', 'Fork kite'], wear: 'Waffle hat' },
-    { name: 'Nacho Storm', emoji: '\u{1F9C0}', feelsLike: 'cheesy and crunchy', bring: ['Salsa shield', 'Chip surfboard', 'Cheese umbrella'], wear: 'Nachoprene wetsuit' },
-    { name: 'Bubble Fog', emoji: '\u{1FAE7}', feelsLike: 'a bathtub without water', bring: ['Bubble wand', 'Pop-proof vest', 'Soap shoes'], wear: 'Bubble wrap suit' },
-    { name: 'Pizza Heat', emoji: '\u{1F355}', feelsLike: 'an oven with a breeze', warning: 'Extra Cheese Warning!', bring: ['Pepperoni frisbee', 'Crust walking stick', 'Cheese goggles'], wear: 'Pizza slice hat' },
-    { name: 'Frog Rain', emoji: '\u{1F438}', feelsLike: 'a pond fell from the sky', bring: ['Lily pad helmet', 'Frog catcher net', 'Ribbit translator'], wear: 'Full frog costume' },
-    { name: 'Glitter Snow', emoji: '\u2728', feelsLike: 'a craft store exploded', bring: ['Sparkle shovel', 'Glitter goggles', 'Shimmer sled'], wear: 'Disco snowsuit' },
-    { name: 'Homework Clouds', emoji: '\u{1F4DA}', feelsLike: 'a boring afternoon', warning: 'Study Alert!', bring: ['Eraser sword', 'Pencil wand', 'Book shield'], wear: 'Thinking cap' },
-    { name: 'Jelly Earthquake', emoji: '\u{1F36E}', feelsLike: 'the ground is wiggling', bring: ['Wobbly shoes', 'Jelly jar', 'Spoon surfboard'], wear: 'Bouncy boots' },
-    { name: 'Popcorn Flurries', emoji: '\u{1F37F}', feelsLike: 'movie night outside', bring: ['Butter bucket', 'Popcorn bag', 'Salt shaker'], wear: 'Popcorn bucket hat' },
-    { name: 'Pillow Hail', emoji: '\u{1F6CF}\uFE0F', feelsLike: 'a sleepover attack', bring: ['Pillow shield', 'Blanket cape', 'Teddy bear bodyguard'], wear: 'Pajama armor' },
-    { name: 'Spaghetti Cyclone', emoji: '\u{1F35D}', feelsLike: 'a spinning bowl of noodles', warning: 'Noodle Tangle Zone!', bring: ['Fork helicopter', 'Sauce goggles', 'Garlic bread raft'], wear: 'Colander helmet' },
-    { name: 'Confetti Burst', emoji: '\u{1F389}', feelsLike: 'a surprise party', bring: ['Party hat', 'Confetti vacuum', 'Streamer lasso'], wear: 'Birthday suit (the party kind!)' },
-    { name: 'Chocolate Drizzle', emoji: '\u{1F36B}', feelsLike: 'a dessert waterfall', bring: ['Chocolate bucket', 'Wafer raft', 'Marshmallow umbrella'], wear: 'Sprinkle-proof poncho' },
-    { name: 'Banana Breeze', emoji: '\u{1F34C}', feelsLike: 'a smoothie on a windy day', bring: ['Peel-proof boots', 'Banana phone', 'Smoothie cup'], wear: 'Yellow windbreaker' },
-    { name: 'Taco Tuesday Storm', emoji: '\u{1F32E}', feelsLike: 'a fiesta in the sky', warning: 'Extra Salsa Advisory!', bring: ['Tortilla umbrella', 'Guacamole goggles', 'Hot sauce raincoat'], wear: 'Sombrero helmet' },
+    { id: 'meatball', name: 'Meatball Blizzard', emoji: '\u{1F9C6}', feelsLike: 'a fridge full of pasta', warning: 'Meatball Advisory!', bring: ['Spaghetti umbrella', 'Sauce boots', 'Parmesan helmet'], wear: 'Full pasta armor' },
+    { id: 'rainbow', name: 'Rainbow Drizzle', emoji: '\u{1F308}', feelsLike: 'a unicorn sneezed', bring: ['Glitter bucket', 'Color catcher', 'Rainbow jar'], wear: 'Sparkly raincoat' },
+    { id: 'sneeze-fog', name: 'Sneezing Fog', emoji: '\u{1F32B}\uFE0F', feelsLike: 'walking inside a tissue', warning: 'Gesundheit Zone!', bring: ['Tissue scarf', 'Nose plugs', 'Fog horn'], wear: 'Anti-sneeze goggles' },
+    { id: 'gummy-heat', name: 'Gummy Bear Heatwave', emoji: '\u{1F525}', feelsLike: 'a melted candy store', bring: ['Gummy fan', 'Sugar sunscreen', 'Popsicle sword'], wear: 'Gummy bear swimsuit' },
+    { id: 'sock-tornado', name: 'Sock Tornado', emoji: '\u{1F32A}\uFE0F', feelsLike: 'laundry day went wrong', warning: 'Missing Socks Alert!', bring: ['Sock lasso', 'Clothespin shield', 'Lint roller'], wear: 'Double socks on each foot' },
+    { id: 'pancake', name: 'Pancake Clouds', emoji: '\u{1F95E}', feelsLike: 'breakfast in the sky', bring: ['Syrup bottle', 'Butter parachute', 'Fork kite'], wear: 'Waffle hat' },
+    { id: 'nacho', name: 'Nacho Storm', emoji: '\u{1F9C0}', feelsLike: 'cheesy and crunchy', bring: ['Salsa shield', 'Chip surfboard', 'Cheese umbrella'], wear: 'Nachoprene wetsuit' },
+    { id: 'bubble', name: 'Bubble Fog', emoji: '\u{1FAE7}', feelsLike: 'a bathtub without water', bring: ['Bubble wand', 'Pop-proof vest', 'Soap shoes'], wear: 'Bubble wrap suit' },
+    { id: 'pizza', name: 'Pizza Heat', emoji: '\u{1F355}', feelsLike: 'an oven with a breeze', warning: 'Extra Cheese Warning!', bring: ['Pepperoni frisbee', 'Crust walking stick', 'Cheese goggles'], wear: 'Pizza slice hat' },
+    { id: 'frog', name: 'Frog Rain', emoji: '\u{1F438}', feelsLike: 'a pond fell from the sky', bring: ['Lily pad helmet', 'Frog catcher net', 'Ribbit translator'], wear: 'Full frog costume' },
+    { id: 'glitter', name: 'Glitter Snow', emoji: '\u2728', feelsLike: 'a craft store exploded', bring: ['Sparkle shovel', 'Glitter goggles', 'Shimmer sled'], wear: 'Disco snowsuit' },
+    { id: 'homework', name: 'Homework Clouds', emoji: '\u{1F4DA}', feelsLike: 'a boring afternoon', warning: 'Study Alert!', bring: ['Eraser sword', 'Pencil wand', 'Book shield'], wear: 'Thinking cap' },
+    { id: 'jelly', name: 'Jelly Earthquake', emoji: '\u{1F36E}', feelsLike: 'the ground is wiggling', bring: ['Wobbly shoes', 'Jelly jar', 'Spoon surfboard'], wear: 'Bouncy boots' },
+    { id: 'popcorn', name: 'Popcorn Flurries', emoji: '\u{1F37F}', feelsLike: 'movie night outside', bring: ['Butter bucket', 'Popcorn bag', 'Salt shaker'], wear: 'Popcorn bucket hat' },
+    { id: 'pillow', name: 'Pillow Hail', emoji: '\u{1F6CF}\uFE0F', feelsLike: 'a sleepover attack', bring: ['Pillow shield', 'Blanket cape', 'Teddy bear bodyguard'], wear: 'Pajama armor' },
+    { id: 'spaghetti', name: 'Spaghetti Cyclone', emoji: '\u{1F35D}', feelsLike: 'a spinning bowl of noodles', warning: 'Noodle Tangle Zone!', bring: ['Fork helicopter', 'Sauce goggles', 'Garlic bread raft'], wear: 'Colander helmet' },
+    { id: 'confetti', name: 'Confetti Burst', emoji: '\u{1F389}', feelsLike: 'a surprise party', bring: ['Party hat', 'Confetti vacuum', 'Streamer lasso'], wear: 'Birthday suit (the party kind!)' },
+    { id: 'chocolate', name: 'Chocolate Drizzle', emoji: '\u{1F36B}', feelsLike: 'a dessert waterfall', bring: ['Chocolate bucket', 'Wafer raft', 'Marshmallow umbrella'], wear: 'Sprinkle-proof poncho' },
+    { id: 'banana', name: 'Banana Breeze', emoji: '\u{1F34C}', feelsLike: 'a smoothie on a windy day', bring: ['Peel-proof boots', 'Banana phone', 'Smoothie cup'], wear: 'Yellow windbreaker' },
+    { id: 'taco', name: 'Taco Tuesday Storm', emoji: '\u{1F32E}', feelsLike: 'a fiesta in the sky', warning: 'Extra Salsa Advisory!', bring: ['Tortilla umbrella', 'Guacamole goggles', 'Hot sauce raincoat'], wear: 'Sombrero helmet' },
   ];
 
   const STAT_TEMPLATES = [
-    s => `Chance of hiccups: ${s(20,90)}%`,
-    s => `Wind speed: ${s(1,50)} hats per hour`,
-    s => `Silliness index: ${s(3,10)}/10`,
-    s => `Chance of giggles: ${s(40,100)}%`,
-    s => `Puddle count: ${s(2,200)} puddles`,
-    s => `Snack radar: ${s(1,5)} snacks nearby`,
-    s => `Pillow pressure: ${s(10,99)} fluffs`,
-    s => `Wiggle factor: ${s(1,10)} wiggles/min`,
-    s => `Unicorn sightings: ${s(0,3)} today`,
-    s => `Dance probability: ${s(30,100)}%`,
+    s => t('Chance of hiccups: {n}%', { n: s(20,90) }),
+    // English shows "hats" for each number. Serbian needs the word form for the number
+    s => { const n = s(1,50); return t('Wind speed: {n} {hats} per hour', { n, hats: t.plural(n, 'hats', 'hats') }); },
+    s => t('Silliness index: {n}/10', { n: s(3,10) }),
+    s => t('Chance of giggles: {n}%', { n: s(40,100) }),
+    s => t('Puddle count: {n} puddles', { n: s(2,200) }),
+    s => t('Snack radar: {n} snacks nearby', { n: s(1,5) }),
+    s => t('Pillow pressure: {n} fluffs', { n: s(10,99) }),
+    s => t('Wiggle factor: {n} wiggles/min', { n: s(1,10) }),
+    s => t('Unicorn sightings: {n} today', { n: s(0,3) }),
+    s => t('Dance probability: {n}%', { n: s(30,100) }),
   ];
 
   const JOKES = [
@@ -65,22 +68,22 @@
   const SILLY_UNITS = ['Giggles', 'Marshmallows', 'Wiggles', 'Sparkles'];
 
   const SKY_OPTIONS = [
-    { name: 'Clouds', emoji: '\u2601\uFE0F' },
-    { name: 'Tacos', emoji: '\u{1F32E}' },
-    { name: 'Balloons', emoji: '\u{1F388}' },
-    { name: 'Confetti', emoji: '\u{1F38A}' },
+    { id: 'clouds', name: 'Clouds', word: 'clouds', emoji: '\u2601\uFE0F' },
+    { id: 'tacos', name: 'Tacos', word: 'tacos', emoji: '\u{1F32E}' },
+    { id: 'balloons', name: 'Balloons', word: 'balloons', emoji: '\u{1F388}' },
+    { id: 'confetti', name: 'Confetti', word: 'confetti', emoji: '\u{1F38A}' },
   ];
 
   const WIND_OPTIONS = [
-    { name: 'Sleepy', emoji: '\u{1F634}' },
-    { name: 'Zoomy', emoji: '\u{1F4A8}' },
-    { name: 'Pogo-Stick', emoji: '\u{1F538}' },
+    { id: 'sleepy', name: 'Sleepy', word: 'sleepy', emoji: '\u{1F634}' },
+    { id: 'zoomy', name: 'Zoomy', word: 'zoomy', emoji: '\u{1F4A8}' },
+    { id: 'pogo-stick', name: 'Pogo-Stick', word: 'pogo-stick', emoji: '\u{1F538}' },
   ];
 
   const MOOD_OPTIONS = [
-    { name: 'Grumpy', emoji: '\u{1F624}' },
-    { name: 'Silly', emoji: '\u{1F92A}' },
-    { name: 'Heroic', emoji: '\u{1F9B8}' },
+    { id: 'grumpy', name: 'Grumpy', word: 'grumpy', emoji: '\u{1F624}' },
+    { id: 'silly', name: 'Silly', word: 'silly', emoji: '\u{1F92A}' },
+    { id: 'heroic', name: 'Heroic', word: 'heroic', emoji: '\u{1F9B8}' },
   ];
 
   const MIXED_RESULTS = [
@@ -96,8 +99,6 @@
     ["Local {sky} report: it's getting {mood} out there.", "Wind advisory: {wind} gusts of pure {mood} energy."],
     ["The {sky} are {mood} today.", "Forecasters recommend {wind} dancing to stay warm."],
   ];
-
-  const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
   /* ---- Seeded Random (same as TreasureMapper) ---- */
   function seedRand(str) {
@@ -136,9 +137,9 @@
     const place = PLACES[placeIdx];
     const seed = place.id + '-' + dayOffset + '-' + (dayOffset === 0 ? todayStr() : weekStr()) + '-' + spinCount;
     const rand = seedRand(seed);
-    const weather = pick(rand, WEATHER_TYPES);
+    const weather = pick(rand, t.list('sillyskies.weather', WEATHER_TYPES));
     const temp = randInt(rand, 5, 40);
-    const unit = pick(rand, SILLY_UNITS);
+    const unit = pick(rand, t.list('sillyskies.units', SILLY_UNITS));
     return { weather, temp, unit, rand };
   }
 
@@ -157,9 +158,12 @@
   }
 
   function getDayName(offset) {
+    if (offset === 0) return t('Today');
+    if (offset === 1) return t('Tomorrow');
     const d = new Date();
     d.setDate(d.getDate() + offset);
-    return offset === 0 ? 'Today' : offset === 1 ? 'Tomorrow' : DAY_NAMES[d.getDay()];
+    const name = new Intl.DateTimeFormat(OS.locale(), { weekday: 'long' }).format(d);
+    return name.charAt(0).toUpperCase() + name.slice(1);
   }
 
   /* ---- Render helpers ---- */
@@ -170,10 +174,10 @@
 
     return `
       <div class="ss-header">
-        <span class="ss-header-icon">\u{1F308}</span> Today on SillySkies
+        <span class="ss-header-icon">\u{1F308}</span> ${t('Today on SillySkies')}
       </div>
       <div class="ss-places">
-        ${PLACES.map((p, i) => `
+        ${t.list('sillyskies.places', PLACES).map((p, i) => `
           <button class="ss-place-btn${i === selectedPlace ? ' ss-active' : ''}" onclick="window._ss.selectPlace(${i})">
             ${p.emoji} ${p.name}
           </button>
@@ -183,27 +187,27 @@
         <div class="ss-weather-icon" onclick="window._ss.bounceIcon(this)">${weather.emoji}</div>
         <div class="ss-weather-name">${weather.name}</div>
         <div class="ss-temp">${temp}\u00B0 ${unit}</div>
-        <div class="ss-feels">Feels like ${weather.feelsLike}</div>
+        <div class="ss-feels">${t('Feels like {what}', { what: weather.feelsLike })}</div>
         ${weather.warning ? `<div class="ss-warning">\u26A0\uFE0F ${weather.warning}</div>` : ''}
         <div class="ss-stats">
           ${stats.map(s => `<div class="ss-stat">${s}</div>`).join('')}
         </div>
       </div>
       <div class="ss-actions">
-        <button class="ss-btn ss-btn-primary" onclick="window._ss.goForecast()">\u{1F4C5} See Forecast</button>
-        <button class="ss-btn ss-btn-secondary" onclick="window._ss.spin()">\u{1F300} Spin the Sky</button>
+        <button class="ss-btn ss-btn-primary" onclick="window._ss.goForecast()">\u{1F4C5} ${t('See Forecast')}</button>
+        <button class="ss-btn ss-btn-secondary" onclick="window._ss.spin()">\u{1F300} ${t('Spin the Sky')}</button>
       </div>
       <div class="ss-nav-row">
-        <button class="ss-nav-btn" onclick="window._ss.goMixer()">\u{1F3A8} Mix-a-Forecast</button>
+        <button class="ss-nav-btn" onclick="window._ss.goMixer()">\u{1F3A8} ${t('Mix-a-Forecast')}</button>
       </div>`;
   }
 
   function renderForecast() {
-    const place = PLACES[selectedPlace];
+    const place = t.list('sillyskies.places', PLACES)[selectedPlace];
     return `
       <div class="ss-header">
         <button class="ss-back" onclick="window._ss.goHome()">\u2190</button>
-        <span class="ss-header-icon">\u{1F4C5}</span> 7 Days \u2014 ${place.emoji} ${place.name}
+        <span class="ss-header-icon">\u{1F4C5}</span> ${t('7 Days')} \u2014 ${place.emoji} ${place.name}
       </div>
       <div class="ss-forecast-list">
         ${Array.from({length: 7}, (_, i) => {
@@ -215,7 +219,7 @@
               <div class="ss-fc-info">
                 <div class="ss-fc-name">${weather.name}</div>
                 <div class="ss-fc-temp">${temp}\u00B0 ${unit}</div>
-                <div class="ss-fc-feels">Feels like ${weather.feelsLike}</div>
+                <div class="ss-fc-feels">${t('Feels like {what}', { what: weather.feelsLike })}</div>
               </div>
               ${weather.warning ? `<div class="ss-fc-badge">\u26A0\uFE0F</div>` : ''}
             </div>`;
@@ -228,7 +232,7 @@
     const { weather, temp, unit, rand } = getWeatherForDay(selectedPlace, day);
     // pick 3 jokes
     rand(); rand();
-    const jokePool = [...JOKES];
+    const jokePool = t.list('sillyskies.jokes', JOKES).slice();
     const jokes = [];
     for (let i = 0; i < 3 && jokePool.length; i++) {
       const idx = Math.floor(rand() * jokePool.length);
@@ -238,7 +242,7 @@
     return `
       <div class="ss-header">
         <button class="ss-back" onclick="window._ss.goForecast()">\u2190</button>
-        <span class="ss-header-icon">\u{1F4DC}</span> Forecast Story \u2014 ${getDayName(day)}
+        <span class="ss-header-icon">\u{1F4DC}</span> ${t('Forecast Story')} \u2014 ${getDayName(day)}
       </div>
       <div class="ss-day-hero">
         <div class="ss-weather-icon ss-float" onclick="window._ss.bounceIcon(this)">${weather.emoji}</div>
@@ -247,22 +251,22 @@
         ${weather.warning ? `<div class="ss-warning">\u26A0\uFE0F ${weather.warning}</div>` : ''}
       </div>
       <div class="ss-detail-section">
-        <div class="ss-section-title">\u{1F399}\uFE0F Meteorologist Says:</div>
-        ${jokes.map(j => `<div class="ss-joke">"${j}"</div>`).join('')}
+        <div class="ss-section-title">\u{1F399}\uFE0F ${t('Meteorologist Says:')}</div>
+        ${jokes.map(j => `<div class="ss-joke">${t('"{joke}"', { joke: j })}</div>`).join('')}
       </div>
       <div class="ss-detail-section">
-        <div class="ss-section-title">\u{1F455} What to Wear:</div>
+        <div class="ss-section-title">\u{1F455} ${t('What to Wear:')}</div>
         <div class="ss-wear">${weather.wear}</div>
       </div>
       <div class="ss-detail-section">
-        <div class="ss-section-title">\u{1F392} What to Bring:</div>
+        <div class="ss-section-title">\u{1F392} ${t('What to Bring:')}</div>
         <div class="ss-bring-list">
           ${weather.bring.map(b => `<div class="ss-bring-item">\u2022 ${b}</div>`).join('')}
         </div>
       </div>
       <div class="ss-actions">
-        <button class="ss-btn ss-btn-primary" onclick="window._ss.nextDay()">${day < 6 ? '\u27A1\uFE0F Next Day' : '\u{1F504} Back to Today'}</button>
-        <button class="ss-btn ss-btn-secondary" onclick="window._ss.goForecast()">\u{1F4C5} Full Forecast</button>
+        <button class="ss-btn ss-btn-primary" onclick="window._ss.nextDay()">${day < 6 ? '\u27A1\uFE0F ' + t('Next Day') : '\u{1F504} ' + t('Back to Today')}</button>
+        <button class="ss-btn ss-btn-secondary" onclick="window._ss.goForecast()">\u{1F4C5} ${t('Full Forecast')}</button>
       </div>`;
   }
 
@@ -274,7 +278,7 @@
           ${mixResult.lines.map(l => `<div>${l}</div>`).join('')}
         </div>
         <div class="ss-silliness">
-          <span>Silliness Score:</span>
+          <span>${t('Silliness Score:')}</span>
           <div class="ss-meter">
             <div class="ss-meter-fill" style="width:${mixResult.score * 10}%"></div>
           </div>
@@ -285,13 +289,13 @@
     return `
       <div class="ss-header">
         <button class="ss-back" onclick="window._ss.goHome()">\u2190</button>
-        <span class="ss-header-icon">\u{1F3A8}</span> Mix-a-Forecast
+        <span class="ss-header-icon">\u{1F3A8}</span> ${t('Mix-a-Forecast')}
       </div>
       <div class="ss-mixer">
         <div class="ss-mixer-group">
-          <div class="ss-mixer-label">\u2601\uFE0F Sky Stuff</div>
+          <div class="ss-mixer-label">\u2601\uFE0F ${t('Sky Stuff')}</div>
           <div class="ss-mixer-pills">
-            ${SKY_OPTIONS.map((o, i) => `
+            ${t.list('sillyskies.sky', SKY_OPTIONS).map((o, i) => `
               <button class="ss-pill${i === mixSky ? ' ss-active' : ''}" onclick="window._ss.setSky(${i})">
                 ${o.emoji} ${o.name}
               </button>
@@ -299,9 +303,9 @@
           </div>
         </div>
         <div class="ss-mixer-group">
-          <div class="ss-mixer-label">\u{1F4A8} Wind</div>
+          <div class="ss-mixer-label">\u{1F4A8} ${t('Wind')}</div>
           <div class="ss-mixer-pills">
-            ${WIND_OPTIONS.map((o, i) => `
+            ${t.list('sillyskies.wind', WIND_OPTIONS).map((o, i) => `
               <button class="ss-pill${i === mixWind ? ' ss-active' : ''}" onclick="window._ss.setWind(${i})">
                 ${o.emoji} ${o.name}
               </button>
@@ -309,16 +313,16 @@
           </div>
         </div>
         <div class="ss-mixer-group">
-          <div class="ss-mixer-label">\u{1F3AD} Mood</div>
+          <div class="ss-mixer-label">\u{1F3AD} ${t('Mood')}</div>
           <div class="ss-mixer-pills">
-            ${MOOD_OPTIONS.map((o, i) => `
+            ${t.list('sillyskies.mood', MOOD_OPTIONS).map((o, i) => `
               <button class="ss-pill${i === mixMood ? ' ss-active' : ''}" onclick="window._ss.setMood(${i})">
                 ${o.emoji} ${o.name}
               </button>
             `).join('')}
           </div>
         </div>
-        <button class="ss-btn ss-btn-primary ss-generate-btn" onclick="window._ss.generate()">\u26A1 Generate Forecast!</button>
+        <button class="ss-btn ss-btn-primary ss-generate-btn" onclick="window._ss.generate()">\u26A1 ${t('Generate Forecast!')}</button>
         ${resultHtml}
       </div>`;
   }
@@ -361,15 +365,20 @@
     generate() {
       const seed = `mix-${mixSky}-${mixWind}-${mixMood}-${todayStr()}`;
       const rand = seedRand(seed);
-      const nameIdx = Math.floor(rand() * MIXED_RESULTS.length);
-      const nameSubIdx = Math.floor(rand() * MIXED_RESULTS[nameIdx].length);
-      const name = MIXED_RESULTS[nameIdx][nameSubIdx];
-      const emoji = SKY_OPTIONS[mixSky].emoji;
-      const lineSet = MIXED_LINES[Math.floor(rand() * MIXED_LINES.length)];
+      const names = t.list('sillyskies.mixNames', MIXED_RESULTS);
+      const lineSets = t.list('sillyskies.mixLines', MIXED_LINES);
+      const sky = t.list('sillyskies.sky', SKY_OPTIONS)[mixSky];
+      const wind = t.list('sillyskies.wind', WIND_OPTIONS)[mixWind];
+      const mood = t.list('sillyskies.mood', MOOD_OPTIONS)[mixMood];
+      const nameIdx = Math.floor(rand() * names.length);
+      const nameSubIdx = Math.floor(rand() * names[nameIdx].length);
+      const name = names[nameIdx][nameSubIdx];
+      const emoji = sky.emoji;
+      const lineSet = lineSets[Math.floor(rand() * lineSets.length)];
       const lines = lineSet.map(l =>
-        l.replace('{sky}', SKY_OPTIONS[mixSky].name.toLowerCase())
-         .replace('{wind}', WIND_OPTIONS[mixWind].name.toLowerCase())
-         .replace('{mood}', MOOD_OPTIONS[mixMood].name.toLowerCase())
+        l.replace('{sky}', sky.word)
+         .replace('{wind}', wind.word)
+         .replace('{mood}', mood.word)
       );
       const score = randInt(rand, 3, 10);
       mixResult = { name, emoji, lines, score };
@@ -382,7 +391,7 @@
     singleInstance: true,
     getWindowOpts() {
       return {
-        id: 'sillyskies', title: 'SillySkies', icon: '\u{1F308}',
+        id: 'sillyskies', title: t('SillySkies'), icon: '\u{1F308}',
         width: 420, height: 540,
         content: '<div class="ss-wrap"><div id="ss-content"></div></div>',
       };

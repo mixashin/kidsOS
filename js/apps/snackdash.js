@@ -1,108 +1,110 @@
 /* ===== SnackDash — Fake Food Delivery App ===== */
 (() => {
+  const t = OS.texts('snackdash');
+
   /* ---- Data Constants ---- */
   const RESTAURANTS = [
     {
       id: 'crunch', name: "Captain Crunch's Dockside Diner", emoji: '\u{1F3F4}\u200D\u2620\uFE0F',
       tags: ['Pirate Grub', 'Crunchy'], rating: 4.7, time: '20-30 min',
       items: [
-        { emoji: '\u{1F4A3}', name: 'Crunchy Cannonball', desc: 'Deep-fried ball of everything. EVERYTHING.', price: 12, addOns: ['Extra Crunch', 'Gunpowder Sauce'] },
-        { emoji: '\u{1F9AA}', name: 'Barnacle Nuggets', desc: 'Suspiciously chewy nuggets from the ocean floor.', price: 8, addOns: ['Seaweed Dip', 'Pirate Ketchup'] },
-        { emoji: '\u{1F35F}', name: 'Walk The Plank Fries', desc: 'Long fries that dangle over the edge of the plate.', price: 7, addOns: ['Treasure Cheese', 'Salt Storm'] },
-        { emoji: '\u{1F368}', name: 'Shipwreck Sundae', desc: 'Ice cream buried under candy debris.', price: 10, addOns: ['Gummy Sharks', 'Whirlpool Swirl'] },
+        { id: 'cannonball', emoji: '\u{1F4A3}', name: 'Crunchy Cannonball', desc: 'Deep-fried ball of everything. EVERYTHING.', price: 12, addOns: ['Extra Crunch', 'Gunpowder Sauce'] },
+        { id: 'barnacle-nuggets', emoji: '\u{1F9AA}', name: 'Barnacle Nuggets', desc: 'Suspiciously chewy nuggets from the ocean floor.', price: 8, addOns: ['Seaweed Dip', 'Pirate Ketchup'] },
+        { id: 'plank-fries', emoji: '\u{1F35F}', name: 'Walk The Plank Fries', desc: 'Long fries that dangle over the edge of the plate.', price: 7, addOns: ['Treasure Cheese', 'Salt Storm'] },
+        { id: 'shipwreck-sundae', emoji: '\u{1F368}', name: 'Shipwreck Sundae', desc: 'Ice cream buried under candy debris.', price: 10, addOns: ['Gummy Sharks', 'Whirlpool Swirl'] },
       ],
     },
     {
       id: 'noodle', name: 'The Noodle Doodle', emoji: '\u{1F35C}',
       tags: ['Noodley', 'Slurpy'], rating: 4.5, time: '15-25 min',
       items: [
-        { emoji: '\u{1F32A}\uFE0F', name: 'Spaghetti Tornado', desc: 'Pasta that spins in the bowl. Wear goggles.', price: 11, addOns: ['Extra Spin', 'Cheese Cloud'] },
-        { emoji: '\u{1F95F}', name: 'Doodle Dumplings', desc: 'Each dumpling has a silly face drawn on it.', price: 9, addOns: ['Giggly Sauce', 'Doodle Extras'] },
-        { emoji: '\u{1F9D4}', name: 'Noodle Beard Bowl', desc: 'So many noodles you can wear them as a beard.', price: 13, addOns: ['Beard Extensions', 'Broth Boost'] },
+        { id: 'spaghetti-tornado', emoji: '\u{1F32A}\uFE0F', name: 'Spaghetti Tornado', desc: 'Pasta that spins in the bowl. Wear goggles.', price: 11, addOns: ['Extra Spin', 'Cheese Cloud'] },
+        { id: 'doodle-dumplings', emoji: '\u{1F95F}', name: 'Doodle Dumplings', desc: 'Each dumpling has a silly face drawn on it.', price: 9, addOns: ['Giggly Sauce', 'Doodle Extras'] },
+        { id: 'beard-bowl', emoji: '\u{1F9D4}', name: 'Noodle Beard Bowl', desc: 'So many noodles you can wear them as a beard.', price: 13, addOns: ['Beard Extensions', 'Broth Boost'] },
       ],
     },
     {
       id: 'pancake', name: 'Planet Pancake', emoji: '\u{1F95E}',
       tags: ['Breakfast', 'Space'], rating: 4.8, time: '10-20 min',
       items: [
-        { emoji: '\u{1FA90}', name: 'Saturn Ring Pancakes', desc: 'Pancakes with a ring of syrup orbiting them.', price: 10, addOns: ['Stardust Sprinkles', 'Maple Meteor'] },
-        { emoji: '\u{1F47D}', name: 'Alien Waffle', desc: 'Green waffle with antenna-shaped fruit.', price: 9, addOns: ['UFO Syrup', 'Moon Butter'] },
-        { emoji: '\u{1F30C}', name: 'Milky Way Milkshake', desc: 'So thick you need a rocket-powered straw.', price: 8, addOns: ['Asteroid Chunks', 'Galactic Whip'] },
-        { emoji: '\u{1F573}\uFE0F', name: 'Black Hole Donut', desc: 'Everything near it gets sucked in. Especially fingers.', price: 7, addOns: ['Gravity Glaze', 'Cosmic Crumbs'] },
+        { id: 'saturn-pancakes', emoji: '\u{1FA90}', name: 'Saturn Ring Pancakes', desc: 'Pancakes with a ring of syrup orbiting them.', price: 10, addOns: ['Stardust Sprinkles', 'Maple Meteor'] },
+        { id: 'alien-waffle', emoji: '\u{1F47D}', name: 'Alien Waffle', desc: 'Green waffle with antenna-shaped fruit.', price: 9, addOns: ['UFO Syrup', 'Moon Butter'] },
+        { id: 'milkshake', emoji: '\u{1F30C}', name: 'Milky Way Milkshake', desc: 'So thick you need a rocket-powered straw.', price: 8, addOns: ['Asteroid Chunks', 'Galactic Whip'] },
+        { id: 'donut', emoji: '\u{1F573}\uFE0F', name: 'Black Hole Donut', desc: 'Everything near it gets sucked in. Especially fingers.', price: 7, addOns: ['Gravity Glaze', 'Cosmic Crumbs'] },
       ],
     },
     {
       id: 'booger', name: 'Burgers & Boogers', emoji: '\u{1F354}',
       tags: ['Gross', 'Yummy'], rating: 4.2, time: '15-20 min',
       items: [
-        { emoji: '\u{1F922}', name: 'The Booger Burger', desc: "Green cheese that's totally NOT boogers. Probably.", price: 11, addOns: ['Snot Sauce', 'Slime Pickles'] },
-        { emoji: '\u{1F964}', name: 'Snot Shake', desc: 'Thick, green, and drips everywhere. Delicious!', price: 7, addOns: ['Bogey Bits', 'Goo Swirl'] },
-        { emoji: '\u{1F35F}', name: 'Earwax Fries', desc: 'Yellow and waxy. Crunchy on the outside. Do not ask.', price: 6, addOns: ['Wax Dip', 'Crust Crumble'] },
+        { id: 'booger-burger', emoji: '\u{1F922}', name: 'The Booger Burger', desc: "Green cheese that's totally NOT boogers. Probably.", price: 11, addOns: ['Snot Sauce', 'Slime Pickles'] },
+        { id: 'snot-shake', emoji: '\u{1F964}', name: 'Snot Shake', desc: 'Thick, green, and drips everywhere. Delicious!', price: 7, addOns: ['Bogey Bits', 'Goo Swirl'] },
+        { id: 'earwax-fries', emoji: '\u{1F35F}', name: 'Earwax Fries', desc: 'Yellow and waxy. Crunchy on the outside. Do not ask.', price: 6, addOns: ['Wax Dip', 'Crust Crumble'] },
       ],
     },
     {
       id: 'broccoli', name: 'The Sneaky Broccoli', emoji: '\u{1F966}',
       tags: ['Healthy', 'Sneaky'], rating: 4.6, time: '10-15 min',
       items: [
-        { emoji: '\u{1F332}', name: 'Broccoli Disguised As A Tree', desc: 'You WILL eat a tree and you WILL like it.', price: 8, addOns: ['Ranch Cloud', 'Cheese Camo'] },
-        { emoji: '\u{1F370}', name: 'Invisible Carrot Cake', desc: "It's there. You just can't see the carrots. Trust us.", price: 9, addOns: ['Stealth Frosting', 'Ninja Sprinkles'] },
-        { emoji: '\u{1F966}', name: 'Spinach Surprise Smoothie', desc: "Surprise! It's spinach. You already drank it.", price: 7, addOns: ['Berry Disguise', 'Vitamin Sneak'] },
+        { id: 'broccoli-tree', emoji: '\u{1F332}', name: 'Broccoli Disguised As A Tree', desc: 'You WILL eat a tree and you WILL like it.', price: 8, addOns: ['Ranch Cloud', 'Cheese Camo'] },
+        { id: 'carrot-cake', emoji: '\u{1F370}', name: 'Invisible Carrot Cake', desc: "It's there. You just can't see the carrots. Trust us.", price: 9, addOns: ['Stealth Frosting', 'Ninja Sprinkles'] },
+        { id: 'spinach-smoothie', emoji: '\u{1F966}', name: 'Spinach Surprise Smoothie', desc: "Surprise! It's spinach. You already drank it.", price: 7, addOns: ['Berry Disguise', 'Vitamin Sneak'] },
       ],
     },
     {
       id: 'waffle', name: 'Waffle Wizard Academy', emoji: '\u{1F9D9}',
       tags: ['Magical', 'Breakfast'], rating: 4.9, time: '20-30 min',
       items: [
-        { emoji: '\u{1FA84}', name: "Wizard's Staff Waffle Stick", desc: 'Wave it around before eating. Spells not guaranteed.', price: 10, addOns: ['Enchanted Syrup', 'Sparkle Dust'] },
-        { emoji: '\u{1F9EA}', name: 'Potion Pancake Platter', desc: 'Each pancake is a different color potion flavor.', price: 12, addOns: ['Mana Butter', 'XP Berries'] },
-        { emoji: '\u{2728}', name: 'Enchanted French Toast', desc: 'Glows faintly. May grant wishes. (Probably not.)', price: 11, addOns: ['Golden Syrup', 'Fairy Sugar'] },
+        { id: 'waffle-stick', emoji: '\u{1FA84}', name: "Wizard's Staff Waffle Stick", desc: 'Wave it around before eating. Spells not guaranteed.', price: 10, addOns: ['Enchanted Syrup', 'Sparkle Dust'] },
+        { id: 'potion-pancakes', emoji: '\u{1F9EA}', name: 'Potion Pancake Platter', desc: 'Each pancake is a different color potion flavor.', price: 12, addOns: ['Mana Butter', 'XP Berries'] },
+        { id: 'french-toast', emoji: '\u{2728}', name: 'Enchanted French Toast', desc: 'Glows faintly. May grant wishes. (Probably not.)', price: 11, addOns: ['Golden Syrup', 'Fairy Sugar'] },
       ],
     },
     {
       id: 'sushi', name: 'Sushi No Slushy', emoji: '\u{1F363}',
       tags: ['Cold', 'Fishy'], rating: 4.4, time: '15-25 min',
       items: [
-        { emoji: '\u{1F3A2}', name: 'Sushi Roll-ercoaster', desc: 'A looping sushi roll that does a barrel roll on the plate.', price: 13, addOns: ['Wasabi Boost', 'Ginger Loop'] },
-        { emoji: '\u{1F9CA}', name: 'Brain Freeze Slushy', desc: 'So cold your brain files a complaint.', price: 6, addOns: ['Extra Freeze', 'Neon Flavor'] },
-        { emoji: '\u{1F419}', name: 'Octopus Hug Roll', desc: '8 arms of flavor wrapped around rice. Group hug!', price: 11, addOns: ['Tentacle Sauce', 'Seaweed Scarf'] },
+        { id: 'sushi-coaster', emoji: '\u{1F3A2}', name: 'Sushi Roll-ercoaster', desc: 'A looping sushi roll that does a barrel roll on the plate.', price: 13, addOns: ['Wasabi Boost', 'Ginger Loop'] },
+        { id: 'slushy', emoji: '\u{1F9CA}', name: 'Brain Freeze Slushy', desc: 'So cold your brain files a complaint.', price: 6, addOns: ['Extra Freeze', 'Neon Flavor'] },
+        { id: 'octopus-roll', emoji: '\u{1F419}', name: 'Octopus Hug Roll', desc: '8 arms of flavor wrapped around rice. Group hug!', price: 11, addOns: ['Tentacle Sauce', 'Seaweed Scarf'] },
       ],
     },
     {
       id: 'taco', name: "Taco 'Bout It", emoji: '\u{1F32E}',
       tags: ['Spicy', 'Chatty'], rating: 4.7, time: '10-20 min',
       items: [
-        { emoji: '\u{1F4AC}', name: 'Chatty Chalupa', desc: "Won't stop talking. Even while you eat it.", price: 9, addOns: ['Salsa Shout', 'Cheese Whisper'] },
-        { emoji: '\u{1F6CF}\uFE0F', name: 'Burrito Blanket', desc: "So big you can wrap yourself in it. And you should.", price: 12, addOns: ['Guac Pillow', 'Bean Stuffing'] },
-        { emoji: '\u{1F9C0}', name: 'Nacho Average Nachos', desc: 'Above average. Way above. Sky-high nacho tower.', price: 10, addOns: ['Cheese Waterfall', 'Jalape\u00F1o Rain'] },
-        { emoji: '\u{1F4DC}', name: 'Quesadilla Of Truth', desc: 'Answers one question per bite. Ask wisely.', price: 11, addOns: ['Truth Sauce', 'Wisdom Guac'] },
+        { id: 'chalupa', emoji: '\u{1F4AC}', name: 'Chatty Chalupa', desc: "Won't stop talking. Even while you eat it.", price: 9, addOns: ['Salsa Shout', 'Cheese Whisper'] },
+        { id: 'burrito', emoji: '\u{1F6CF}\uFE0F', name: 'Burrito Blanket', desc: "So big you can wrap yourself in it. And you should.", price: 12, addOns: ['Guac Pillow', 'Bean Stuffing'] },
+        { id: 'nachos', emoji: '\u{1F9C0}', name: 'Nacho Average Nachos', desc: 'Above average. Way above. Sky-high nacho tower.', price: 10, addOns: ['Cheese Waterfall', 'Jalape\u00F1o Rain'] },
+        { id: 'quesadilla', emoji: '\u{1F4DC}', name: 'Quesadilla Of Truth', desc: 'Answers one question per bite. Ask wisely.', price: 11, addOns: ['Truth Sauce', 'Wisdom Guac'] },
       ],
     },
   ];
 
   const CURRENCIES = [
-    { name: 'Giggle Coins', emoji: '\u{1F602}' },
-    { name: 'Sticker Bucks', emoji: '\u2B50' },
-    { name: 'Tooth Fairy Credits', emoji: '\u{1F9DA}' },
-    { name: 'Laundry Tokens', emoji: '\u{1F9E6}' },
-    { name: 'Mom\'s "Maybe Later" Card', emoji: '\u{1F4B3}' },
+    { id: 'giggle', name: 'Giggle Coins', emoji: '\u{1F602}' },
+    { id: 'sticker', name: 'Sticker Bucks', emoji: '\u2B50' },
+    { id: 'tooth-fairy', name: 'Tooth Fairy Credits', emoji: '\u{1F9DA}' },
+    { id: 'laundry', name: 'Laundry Tokens', emoji: '\u{1F9E6}' },
+    { id: 'mom-card', name: 'Mom\'s "Maybe Later" Card', emoji: '\u{1F4B3}' },
   ];
 
   const DRIVERS = [
-    { name: 'Scooter Penguin', emoji: '\u{1F427}', vehicle: 'a tiny scooter' },
-    { name: 'Rollerblade Robot', emoji: '\u{1F916}', vehicle: 'rocket rollerblades' },
-    { name: 'Sleepy Sloth', emoji: '\u{1F9A5}', vehicle: 'a hammock on wheels' },
-    { name: 'Rocket Turtle', emoji: '\u{1F422}', vehicle: 'a jet-powered shell' },
-    { name: 'Unicycle Unicorn', emoji: '\u{1F984}', vehicle: 'a sparkly unicycle' },
+    { id: 'penguin', name: 'Scooter Penguin', emoji: '\u{1F427}', vehicle: 'a tiny scooter' },
+    { id: 'robot', name: 'Rollerblade Robot', emoji: '\u{1F916}', vehicle: 'rocket rollerblades' },
+    { id: 'sloth', name: 'Sleepy Sloth', emoji: '\u{1F9A5}', vehicle: 'a hammock on wheels' },
+    { id: 'turtle', name: 'Rocket Turtle', emoji: '\u{1F422}', vehicle: 'a jet-powered shell' },
+    { id: 'unicorn', name: 'Unicycle Unicorn', emoji: '\u{1F984}', vehicle: 'a sparkly unicycle' },
   ];
 
   const WAYPOINTS = [
-    { emoji: '\u{1F373}', place: 'Restaurant Kitchen', msg: 'Chef is flipping your food in the air...' },
-    { emoji: '\u{1F6CB}\uFE0F', place: 'Couch Canyon', msg: 'Navigating between giant couch cushions...' },
-    { emoji: '\u{1F9F1}', place: 'Lego Swamp', msg: 'OW! Stepped on a Lego! Driver needs a moment...' },
-    { emoji: '\u{1F408}', place: 'Cat Crossing', msg: '12 cats blocking the road. Negotiations underway...' },
-    { emoji: '\u{1F6CF}\uFE0F', place: 'Pillow Fort Station', msg: 'Passing through the great pillow fortress...' },
-    { emoji: '\u{1F9E6}', place: 'Sock Mountain', msg: 'Climbing the legendary mountain of lost socks...' },
-    { emoji: '\u{1F3E0}', place: 'Your Door', msg: 'Arrived! Quick, open the door!' },
+    { id: 'kitchen', emoji: '\u{1F373}', place: 'Restaurant Kitchen', msg: 'Chef is flipping your food in the air...' },
+    { id: 'couch', emoji: '\u{1F6CB}\uFE0F', place: 'Couch Canyon', msg: 'Navigating between giant couch cushions...' },
+    { id: 'lego', emoji: '\u{1F9F1}', place: 'Lego Swamp', msg: 'OW! Stepped on a Lego! Driver needs a moment...' },
+    { id: 'cats', emoji: '\u{1F408}', place: 'Cat Crossing', msg: '12 cats blocking the road. Negotiations underway...' },
+    { id: 'pillow-fort', emoji: '\u{1F6CF}\uFE0F', place: 'Pillow Fort Station', msg: 'Passing through the great pillow fortress...' },
+    { id: 'sock-mountain', emoji: '\u{1F9E6}', place: 'Sock Mountain', msg: 'Climbing the legendary mountain of lost socks...' },
+    { id: 'door', emoji: '\u{1F3E0}', place: 'Your Door', msg: 'Arrived! Quick, open the door!' },
   ];
 
   const BADGES = [
@@ -135,21 +137,40 @@
   ];
 
   const DAILY_DEALS = [
-    { emoji: '\u{1F355}', name: 'Mega Ultra Pizza Slice', price: 3, original: 15, tag: '80% OFF' },
-    { emoji: '\u{1F366}', name: 'Triple Scoop Chaos Cone', price: 2, original: 10, tag: 'STEAL' },
-    { emoji: '\u{1F969}', name: 'T-Rex Steak (toy sized)', price: 5, original: 25, tag: 'DEAL OF DOOM' },
-    { emoji: '\u{1F382}', name: 'Birthday Cake (any day!)', price: 4, original: 20, tag: 'PARTY TIME' },
+    { id: 'pizza-slice', emoji: '\u{1F355}', name: 'Mega Ultra Pizza Slice', price: 3, original: 15, tag: '80% OFF' },
+    { id: 'chaos-cone', emoji: '\u{1F366}', name: 'Triple Scoop Chaos Cone', price: 2, original: 10, tag: 'STEAL' },
+    { id: 'trex-steak', emoji: '\u{1F969}', name: 'T-Rex Steak (toy sized)', price: 5, original: 25, tag: 'DEAL OF DOOM' },
+    { id: 'birthday-cake', emoji: '\u{1F382}', name: 'Birthday Cake (any day!)', price: 4, original: 20, tag: 'PARTY TIME' },
   ];
 
   const MOODS = [
-    { emoji: '\u{1F60B}', label: 'Kinda hungry' },
-    { emoji: '\u{1F924}', label: 'STARVING' },
-    { emoji: '\u{1F92F}', label: 'FEED ME NOW' },
+    { id: 'kinda', emoji: '\u{1F60B}', label: 'Kinda hungry' },
+    { id: 'starving', emoji: '\u{1F924}', label: 'STARVING' },
+    { id: 'feed-me', emoji: '\u{1F92F}', label: 'FEED ME NOW' },
   ];
 
   /* ---- Helpers ---- */
   function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
   function $(sel) { return body ? body.querySelector(sel) : null; }
+  const number = n => n.toLocaleString(OS.locale());
+  const coins = n => t('{n} {coins}', { n, coins: t.plural(n, 'coin', 'coins') });
+  const banners = () => t.list('snackdash.banners', BANNERS);
+
+  // The restaurants with their dishes, in the language of the app
+  function restaurants() {
+    return t.list('snackdash.restaurants', RESTAURANTS).map(r => ({ ...r, items: t.list('snackdash.dishes', r.items) }));
+  }
+
+  // The name of a currency after the number n. A total is 7 or more, so English shows the same name as the list
+  function currencyWord(id, n) {
+    switch (id) {
+      case 'giggle': return t.plural(n, 'Giggle Coin', 'Giggle Coins');
+      case 'sticker': return t.plural(n, 'Sticker Buck', 'Sticker Bucks');
+      case 'tooth-fairy': return t.plural(n, 'Tooth Fairy Credit', 'Tooth Fairy Credits');
+      case 'laundry': return t.plural(n, 'Laundry Token', 'Laundry Tokens');
+      default: return t.plural(n, 'Mom\'s "Maybe Later" Card', 'Mom\'s "Maybe Later" Card');
+    }
+  }
 
   /* ---- State ---- */
   let winId = null;
@@ -194,7 +215,7 @@
       uniqueRestaurants: [...new Set(persisted.orderedFrom)].length,
     };
     const newBadges = [];
-    for (const b of BADGES) {
+    for (const b of t.list('snackdash.badges', BADGES)) {
       if (!persisted.badges.includes(b.id) && b.condition(stats)) {
         persisted.badges.push(b.id);
         newBadges.push(b);
@@ -213,7 +234,7 @@
   }
 
   function addToCart(restId, itemIdx, addOns) {
-    const rest = RESTAURANTS.find(r => r.id === restId);
+    const rest = restaurants().find(r => r.id === restId);
     if (!rest) return;
     const item = rest.items[itemIdx];
     if (!item) return;
@@ -247,32 +268,33 @@
   }
 
   function renderHome() {
-    const deal = DAILY_DEALS[new Date().getDate() % DAILY_DEALS.length];
-    const earnedBadges = BADGES.filter(b => persisted.badges.includes(b.id));
+    const deal = t.list('snackdash.deals', DAILY_DEALS)[new Date().getDate() % DAILY_DEALS.length];
+    const earnedBadges = t.list('snackdash.badges', BADGES).filter(b => persisted.badges.includes(b.id));
+    const banner = banners();
     body.innerHTML = `
       <div class="sd-wrap">
         <div class="sd-header">
-          <span class="sd-logo">\u{1F6F5} SnackDash</span>
-          <span class="sd-points">\u2B50 ${persisted.snackPoints} pts</span>
+          <span class="sd-logo">\u{1F6F5} ${t('SnackDash')}</span>
+          <span class="sd-points">\u2B50 ${t('{n} pts', { n: persisted.snackPoints })}</span>
         </div>
         <div class="sd-content">
           <div class="sd-mood-section">
-            <div class="sd-mood-label">How hungry are you?</div>
+            <div class="sd-mood-label">${t('How hungry are you?')}</div>
             <div class="sd-mood-row">
-              ${MOODS.map((m, i) => `<button class="sd-mood-btn ${mood === i ? 'sd-mood-active' : ''}" onclick="window._sdMood(${i})">${m.emoji}<br><small>${m.label}</small></button>`).join('')}
+              ${t.list('snackdash.moods', MOODS).map((m, i) => `<button class="sd-mood-btn ${mood === i ? 'sd-mood-active' : ''}" onclick="window._sdMood(${i})">${m.emoji}<br><small>${m.label}</small></button>`).join('')}
             </div>
           </div>
-          <button class="sd-big-btn" onclick="window._sdGo('restaurants')">\u{1F354} Order Snacks</button>
-          ${activeOrder ? '<button class="sd-big-btn sd-track-btn" onclick="window._sdGo(\'tracking\')">\u{1F4E6} Track Delivery</button>' : ''}
-          <button class="sd-big-btn sd-vault-btn" onclick="window._sdGo('vault')">\u{1F3C6} Snack Vault</button>
-          <div class="sd-banner" id="sd-banner">${BANNERS[bannerIdx]}</div>
+          <button class="sd-big-btn" onclick="window._sdGo('restaurants')">\u{1F354} ${t('Order Snacks')}</button>
+          ${activeOrder ? '<button class="sd-big-btn sd-track-btn" onclick="window._sdGo(\'tracking\')">\u{1F4E6} ' + t('Track Delivery') + '</button>' : ''}
+          <button class="sd-big-btn sd-vault-btn" onclick="window._sdGo('vault')">\u{1F3C6} ${t('Snack Vault')}</button>
+          <div class="sd-banner" id="sd-banner">${banner[bannerIdx % banner.length]}</div>
           <div class="sd-deal" onclick="window._sdGo('restaurants')">
             <div class="sd-deal-tag">${deal.tag}</div>
             <div class="sd-deal-body">
               <span class="sd-deal-emoji">${deal.emoji}</span>
               <div class="sd-deal-info">
                 <div class="sd-deal-name">${deal.name}</div>
-                <div class="sd-deal-price"><s>${deal.original}</s> \u2192 ${deal.price} coins!</div>
+                <div class="sd-deal-price"><s>${deal.original}</s> \u2192 ${t('{n} {coins}!', { n: deal.price, coins: t.plural(deal.price, 'coin', 'coins') })}</div>
               </div>
             </div>
           </div>
@@ -286,20 +308,20 @@
       <div class="sd-wrap">
         <div class="sd-header">
           <button class="sd-back" onclick="window._sdGo('home')">\u2190</button>
-          <span class="sd-header-title">Restaurants</span>
+          <span class="sd-header-title">${t('Restaurants')}</span>
           ${cartCount() > 0 ? `<button class="sd-cart-badge" onclick="window._sdGo('cart')">\u{1F6D2} ${cartCount()}</button>` : '<span></span>'}
         </div>
         <div class="sd-content">
-          ${RESTAURANTS.map(r => `
+          ${restaurants().map(r => `
             <div class="sd-restaurant-card" onclick="window._sdOpenMenu('${r.id}')">
               <span class="sd-rest-emoji">${r.emoji}</span>
               <div class="sd-rest-info">
                 <div class="sd-rest-name">${r.name}</div>
                 <div class="sd-rest-meta">
-                  ${r.tags.map(t => `<span class="sd-tag">${t}</span>`).join('')}
+                  ${r.tags.map(tag => `<span class="sd-tag">${tag}</span>`).join('')}
                 </div>
                 <div class="sd-rest-bottom">
-                  <span class="sd-rest-rating">\u2B50 ${r.rating}</span>
+                  <span class="sd-rest-rating">\u2B50 ${number(r.rating)}</span>
                   <span class="sd-rest-time">\u{1F552} ${r.time}</span>
                 </div>
               </div>
@@ -310,7 +332,7 @@
   }
 
   function renderMenu() {
-    const rest = RESTAURANTS.find(r => r.id === selectedRestaurant);
+    const rest = restaurants().find(r => r.id === selectedRestaurant);
     if (!rest) { screen = 'restaurants'; render(); return; }
     body.innerHTML = `
       <div class="sd-wrap">
@@ -327,15 +349,15 @@
                 <div class="sd-item-info">
                   <div class="sd-item-name">${item.name}</div>
                   <div class="sd-item-desc">${item.desc}</div>
-                  <div class="sd-item-price">${item.price} coins</div>
+                  <div class="sd-item-price">${coins(item.price)}</div>
                 </div>
               </div>
               ${item.addOns.length ? `<div class="sd-addons" id="sd-addons-${idx}">${item.addOns.map((a, ai) => `<button class="sd-addon-pill" data-idx="${idx}" data-ai="${ai}" onclick="this.classList.toggle('sd-addon-active')">${a}</button>`).join('')}</div>` : ''}
-              <button class="sd-add-btn" onclick="window._sdAddToCart('${rest.id}', ${idx})">+ Add to Cart</button>
+              <button class="sd-add-btn" onclick="window._sdAddToCart('${rest.id}', ${idx})">+ ${t('Add to Cart')}</button>
             </div>
           `).join('')}
         </div>
-        ${cartCount() > 0 ? `<div class="sd-cart-footer" onclick="window._sdGo('cart')">\u{1F6D2} View Cart (${cartCount()} items) \u2014 ${cartTotal()} coins</div>` : ''}
+        ${cartCount() > 0 ? `<div class="sd-cart-footer" onclick="window._sdGo('cart')">\u{1F6D2} ${t('View Cart ({n} items)', { n: cartCount() })} \u2014 ${coins(cartTotal())}</div>` : ''}
       </div>`;
   }
 
@@ -345,13 +367,13 @@
         <div class="sd-wrap">
           <div class="sd-header">
             <button class="sd-back" onclick="window._sdGo('restaurants')">\u2190</button>
-            <span class="sd-header-title">Your Cart</span>
+            <span class="sd-header-title">${t('Your Cart')}</span>
             <span></span>
           </div>
           <div class="sd-content sd-empty">
             <div class="sd-empty-emoji">\u{1F6D2}</div>
-            <div>Your cart is empty!</div>
-            <div class="sd-empty-sub">Go pick some ridiculous food.</div>
+            <div>${t('Your cart is empty!')}</div>
+            <div class="sd-empty-sub">${t('Go pick some ridiculous food.')}</div>
           </div>
         </div>`;
       return;
@@ -359,12 +381,13 @@
 
     const tipEmojis = ['\u{1F44D}', '\u{1F44F}', '\u{1F64C}', '\u{1F929}', '\u{1F451}'];
     const total = cartTotal() + tipLevel;
+    const currencies = t.list('snackdash.currencies', CURRENCIES);
 
     body.innerHTML = `
       <div class="sd-wrap">
         <div class="sd-header">
           <button class="sd-back" onclick="window._sdGo('${selectedRestaurant ? 'menu' : 'restaurants'}')">\u2190</button>
-          <span class="sd-header-title">Your Cart</span>
+          <span class="sd-header-title">${t('Your Cart')}</span>
           <span></span>
         </div>
         <div class="sd-content">
@@ -374,7 +397,7 @@
               <div class="sd-cart-item-info">
                 <div class="sd-cart-item-name">${item.name}</div>
                 ${item.addOns.length ? `<div class="sd-cart-item-addons">${item.addOns.join(', ')}</div>` : ''}
-                <div class="sd-cart-item-price">${item.price * item.qty} coins</div>
+                <div class="sd-cart-item-price">${coins(item.price * item.qty)}</div>
               </div>
               <div class="sd-qty-controls">
                 <button class="sd-qty-btn" onclick="window._sdQty(${i}, -1)">\u2212</button>
@@ -384,23 +407,23 @@
             </div>
           `).join('')}
 
-          <div class="sd-section-label">Pay With</div>
+          <div class="sd-section-label">${t('Pay With')}</div>
           <div class="sd-currency-row">
-            ${CURRENCIES.map((c, i) => `<button class="sd-currency-pill ${selectedCurrency === i ? 'sd-currency-active' : ''}" onclick="window._sdCurrency(${i})">${c.emoji} ${c.name}</button>`).join('')}
+            ${currencies.map((c, i) => `<button class="sd-currency-pill ${selectedCurrency === i ? 'sd-currency-active' : ''}" onclick="window._sdCurrency(${i})">${c.emoji} ${c.name}</button>`).join('')}
           </div>
 
-          <div class="sd-section-label">Tip Your Driver</div>
+          <div class="sd-section-label">${t('Tip Your Driver')}</div>
           <div class="sd-tip-row">
             ${tipEmojis.map((e, i) => `<button class="sd-tip-btn ${tipLevel === (i + 1) ? 'sd-tip-active' : ''}" onclick="window._sdTip(${i + 1})">${e}<br>${i + 1}</button>`).join('')}
           </div>
 
           <div class="sd-total">
-            <span>Total</span>
+            <span>${t('Total')}</span>
             <strong>${total} ${CURRENCIES[selectedCurrency].emoji}</strong>
           </div>
 
-          <button class="sd-pay-btn" onclick="window._sdPay()">\u{1F4B0} Pay ${total} ${CURRENCIES[selectedCurrency].name}</button>
-          <div class="sd-disclaimer">* No real money. No real food. No refunds on imaginary orders.</div>
+          <button class="sd-pay-btn" onclick="window._sdPay()">\u{1F4B0} ${t('Pay {n} {currency}', { n: total, currency: currencyWord(CURRENCIES[selectedCurrency].id, total) })}</button>
+          <div class="sd-disclaimer">${t('* No real money. No real food. No refunds on imaginary orders.')}</div>
         </div>
       </div>`;
   }
@@ -409,11 +432,11 @@
     body.innerHTML = `
       <div class="sd-wrap">
         <div class="sd-header">
-          <span class="sd-header-title">Processing...</span>
+          <span class="sd-header-title">${t('Processing...')}</span>
         </div>
         <div class="sd-content sd-paying-screen">
           <div class="sd-pay-spinner" id="sd-pay-spinner">${CURRENCIES[selectedCurrency].emoji}</div>
-          <div class="sd-pay-msg" id="sd-pay-msg">${pick(PAYMENT_MSGS)}</div>
+          <div class="sd-pay-msg" id="sd-pay-msg">${pick(t.list('snackdash.paying', PAYMENT_MSGS))}</div>
         </div>
       </div>`;
 
@@ -422,7 +445,7 @@
     const msgEl = () => body ? body.querySelector('#sd-pay-msg') : null;
     const msgInterval = setInterval(() => {
       const el = msgEl();
-      if (el) el.textContent = pick(PAYMENT_MSGS);
+      if (el) el.textContent = pick(t.list('snackdash.paying', PAYMENT_MSGS));
       msgCount++;
       if (msgCount >= 3) clearInterval(msgInterval);
     }, 800);
@@ -434,7 +457,7 @@
   }
 
   function startTracking() {
-    const driver = pick(DRIVERS);
+    const driver = pick(t.list('snackdash.drivers', DRIVERS));
     activeOrder = {
       driver,
       waypointIdx: 0,
@@ -469,20 +492,20 @@
     body.innerHTML = `
       <div class="sd-wrap">
         <div class="sd-header">
-          <span class="sd-header-title">\u{1F4E6} Delivery Tracker</span>
+          <span class="sd-header-title">\u{1F4E6} ${t('Delivery Tracker')}</span>
         </div>
         <div class="sd-content">
           <div class="sd-driver">
             <span class="sd-driver-emoji">${d.emoji}</span>
             <div class="sd-driver-info">
               <div class="sd-driver-name">${d.name}</div>
-              <div class="sd-driver-vehicle">On ${d.vehicle}</div>
+              <div class="sd-driver-vehicle">${t('On {vehicle}', { vehicle: d.vehicle })}</div>
             </div>
-            <div class="sd-driver-eta">${remaining > 0 ? `~${remaining}s` : 'HERE!'}</div>
+            <div class="sd-driver-eta">${remaining > 0 ? t('~{n}s', { n: remaining }) : t('HERE!')}</div>
           </div>
 
           <div class="sd-timeline">
-            ${WAYPOINTS.map((wp, i) => {
+            ${t.list('snackdash.waypoints', WAYPOINTS).map((wp, i) => {
               let cls = 'sd-wp-future';
               if (i < wpIdx) cls = 'sd-wp-done';
               else if (i === wpIdx) cls = 'sd-wp-current';
@@ -500,7 +523,7 @@
           </div>
 
           <button class="sd-honk-btn" onclick="window._sdHonk()">
-            ${honkAnim ? '<span class="sd-honk-text">HONK HONK!</span>' : '\u{1F4E3} Honk!'}
+            ${honkAnim ? '<span class="sd-honk-text">' + t('HONK HONK!') + '</span>' : '\u{1F4E3} ' + t('Honk!')}
           </button>
         </div>
       </div>`;
@@ -521,8 +544,8 @@
       items: activeOrder.items.map(i => i.name),
       restaurant: activeOrder.restaurant,
       total: activeOrder.total,
-      currency: activeOrder.currency.name,
-      date: new Date().toLocaleDateString(),
+      currency: currencyWord(activeOrder.currency.id, activeOrder.total),
+      date: new Date().toLocaleDateString(OS.locale()),
       points,
     });
     if (persisted.orderHistory.length > 5) persisted.orderHistory.length = 5;
@@ -532,7 +555,7 @@
     saveState();
 
     const gcCoins = Math.max(1, Math.floor(points / 10));
-    OS.awardCoins(gcCoins, 'snackdash', '🛵', 'SnackDash: delivery #' + persisted.totalOrders);
+    OS.awardCoins(gcCoins, 'snackdash', '🛵', t('SnackDash: delivery #{n}', { n: persisted.totalOrders }));
 
     // Show delivered screen
     screen = 'delivered';
@@ -547,67 +570,67 @@
     body.innerHTML = `
       <div class="sd-wrap">
         <div class="sd-header">
-          <span class="sd-header-title">\u{1F389} Delivered!</span>
+          <span class="sd-header-title">\u{1F389} ${t('Delivered!')}</span>
         </div>
         <div class="sd-content sd-delivered">
           <div class="sd-delivered-emoji">\u{1F389}</div>
-          <div class="sd-delivered-title">Your food arrived!</div>
-          <div class="sd-delivered-driver">${activeOrder ? activeOrder.driver.emoji + ' ' + activeOrder.driver.name + ' says bye!' : ''}</div>
-          ${points > 0 ? `<div class="sd-delivered-points">+${points} SnackPoints!</div>` : ''}
+          <div class="sd-delivered-title">${t('Your food arrived!')}</div>
+          <div class="sd-delivered-driver">${activeOrder ? activeOrder.driver.emoji + ' ' + t('{name} says bye!', { name: activeOrder.driver.name }) : ''}</div>
+          ${points > 0 ? `<div class="sd-delivered-points">${t('+{n} SnackPoints!', { n: points })}</div>` : ''}
           ${newBadges.length > 0 ? `<div class="sd-delivered-badges">
-            <div>New Badge${newBadges.length > 1 ? 's' : ''} Unlocked!</div>
+            <div>${newBadges.length > 1 ? t('New Badges Unlocked!') : t('New Badge Unlocked!')}</div>
             ${newBadges.map(b => `<div class="sd-new-badge">${b.emoji} ${b.name}</div>`).join('')}
           </div>` : ''}
-          <button class="sd-big-btn" onclick="window._sdDone()">\u{1F44D} Done</button>
+          <button class="sd-big-btn" onclick="window._sdDone()">\u{1F44D} ${t('Done')}</button>
         </div>
       </div>`;
   }
 
   function renderVault() {
     const uniqueCount = [...new Set(persisted.orderedFrom)].length;
-    const earnedBadges = BADGES.filter(b => persisted.badges.includes(b.id));
+    const earnedBadges = t.list('snackdash.badges', BADGES).filter(b => persisted.badges.includes(b.id));
 
     body.innerHTML = `
       <div class="sd-wrap">
         <div class="sd-header">
           <button class="sd-back" onclick="window._sdGo('home')">\u2190</button>
-          <span class="sd-header-title">\u{1F3C6} Snack Vault</span>
+          <span class="sd-header-title">\u{1F3C6} ${t('Snack Vault')}</span>
           <span></span>
         </div>
         <div class="sd-content">
           <div class="sd-vault-stats">
             <div class="sd-vault-stat">
               <div class="sd-vault-stat-num">${persisted.totalOrders}</div>
-              <div class="sd-vault-stat-label">Orders</div>
+              <div class="sd-vault-stat-label">${t('Orders')}</div>
             </div>
             <div class="sd-vault-stat">
               <div class="sd-vault-stat-num">${persisted.snackPoints}</div>
-              <div class="sd-vault-stat-label">Points</div>
+              <div class="sd-vault-stat-label">${t('Points')}</div>
             </div>
             <div class="sd-vault-stat">
               <div class="sd-vault-stat-num">${uniqueCount}</div>
-              <div class="sd-vault-stat-label">Restaurants</div>
+              <div class="sd-vault-stat-label">${t('Restaurants')}</div>
             </div>
           </div>
 
           ${earnedBadges.length > 0 ? `
-            <div class="sd-section-label">Badges</div>
+            <div class="sd-section-label">${t('Badges')}</div>
             <div class="sd-vault-badges">
               ${earnedBadges.map(b => `<div class="sd-vault-badge">${b.emoji}<br><small>${b.name}</small></div>`).join('')}
             </div>
           ` : ''}
 
-          <div class="sd-section-label">Recent Orders</div>
+          <div class="sd-section-label">${t('Recent Orders')}</div>
           ${persisted.orderHistory.length > 0 ? persisted.orderHistory.map(o => `
             <div class="sd-order-card">
               <div class="sd-order-top">
                 <span>${o.date}</span>
-                <span>+${o.points} pts</span>
+                <span>${t('+{n} pts', { n: o.points })}</span>
               </div>
               <div class="sd-order-items">${o.items.join(', ')}</div>
               <div class="sd-order-total">${o.total} ${o.currency}</div>
             </div>
-          `).join('') : '<div class="sd-empty-sub">No orders yet! Go get some snacks.</div>'}
+          `).join('') : '<div class="sd-empty-sub">' + t('No orders yet! Go get some snacks.') + '</div>'}
         </div>
       </div>`;
   }
@@ -639,9 +662,9 @@
     // Flash feedback
     const btn = body ? body.querySelectorAll('.sd-add-btn')[itemIdx] : null;
     if (btn) {
-      btn.textContent = '\u2705 Added!';
+      btn.textContent = '\u2705 ' + t('Added!');
       btn.classList.add('sd-added');
-      setTimeout(() => { btn.textContent = '+ Add to Cart'; btn.classList.remove('sd-added'); }, 800);
+      setTimeout(() => { btn.textContent = '+ ' + t('Add to Cart'); btn.classList.remove('sd-added'); }, 800);
     }
   };
 
@@ -684,7 +707,7 @@
   OS.registerApp('snackdash', {
     singleInstance: true,
     getWindowOpts() {
-      return { id: 'snackdash', title: 'SnackDash', icon: '\u{1F6F5}', width: 420, height: 520, content: '' };
+      return { id: 'snackdash', title: t('SnackDash'), icon: '\u{1F6F5}', width: 420, height: 520, content: '' };
     },
     onOpen(id) {
       winId = id;
@@ -698,14 +721,14 @@
       mood = 1;
       activeOrder = null;
       honkAnim = false;
-      bannerIdx = Math.floor(Math.random() * BANNERS.length);
+      bannerIdx = Math.floor(Math.random() * banners().length);
       render();
 
       // Rotate banner
       bannerInterval = setInterval(() => {
-        bannerIdx = (bannerIdx + 1) % BANNERS.length;
+        bannerIdx = (bannerIdx + 1) % banners().length;
         const el = body ? body.querySelector('#sd-banner') : null;
-        if (el) el.textContent = BANNERS[bannerIdx];
+        if (el) el.textContent = banners()[bannerIdx];
       }, 5000);
     },
     onClose() {

@@ -1,20 +1,22 @@
 /* ===== Zoomer — Parody Ride-Hailing App ===== */
 (() => {
+  const t = OS.texts('zoomer');
+
   /* ---- Data Constants ---- */
   const DESTINATIONS = [
-    { emoji: '\u{1F3F0}', name: 'Pillow Fort Plaza', address: '42 Cushion Lane, Blanket District' },
-    { emoji: '\u{1F36A}', name: 'Cookie Corner', address: '7 Crumb Street, Sugar Heights' },
-    { emoji: '\u{1F9F8}', name: 'Teddy Bear Hospital', address: '1 Fluff Ave, Stuffing Ward' },
-    { emoji: '\u{1F9E6}', name: 'Sock Rescue Station', address: '99 Lost Sock Blvd, Laundry Town' },
-    { emoji: '\u{1F30B}', name: 'Lava Floor Zone', address: '0 Danger Rd, Living Room Sector' },
+    { id: 'pillow-fort', emoji: '\u{1F3F0}', name: 'Pillow Fort Plaza', address: '42 Cushion Lane, Blanket District' },
+    { id: 'cookie', emoji: '\u{1F36A}', name: 'Cookie Corner', address: '7 Crumb Street, Sugar Heights' },
+    { id: 'teddy-hospital', emoji: '\u{1F9F8}', name: 'Teddy Bear Hospital', address: '1 Fluff Ave, Stuffing Ward' },
+    { id: 'sock-station', emoji: '\u{1F9E6}', name: 'Sock Rescue Station', address: '99 Lost Sock Blvd, Laundry Town' },
+    { id: 'lava-floor', emoji: '\u{1F30B}', name: 'Lava Floor Zone', address: '0 Danger Rd, Living Room Sector' },
   ];
 
   const VEHICLES = [
-    { emoji: '\u{1F43F}\uFE0F', name: 'Scooter Squirrel', desc: 'Fast-ish. May stop for acorns.' },
-    { emoji: '\u{1F680}', name: 'Rocket Car', desc: 'VERY FAST. Might go "whoooosh".' },
-    { emoji: '\u{1F996}', name: 'T-Rex Taxi', desc: 'Bumpy. Roars at pigeons.' },
-    { emoji: '\u{1F984}', name: 'Unicorn Unicycle', desc: 'Elegant. Slightly wobbly.' },
-    { emoji: '\u{1F916}', name: 'Robot Rollerblades', desc: 'Smooth. Beeps confidently.' },
+    { id: 'squirrel', emoji: '\u{1F43F}\uFE0F', name: 'Scooter Squirrel', desc: 'Fast-ish. May stop for acorns.' },
+    { id: 'rocket-car', emoji: '\u{1F680}', name: 'Rocket Car', desc: 'VERY FAST. Might go "whoooosh".' },
+    { id: 'trex', emoji: '\u{1F996}', name: 'T-Rex Taxi', desc: 'Bumpy. Roars at pigeons.' },
+    { id: 'unicorn', emoji: '\u{1F984}', name: 'Unicorn Unicycle', desc: 'Elegant. Slightly wobbly.' },
+    { id: 'robot', emoji: '\u{1F916}', name: 'Robot Rollerblades', desc: 'Smooth. Beeps confidently.' },
   ];
 
   const DRIVER_NAMES = [
@@ -43,11 +45,11 @@
   ];
 
   const RATINGS = [
-    { stars: 5, label: 'Legendary' },
-    { stars: 4, label: 'Pretty Zoomy' },
-    { stars: 3, label: 'A bit wiggly' },
-    { stars: 2, label: 'Driver sneezed dramatically' },
-    { stars: 1, label: 'A bird judged us' },
+    { id: 'legendary', stars: 5, label: 'Legendary' },
+    { id: 'zoomy', stars: 4, label: 'Pretty Zoomy' },
+    { id: 'wiggly', stars: 3, label: 'A bit wiggly' },
+    { id: 'sneeze', stars: 2, label: 'Driver sneezed dramatically' },
+    { id: 'bird', stars: 1, label: 'A bird judged us' },
   ];
 
   const HONK_MESSAGES = [
@@ -110,15 +112,15 @@
     body.innerHTML = `
       <div class="zm-wrap">
         <div class="zm-header">
-          <span class="zm-logo">\u{1F697} Zoomer</span>
+          <span class="zm-logo">\u{1F697} ${t('Zoomer')}</span>
         </div>
         <div class="zm-content">
           <div class="zm-search-bar">
             <span class="zm-search-icon">\u{1F50D}</span>
-            <span class="zm-search-text">Where to, tiny boss?</span>
+            <span class="zm-search-text">${t('Where to, tiny boss?')}</span>
           </div>
           <div class="zm-dest-list">
-            ${DESTINATIONS.map((d, i) => `
+            ${t.list('zoomer.places', DESTINATIONS).map((d, i) => `
               <button class="zm-dest-btn" onclick="window._zmDest(${i})">
                 <span class="zm-dest-emoji">${d.emoji}</span>
                 <div class="zm-dest-info">
@@ -129,7 +131,7 @@
               </button>
             `).join('')}
           </div>
-          <div class="zm-disclaimer">* No real rides. No real drivers. You're not going anywhere.</div>
+          <div class="zm-disclaimer">${t("* No real rides. No real drivers. You're not going anywhere.")}</div>
         </div>
       </div>`;
   }
@@ -139,15 +141,15 @@
       <div class="zm-wrap">
         <div class="zm-header zm-header-nav">
           <button class="zm-back" onclick="window._zmGo('home')">\u2190</button>
-          <span class="zm-header-title">Pick Your Ride</span>
+          <span class="zm-header-title">${t('Pick Your Ride')}</span>
           <span></span>
         </div>
         <div class="zm-content">
           <div class="zm-dest-banner">
-            ${destination.emoji} Going to <strong>${destination.name}</strong>
+            ${destination.emoji} ${t('Going to {place}', { place: '<strong>' + destination.name + '</strong>' })}
           </div>
           <div class="zm-vehicle-list">
-            ${VEHICLES.map((v, i) => `
+            ${t.list('zoomer.rides', VEHICLES).map((v, i) => `
               <div class="zm-vehicle-card">
                 <div class="zm-vehicle-top">
                   <span class="zm-vehicle-emoji">${v.emoji}</span>
@@ -156,7 +158,7 @@
                     <div class="zm-vehicle-desc">${v.desc}</div>
                   </div>
                 </div>
-                <button class="zm-request-btn" onclick="window._zmVehicle(${i})">REQUEST RIDE</button>
+                <button class="zm-request-btn" onclick="window._zmVehicle(${i})">${t('REQUEST RIDE')}</button>
               </div>
             `).join('')}
           </div>
@@ -168,11 +170,12 @@
     const progress = Math.min(trackingStep / 5 * 100, 100);
     const driverPos = Math.min(trackingStep * 20, 85);
     const eta = Math.max(0, (5 - trackingStep) * 2);
+    const messages = t.list('zoomer.tracking', TRACKING_MESSAGES);
 
     body.innerHTML = `
       <div class="zm-wrap">
         <div class="zm-header zm-header-nav">
-          <span class="zm-header-title">${vehicle.emoji} ${driverName} is on the way!</span>
+          <span class="zm-header-title">${vehicle.emoji} ${t('{name} is on the way!', { name: driverName })}</span>
         </div>
         <div class="zm-content">
           <div class="zm-map">
@@ -180,11 +183,11 @@
             <div class="zm-map-road"></div>
             <div class="zm-map-driver" style="left:${driverPos}%">${vehicle.emoji}</div>
             <div class="zm-map-you">\u{1F4CD}</div>
-            <div class="zm-map-label-you">YOU (probably)</div>
+            <div class="zm-map-label-you">${t('YOU (probably)')}</div>
           </div>
 
           <div class="zm-eta">
-            ${eta > 0 ? `Arrives in ~${eta} min (or one big yawn)` : 'Your driver is HERE!'}
+            ${eta > 0 ? t('Arrives in ~{n} min (or one big yawn)', { n: eta }) : t('Your driver is HERE!')}
           </div>
 
           <div class="zm-progress-wrap">
@@ -193,13 +196,13 @@
 
           <div class="zm-status-msg">
             <span class="zm-status-dot"></span>
-            ${TRACKING_MESSAGES[trackingMsgIdx % TRACKING_MESSAGES.length]}
+            ${messages[trackingMsgIdx % messages.length]}
           </div>
 
           ${honkMsg ? `<div class="zm-honk-msg">${honkMsg}</div>` : ''}
 
           <button class="zm-honk-btn" onclick="window._zmHonk()">
-            \u{1F514} Honk Politely
+            \u{1F514} ${t('Honk Politely')}
           </button>
         </div>
       </div>`;
@@ -211,12 +214,12 @@
       body.innerHTML = `
         <div class="zm-wrap">
           <div class="zm-header">
-            <span class="zm-header-title">\u{1F697} Zoomer</span>
+            <span class="zm-header-title">\u{1F697} ${t('Zoomer')}</span>
           </div>
           <div class="zm-content zm-center">
             <div class="zm-thankyou-emoji">\u{1F389}</div>
             <div class="zm-thankyou-text">${thankYou}</div>
-            <button class="zm-done-btn" onclick="window._zmDone()">DONE</button>
+            <button class="zm-done-btn" onclick="window._zmDone()">${t('DONE')}</button>
           </div>
         </div>`;
       return;
@@ -227,14 +230,14 @@
       body.innerHTML = `
         <div class="zm-wrap">
           <div class="zm-header">
-            <span class="zm-header-title">\u{1F697} Zoomer</span>
+            <span class="zm-header-title">\u{1F697} ${t('Zoomer')}</span>
           </div>
           <div class="zm-content zm-center">
-            <div class="zm-complete-stamp">TRIP COMPLETE \u2705</div>
-            <div class="zm-arrived-text">You arrived at <strong>${destination.name}</strong>!</div>
-            <div class="zm-rating-label">Rating time!</div>
+            <div class="zm-complete-stamp">${t('TRIP COMPLETE')} \u2705</div>
+            <div class="zm-arrived-text">${t('You arrived at {place}!', { place: '<strong>' + destination.name + '</strong>' })}</div>
+            <div class="zm-rating-label">${t('Rating time!')}</div>
             <div class="zm-rating-list">
-              ${RATINGS.map((r, i) => `
+              ${t.list('zoomer.ratings', RATINGS).map((r, i) => `
                 <button class="zm-rating-btn" onclick="window._zmRate(${i})">
                   <span class="zm-rating-stars">${'\u2B50'.repeat(r.stars)}</span>
                   <span class="zm-rating-text">${r.label}</span>
@@ -250,11 +253,12 @@
     const tripProgress = Math.min(tripStep / 4 * 100, 100);
     const tripTime = tripStep + 1;
     const giggles = tripTime * 3;
+    const messages = t.list('zoomer.trip', TRIP_MESSAGES);
 
     body.innerHTML = `
       <div class="zm-wrap">
         <div class="zm-header zm-header-nav">
-          <span class="zm-header-title">${vehicle.emoji} En route to ${destination.name}</span>
+          <span class="zm-header-title">${vehicle.emoji} ${t('En route to {place}', { place: destination.name })}</span>
         </div>
         <div class="zm-content">
           <div class="zm-trip-map">
@@ -269,19 +273,19 @@
           </div>
 
           <div class="zm-trip-time">
-            Trip time: ${tripTime} minute${tripTime > 1 ? 's' : ''} or ${giggles} giggles
+            ${t('Trip time: {n} {minutes} or {g} giggles', { n: tripTime, minutes: t.plural(tripTime, 'minute', 'minutes'), g: giggles })}
           </div>
 
           <div class="zm-status-msg">
             <span class="zm-status-dot"></span>
-            ${TRIP_MESSAGES[tripMsgIdx % TRIP_MESSAGES.length]}
+            ${messages[tripMsgIdx % messages.length]}
           </div>
 
           <div class="zm-trip-rider">
             <span class="zm-trip-rider-emoji">\u{1F9D2}</span>
             <div class="zm-trip-rider-info">
-              <div class="zm-trip-rider-text">Enjoying the ride!</div>
-              <div class="zm-trip-rider-sub">Driven by ${driverName}</div>
+              <div class="zm-trip-rider-text">${t('Enjoying the ride!')}</div>
+              <div class="zm-trip-rider-sub">${t('Driven by {name}', { name: driverName })}</div>
             </div>
           </div>
         </div>
@@ -295,14 +299,14 @@
   };
 
   window._zmDest = function(idx) {
-    destination = DESTINATIONS[idx];
+    destination = t.list('zoomer.places', DESTINATIONS)[idx];
     screen = 'vehicle';
     render();
   };
 
   window._zmVehicle = function(idx) {
-    vehicle = VEHICLES[idx];
-    driverName = pick(DRIVER_NAMES);
+    vehicle = t.list('zoomer.rides', VEHICLES)[idx];
+    driverName = pick(t.list('zoomer.drivers', DRIVER_NAMES));
     trackingStep = 0;
     trackingMsgIdx = Math.floor(Math.random() * TRACKING_MESSAGES.length);
     honkMsg = '';
@@ -344,7 +348,7 @@
   }
 
   window._zmHonk = function() {
-    honkMsg = pick(HONK_MESSAGES);
+    honkMsg = pick(t.list('zoomer.honks', HONK_MESSAGES));
     render();
     if (honkTimeout) clearTimeout(honkTimeout);
     honkTimeout = setTimeout(() => {
@@ -356,7 +360,7 @@
 
   window._zmRate = function(idx) {
     rating = RATINGS[idx];
-    thankYou = pick(THANK_YOU_MESSAGES);
+    thankYou = pick(t.list('zoomer.thanks', THANK_YOU_MESSAGES));
     render();
   };
 
@@ -374,7 +378,7 @@
   OS.registerApp('zoomer', {
     singleInstance: true,
     getWindowOpts() {
-      return { id: 'zoomer', title: 'Zoomer', icon: '\u{1F697}', width: 420, height: 540, content: '' };
+      return { id: 'zoomer', title: t('Zoomer'), icon: '\u{1F697}', width: 420, height: 540, content: '' };
     },
     onOpen(id) {
       winId = id;
