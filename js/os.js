@@ -388,6 +388,8 @@ const OS = (() => {
     w.el.classList.add('minimized');
     w.taskbarBtn.classList.add('minimized');
     w.taskbarBtn.classList.remove('active');
+    // A hidden app must stop its work: game loop, camera, animation
+    if (w.app && w.app.onMinimize) w.app.onMinimize(id);
   }
 
   function restoreWindow(id) {
@@ -395,6 +397,7 @@ const OS = (() => {
     if (!w) return;
     w.el.classList.remove('minimized');
     focusWindow(id);
+    if (w.app && w.app.onRestore) w.app.onRestore(id);
   }
 
   function toggleMaximize(id) {
@@ -522,6 +525,7 @@ const OS = (() => {
     { id: 'tinyscanner',    icon: '🔍', label: 'Scanner' },
     { id: 'sillyskies',     icon: '🌈', label: 'SillySkies' },
     { id: 'breakout',       icon: '🧱', label: 'Breakout' },
+    { id: 'pong',           icon: '🏓', label: 'Pong' },
     { id: 'captaincardio',  icon: '🚀', label: 'Captain Cardio', short: 'Cardio' },
     { id: 'pebbles',        icon: '🪨', label: 'Pebbles' },
     { id: 'pocketpal',      icon: '🐶', label: 'Pocket Pal' },
@@ -766,6 +770,41 @@ const OS = (() => {
     updateMenuUsername();
   }
 
+  /* ---- Game loop helper ---- */
+  // Fixed timestep: game speed does not depend on the screen refresh rate (60, 90, 120 Hz).
+  // step() runs hz times per second of game time. render(alpha) runs one time per frame,
+  // alpha (0 to 1) is the position between the last two steps.
+  // The browser stops animation frames while the page is hidden, so a hidden game stops too.
+  function createLoop(step, render, hz = 120) {
+    const dt = 1000 / hz;
+    let frame = null, last = 0, acc = 0;
+    function tick(now) {
+      frame = requestAnimationFrame(tick);
+      acc += Math.min(now - last, 250); // after a long stop, do not run all missed steps
+      last = now;
+      while (acc >= dt) {
+        step();
+        acc -= dt;
+        if (frame === null) return; // step() stopped the loop
+      }
+      render(acc / dt);
+    }
+    return {
+      start() {
+        if (frame !== null) return;
+        last = performance.now();
+        acc = 0;
+        frame = requestAnimationFrame(tick);
+      },
+      stop() {
+        if (frame === null) return;
+        cancelAnimationFrame(frame);
+        frame = null;
+      },
+      get running() { return frame !== null; },
+    };
+  }
+
   /* ---- Giggle Coins — cross-app reward API ---- */
   function awardCoins(amount, source, emoji, description) {
     if (!amount || amount <= 0) return;
@@ -826,6 +865,6 @@ const OS = (() => {
     applyTheme, ACCENT_COLORS,
     get VERSION() { return version; },
     checkForUpdate, applyUpdate, _nukeAndReload,
-    awardCoins, esc,
+    awardCoins, esc, createLoop,
   };
 })();

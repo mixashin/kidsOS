@@ -3150,3 +3150,25 @@ button { font-family: var(--font); }
   .calc-btn { font-size: 18px; }
   .calc-display .calc-result { font-size: 28px; }
 }
+
+/* --- Pong --- */
+.pg-wrap { position: relative; width: 100%; height: 100%; background: #0d1b33; overflow: hidden; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.pg-canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+/* Pause and sound sit on the center line, away from both players */
+.pg-hud { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); display: none; gap: 10px; }
+.pg-playing .pg-hud { display: flex; }
+.pg-turned .pg-hud { top: 50%; left: auto; right: 8px; transform: translateY(-50%); flex-direction: column; }
+.pg-round-btn { width: 52px; height: 52px; border: none; border-radius: 50%; background: rgba(255,255,255,0.14); color: #fff; font-size: 24px; line-height: 1; cursor: pointer; touch-action: manipulation; }
+.pg-round-btn:active { background: rgba(255,255,255,0.3); }
+.pg-overlay { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(8,16,32,0.72); padding: 16px; }
+.pg-overlay.pg-show { display: flex; }
+.pg-panel { display: flex; flex-direction: column; align-items: center; gap: 14px; width: min(340px, 100%); color: #fff; font-family: var(--font); text-align: center; }
+.pg-logo { font-size: 64px; line-height: 1; }
+.pg-title { font-size: 30px; font-weight: 700; }
+.pg-final { font-size: 40px; font-weight: 700; letter-spacing: 4px; }
+/* Large buttons: a child of age 5 must hit them with no effort */
+.pg-btn { display: flex; align-items: center; justify-content: center; gap: 14px; width: 100%; min-height: 76px; padding: 10px 20px; border: none; border-radius: 22px; background: var(--pg-c, #4fc3f7); color: #10213d; font: 700 24px var(--font); cursor: pointer; box-shadow: 0 6px 0 rgba(0,0,0,0.28); touch-action: manipulation; }
+.pg-btn span { font-size: 30px; }
+.pg-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0,0,0,0.28); }
+.pg-btn-plain { background: rgba(255,255,255,0.16); color: #fff; min-height: 60px; font-size: 20px; }
+@media (prefers-reduced-motion: reduce) { .pg-btn:active { transform: none; } }

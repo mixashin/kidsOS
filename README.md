@@ -10,7 +10,7 @@ A fun browser-based OS simulator for kids learning to use computers. Built with 
 
 - **Window Manager** — Draggable, resizable windows with minimize/maximize/close
 - **Taskbar & App Menu** — Windows-style taskbar with clock and start menu
-- **24 Apps** — Games, creativity tools, and silly parody apps
+- **25 Apps** — Games, creativity tools, and silly parody apps
 - **Private** — No trackers, no telemetry, no requests to other servers. All data stays on the device
 - **Dark/Light Theme** — With accent color picker
 - **PWA Support** — Installable on Android and iOS, works offline
@@ -41,6 +41,7 @@ A fun browser-based OS simulator for kids learning to use computers. Built with 
 | **TinyScanner** | Object scanner with real camera and silly results |
 | **SillySkies** | Parody weather app for silly places |
 | **Breakout** | Classic brick breaker game |
+| **Pong** | Ball game for one player against the computer, or for two players on one device |
 | **Captain Cardio** | Starship fitness app with exercise moves |
 | **Pebbles** | Virtual pet rock |
 | **Pocket Pal** | Virtual pet corgi in 3D |
