@@ -1,0 +1,38 @@
+/* Serbian texts of Paint */
+Lang.add('sr', 'paint', {
+  'Paint': 'Бојанка',
+  // Tools
+  'Pencil': 'Оловка',
+  'Brush': 'Четкица',
+  'Eraser': 'Гумица',
+  'Line': 'Линија',
+  'Rectangle': 'Правоугаоник',
+  'Circle': 'Круг',
+  'Fill': 'Обој',
+  // Colors. English shows the color code, Serbian shows the name
+  '#000000': 'Црна',
+  '#ffffff': 'Бела',
+  '#ff0000': 'Црвена',
+  '#00aa00': 'Зелена',
+  '#0000ff': 'Плава',
+  '#ffff00': 'Жута',
+  '#ff8800': 'Наранџаста',
+  '#aa00aa': 'Љубичаста',
+  '#00aaaa': 'Тиркизна',
+  '#884400': 'Браон',
+  '#ff88aa': 'Розе',
+  '#88ffaa': 'Светлозелена',
+  '#aaaaff': 'Светлољубичаста',
+  '#ffaa44': 'Светлонаранџаста',
+  '#44ffff': 'Светлоплава',
+  'Custom color': 'Твоја боја',
+  'Size:': 'Дебљина:',
+  'Clear': 'Очисти',
+  'Undo': 'Врати',
+  'Save': 'Сачувај',
+  'Download': 'Преузми',
+  'Saved': 'Сачувано',
+  'Save as (filename):': 'Сачувај као (име фајла):',
+  // Name of a new file. The file type (.png) is in the code
+  'drawing': 'цртеж',
+});

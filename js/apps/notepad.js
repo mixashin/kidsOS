@@ -1,11 +1,16 @@
 /* ===== Notepad App ===== */
+// All app files share one scope for a top-level const. The block keeps `t` inside this file.
+// `var` puts NotepadApp into the shared scope: the markup calls it.
+{
+const t = OS.texts('notepad');
+
 OS.registerApp('notepad', {
   singleInstance: false,
 
   getWindowOpts() {
     return {
       id: 'notepad_' + Date.now(),
-      title: 'Notepad',
+      title: t('Notepad'),
       icon: '📝',
       width: 520,
       height: 400,
@@ -18,30 +23,30 @@ OS.registerApp('notepad', {
     <div class="notepad-wrap">
       <div class="notepad-toolbar">
         <select onchange="NotepadApp.setFont(this.value, this.closest('.notepad-wrap'))">
-          <option value="'Consolas',monospace">Monospace</option>
-          <option value="'Segoe UI',sans-serif">Sans-serif</option>
-          <option value="Georgia,serif">Serif</option>
-          <option value="'Comic Sans MS',cursive">Comic Sans</option>
+          <option value="'Consolas',monospace">${t('Monospace')}</option>
+          <option value="'Segoe UI',sans-serif">${t('Sans-serif')}</option>
+          <option value="Georgia,serif">${t('Serif')}</option>
+          <option value="'Comic Sans MS',cursive">${t('Comic Sans')}</option>
         </select>
         <select onchange="NotepadApp.setSize(this.value, this.closest('.notepad-wrap'))">
-          <option value="13">13px</option>
-          <option value="16" selected>16px</option>
-          <option value="20">20px</option>
-          <option value="24">24px</option>
-          <option value="32">32px</option>
+          <option value="13">${t('{n}px', { n: 13 })}</option>
+          <option value="16" selected>${t('{n}px', { n: 16 })}</option>
+          <option value="20">${t('{n}px', { n: 20 })}</option>
+          <option value="24">${t('{n}px', { n: 24 })}</option>
+          <option value="32">${t('{n}px', { n: 32 })}</option>
         </select>
-        <input type="color" value="#000000" title="Text Color"
+        <input type="color" value="#000000" title="${t('Text Color')}"
                oninput="NotepadApp.setColor(this.value, this.closest('.notepad-wrap'))">
-        <button onclick="NotepadApp.clearText(this.closest('.notepad-wrap'))">🗑 Clear</button>
-        <button onclick="NotepadApp.copyText(this.closest('.notepad-wrap'))">📋 Copy</button>
-        <button class="np-save-btn" onclick="NotepadApp.saveToOS(this.closest('.notepad-wrap'), this)">💾 Save</button>
-        <button onclick="NotepadApp.download(this.closest('.notepad-wrap'))">⬇ Download</button>
+        <button onclick="NotepadApp.clearText(this.closest('.notepad-wrap'))">🗑 ${t('Clear')}</button>
+        <button onclick="NotepadApp.copyText(this.closest('.notepad-wrap'))">📋 ${t('Copy')}</button>
+        <button class="np-save-btn" onclick="NotepadApp.saveToOS(this.closest('.notepad-wrap'), this)">💾 ${t('Save')}</button>
+        <button onclick="NotepadApp.download(this.closest('.notepad-wrap'))">⬇ ${t('Download')}</button>
       </div>
-      <textarea class="notepad-ta" placeholder="Start typing here... ✏️"
+      <textarea class="notepad-ta" placeholder="${t('Start typing here...')} ✏️"
                 oninput="NotepadApp.updateStatus(this.closest('.notepad-wrap'))"
                 style="flex:1;border:none;outline:none;resize:none;padding:14px;font-size:16px;line-height:1.6;font-family:'Consolas',monospace;"></textarea>
       <div class="notepad-statusbar">
-        <span class="np-status">0 characters · 0 words · 0 lines</span>
+        <span class="np-status">${NotepadApp.statusText(0, 0, 0)}</span>
       </div>
     </div>`;
   },
@@ -73,7 +78,7 @@ OS.registerApp('notepad', {
   onClose() {},
 });
 
-const NotepadApp = {
+var NotepadApp = {
   _pending: null,
 
   // Open notepad pre-loaded with a file from the OS filesystem
@@ -111,7 +116,7 @@ const NotepadApp = {
   download(wrap) {
     const ta = this.getTA(wrap);
     if (!ta) return;
-    const name = wrap.dataset.filename || ('note_' + new Date().toISOString().slice(0,10) + '.txt');
+    const name = wrap.dataset.filename || (t('note') + '_' + new Date().toISOString().slice(0,10) + '.txt');
     const blob = new Blob([ta.value], { type: 'text/plain' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -131,13 +136,13 @@ const NotepadApp = {
       // Overwrite existing file
       const ok = FM.writeFile(filePath, fileName, content);
       if (ok) {
-        this._flashSaved(btn, '✅ Saved');
+        this._flashSaved(btn, '✅ ' + t('Saved'));
       } else {
-        alert('Could not save file. It may have been deleted.');
+        alert(t('Could not save file. It may have been deleted.'));
       }
     } else {
       // Save As — ask for filename, save to Documents
-      const name = prompt('Save as (filename):', 'note.txt');
+      const name = prompt(t('Save as (filename):'), t('note') + '.txt');
       if (!name || !name.trim()) return;
       const safeName = name.trim().replace(/[/\\:*?"<>|]/g, '_');
       const finalName = safeName.includes('.') ? safeName : safeName + '.txt';
@@ -147,7 +152,7 @@ const NotepadApp = {
       // Update window title
       const titleEl = wrap.closest('.window')?.querySelector('.win-title');
       if (titleEl) titleEl.innerHTML = `<span class="win-title-icon">${OS.icon('notepad')}</span> ${finalName}`;
-      this._flashSaved(btn, '✅ Saved');
+      this._flashSaved(btn, '✅ ' + t('Saved'));
     }
   },
 
@@ -168,6 +173,16 @@ const NotepadApp = {
     const chars = text.length;
     const words = text.trim() ? text.trim().split(/\s+/).length : 0;
     const lines = text ? text.split('\n').length : 1;
-    status.textContent = `${chars} characters · ${words} words · ${lines} lines`;
+    status.textContent = this.statusText(chars, words, lines);
+  },
+
+  // English has one word form for each number, as before. Serbian has 3 forms.
+  statusText(chars, words, lines) {
+    return [
+      t('{n} {things}', { n: chars, things: t.plural(chars, 'characters', 'characters') }),
+      t('{n} {things}', { n: words, things: t.plural(words, 'words', 'words') }),
+      t('{n} {things}', { n: lines, things: t.plural(lines, 'lines', 'lines') }),
+    ].join(' · ');
   },
 };
+}

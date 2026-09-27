@@ -1,11 +1,16 @@
 /* ===== Calculator App ===== */
+// All app files share one scope for a top-level const. The block keeps `t` inside this file.
+// `var` puts CalcApp into the shared scope: the markup calls it.
+{
+const t = OS.texts('calculator');
+
 OS.registerApp('calculator', {
   singleInstance: true,
 
   getWindowOpts() {
     return {
       id: 'calculator',
-      title: 'Calculator',
+      title: t('Calculator'),
       icon: '🔢',
       width: 300,
       height: 420,
@@ -21,7 +26,7 @@ OS.registerApp('calculator', {
         <div class="calc-result" id="calc-result">0</div>
       </div>
       <div class="calc-buttons">
-        <button class="calc-btn clear" onclick="CalcApp.press('clear')">C</button>
+        <button class="calc-btn clear" onclick="CalcApp.press('clear')">${t('C')}</button>
         <button class="calc-btn fn"    onclick="CalcApp.press('sign')">±</button>
         <button class="calc-btn fn"    onclick="CalcApp.press('pct')">%</button>
         <button class="calc-btn op"   onclick="CalcApp.press('/')">÷</button>
@@ -53,7 +58,7 @@ OS.registerApp('calculator', {
 });
 
 /* Calculator Logic */
-const CalcApp = (() => {
+var CalcApp = (() => {
   let display = '0';
   let stored = null;
   let op = null;
@@ -62,9 +67,12 @@ const CalcApp = (() => {
   function update() {
     const r = document.getElementById('calc-result');
     const e = document.getElementById('calc-expr');
-    if (r) r.textContent = display;
-    if (e) e.textContent = stored !== null ? `${stored} ${opSymbol(op)}` : '';
+    if (r) r.textContent = shown(display);
+    if (e) e.textContent = stored !== null ? `${shown(stored)} ${opSymbol(op)}` : '';
   }
+
+  // A result that is no number shows as a text
+  const shown = value => String(value).replace('NaN', t('NaN')).replace('Infinity', t('Infinity'));
 
   function opSymbol(o) {
     return {'+':'+', '-':'−', '*':'×', '/':'÷'}[o] || o;
@@ -100,9 +108,9 @@ const CalcApp = (() => {
     if (op === '+') res = a + b;
     else if (op === '-') res = a - b;
     else if (op === '*') res = a * b;
-    else if (op === '/') res = b === 0 ? 'Error' : a / b;
+    else if (op === '/') res = b === 0 ? null : a / b; // null: no result
 
-    display = res === 'Error' ? 'Error' : String(parseFloat(res.toFixed(10)));
+    display = res === null ? t('Error') : String(parseFloat(res.toFixed(10)));
     justCalc = true;
     stored = null;
   }
@@ -111,3 +119,4 @@ const CalcApp = (() => {
 
   return { press, reset };
 })();
+}

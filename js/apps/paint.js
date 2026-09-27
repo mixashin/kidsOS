@@ -1,11 +1,16 @@
 /* ===== Paint App ===== */
+// All app files share one scope for a top-level const. The block keeps `t` inside this file.
+// `var` puts PaintApp into the shared scope: the markup calls it.
+{
+const t = OS.texts('paint');
+
 OS.registerApp('paint', {
   singleInstance: true,
 
   getWindowOpts() {
     return {
       id: 'paint',
-      title: 'Paint',
+      title: t('Paint'),
       icon: '🎨',
       width: 680,
       height: 520,
@@ -14,41 +19,42 @@ OS.registerApp('paint', {
   },
 
   getHTML() {
+    // Color, and the name that the child sees. English shows the color code, as before.
     const colors = [
-      '#000000','#ffffff','#ff0000','#00aa00','#0000ff',
-      '#ffff00','#ff8800','#aa00aa','#00aaaa','#884400',
-      '#ff88aa','#88ffaa','#aaaaff','#ffaa44','#44ffff',
+      ['#000000', t('#000000')], ['#ffffff', t('#ffffff')], ['#ff0000', t('#ff0000')], ['#00aa00', t('#00aa00')], ['#0000ff', t('#0000ff')],
+      ['#ffff00', t('#ffff00')], ['#ff8800', t('#ff8800')], ['#aa00aa', t('#aa00aa')], ['#00aaaa', t('#00aaaa')], ['#884400', t('#884400')],
+      ['#ff88aa', t('#ff88aa')], ['#88ffaa', t('#88ffaa')], ['#aaaaff', t('#aaaaff')], ['#ffaa44', t('#ffaa44')], ['#44ffff', t('#44ffff')],
     ];
-    const colorBtns = colors.map(c => `
+    const colorBtns = colors.map(([c, name]) => `
       <div class="paint-color-btn ${c==='#000000'?'active':''}"
            style="background:${c}"
            onclick="PaintApp.setColor('${c}',this)"
-           title="${c}"></div>`).join('');
+           title="${name}"></div>`).join('');
 
     return `
     <div class="paint-wrap">
       <div class="paint-toolbar">
-        <button class="paint-tool-btn active" onclick="PaintApp.setTool('pencil',this)" title="Pencil">✏️</button>
-        <button class="paint-tool-btn" onclick="PaintApp.setTool('brush',this)" title="Brush">🖌️</button>
-        <button class="paint-tool-btn" onclick="PaintApp.setTool('eraser',this)" title="Eraser">🧹</button>
-        <button class="paint-tool-btn" onclick="PaintApp.setTool('line',this)" title="Line">╱</button>
-        <button class="paint-tool-btn" onclick="PaintApp.setTool('rect',this)" title="Rectangle">▭</button>
-        <button class="paint-tool-btn" onclick="PaintApp.setTool('circle',this)" title="Circle">◯</button>
-        <button class="paint-tool-btn" onclick="PaintApp.setTool('fill',this)" title="Fill">🪣</button>
+        <button class="paint-tool-btn active" onclick="PaintApp.setTool('pencil',this)" title="${t('Pencil')}">✏️</button>
+        <button class="paint-tool-btn" onclick="PaintApp.setTool('brush',this)" title="${t('Brush')}">🖌️</button>
+        <button class="paint-tool-btn" onclick="PaintApp.setTool('eraser',this)" title="${t('Eraser')}">🧹</button>
+        <button class="paint-tool-btn" onclick="PaintApp.setTool('line',this)" title="${t('Line')}">╱</button>
+        <button class="paint-tool-btn" onclick="PaintApp.setTool('rect',this)" title="${t('Rectangle')}">▭</button>
+        <button class="paint-tool-btn" onclick="PaintApp.setTool('circle',this)" title="${t('Circle')}">◯</button>
+        <button class="paint-tool-btn" onclick="PaintApp.setTool('fill',this)" title="${t('Fill')}">🪣</button>
         <div class="paint-sep"></div>
         ${colorBtns}
-        <input type="color" id="paint-color-picker" value="#000000" title="Custom color"
+        <input type="color" id="paint-color-picker" value="#000000" title="${t('Custom color')}"
                oninput="PaintApp.setColorFromPicker(this.value)">
         <div class="paint-sep"></div>
-        <span class="paint-size-label">Size:</span>
+        <span class="paint-size-label">${t('Size:')}</span>
         <input type="range" id="paint-size" min="1" max="40" value="4"
                oninput="PaintApp.setSize(this.value)">
         <div class="paint-sep"></div>
         <div class="paint-actions">
-          <button class="paint-action-btn" onclick="PaintApp.clear()">🗑 Clear</button>
-          <button class="paint-action-btn" onclick="PaintApp.undo()">↩ Undo</button>
-          <button class="paint-action-btn paint-save-btn" onclick="PaintApp.saveToOS(this)">💾 Save</button>
-          <button class="paint-action-btn" onclick="PaintApp.download()">⬇ Download</button>
+          <button class="paint-action-btn" onclick="PaintApp.clear()">🗑 ${t('Clear')}</button>
+          <button class="paint-action-btn" onclick="PaintApp.undo()">↩ ${t('Undo')}</button>
+          <button class="paint-action-btn paint-save-btn" onclick="PaintApp.saveToOS(this)">💾 ${t('Save')}</button>
+          <button class="paint-action-btn" onclick="PaintApp.download()">⬇ ${t('Download')}</button>
         </div>
       </div>
       <div class="paint-canvas-wrap">
@@ -61,7 +67,7 @@ OS.registerApp('paint', {
   onClose() { PaintApp.destroy(); },
 });
 
-const PaintApp = (() => {
+var PaintApp = (() => {
   let canvas, ctx;
   let tool = 'pencil';
   let color = '#000000';
@@ -216,10 +222,10 @@ const PaintApp = (() => {
     if (currentFile) {
       // Overwrite existing file in Pictures
       FM.writeFile('pictures', currentFile.name, dataURL);
-      flashBtn(btn, '✅ Saved');
+      flashBtn(btn, '✅ ' + t('Saved'));
     } else {
       // Save As — prompt for name
-      const input = prompt('Save as (filename):', 'drawing.png');
+      const input = prompt(t('Save as (filename):'), t('drawing') + '.png');
       if (!input || !input.trim()) return;
       let name = input.trim().replace(/[/\\:*?"<>|]/g, '_');
       if (!name.toLowerCase().endsWith('.png')) name += '.png';
@@ -229,13 +235,13 @@ const PaintApp = (() => {
       const win = canvas.closest('.window');
       const titleEl = win && win.querySelector('.win-title');
       if (titleEl) titleEl.innerHTML = `<span class="win-title-icon">${OS.icon('paint')}</span> ${name}`;
-      flashBtn(btn, '✅ Saved');
+      flashBtn(btn, '✅ ' + t('Saved'));
     }
   }
 
   function download() {
     if (!canvas) return;
-    const name = currentFile ? currentFile.name : ('drawing_' + Date.now() + '.png');
+    const name = currentFile ? currentFile.name : (t('drawing') + '_' + Date.now() + '.png');
     const a = document.createElement('a');
     a.download = name;
     a.href = canvas.toDataURL('image/png');
@@ -250,8 +256,8 @@ const PaintApp = (() => {
     setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 1500);
   }
 
-  function setTool(t, btn) {
-    tool = t;
+  function setTool(name, btn) {
+    tool = name;
     document.querySelectorAll('.paint-tool-btn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
   }
@@ -325,3 +331,4 @@ const PaintApp = (() => {
 
   return { init, destroy, setTool, setColor, setColorFromPicker, setSize, clear, undo, saveToOS, download, openWithFile };
 })();
+}

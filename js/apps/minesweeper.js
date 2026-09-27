@@ -1,11 +1,16 @@
 /* ===== Minesweeper (Kids Edition) ===== */
+// All app files share one scope for a top-level const. The block keeps `t` inside this file.
+// `var` puts MS into the shared scope: the markup calls it.
+{
+const t = OS.texts('minesweeper');
+
 OS.registerApp('minesweeper', {
   singleInstance: true,
 
   getWindowOpts() {
     return {
       id: 'minesweeper',
-      title: 'Minesweeper',
+      title: t('Minesweeper'),
       icon: '💣',
       width: 430,
       height: 530,
@@ -34,17 +39,17 @@ OS.registerApp('minesweeper', {
 
       <!-- Difficulty -->
       <div style="display:flex;gap:6px;">
-        <button class="ms-dbtn active" onclick="MS.setDiff('easy',this)">🌱 Easy</button>
-        <button class="ms-dbtn"        onclick="MS.setDiff('medium',this)">🌿 Medium</button>
-        <button class="ms-dbtn"        onclick="MS.setDiff('hard',this)">🌳 Hard</button>
+        <button class="ms-dbtn active" onclick="MS.setDiff('easy',this)">🌱 ${t('Easy')}</button>
+        <button class="ms-dbtn"        onclick="MS.setDiff('medium',this)">🌿 ${t('Medium')}</button>
+        <button class="ms-dbtn"        onclick="MS.setDiff('hard',this)">🌳 ${t('Hard')}</button>
       </div>
 
       <!-- Flag mode -->
       <div style="display:flex;align-items:center;gap:10px;">
         <button id="ms-mode-btn" onclick="MS.toggleMode()"
                 style="padding:5px 14px;border-radius:20px;border:none;background:#5b8cff;
-                       color:#fff;cursor:pointer;font-size:13px;font-weight:600;">🔍 Reveal Mode</button>
-        <span style="font-size:11px;color:#555;">Right-click = flag</span>
+                       color:#fff;cursor:pointer;font-size:13px;font-weight:600;">🔍 ${t('Reveal Mode')}</button>
+        <span style="font-size:11px;color:#555;">${t('Right-click = flag')}</span>
       </div>
 
       <!-- Board -->
@@ -61,7 +66,7 @@ OS.registerApp('minesweeper', {
 });
 
 /* ===================== Game Logic ===================== */
-const MS = (() => {
+var MS = (() => {
   const CONFIGS = {
     easy:   { cols: 9,  rows: 9,  mines: 10, cell: 36 },
     medium: { cols: 12, rows: 10, mines: 18, cell: 32 },
@@ -97,7 +102,7 @@ const MS = (() => {
     flagMode = !flagMode;
     const btn = document.getElementById('ms-mode-btn');
     if (btn) {
-      btn.textContent   = flagMode ? '🚩 Flag Mode' : '🔍 Reveal Mode';
+      btn.textContent   = flagMode ? '🚩 ' + t('Flag Mode') : '🔍 ' + t('Reveal Mode');
       btn.style.background = flagMode ? '#ff7c5b' : '#5b8cff';
     }
   }
@@ -113,7 +118,7 @@ const MS = (() => {
 
     // reset flag button
     const modeBtn = document.getElementById('ms-mode-btn');
-    if (modeBtn) { modeBtn.textContent = '🔍 Reveal Mode'; modeBtn.style.background = '#5b8cff'; }
+    if (modeBtn) { modeBtn.textContent = '🔍 ' + t('Reveal Mode'); modeBtn.style.background = '#5b8cff'; }
 
     // Build empty grid
     grid = [];
@@ -264,14 +269,14 @@ const MS = (() => {
         for (let c=0;c<cfg.cols;c++)
           if (grid[r][c].mine) grid[r][c].flagged = true;
       setMines(0);
-      setMsg('🎉 You won in ' + elapsed + 's! Great job!');
+      setMsg('🎉 ' + t('You won in {n}s! Great job!', { n: elapsed }));
     } else {
       setFace('😵');
       // Reveal all mines
       for (let r=0;r<cfg.rows;r++)
         for (let c=0;c<cfg.cols;c++)
           if (grid[r][c].mine) grid[r][c].revealed = true;
-      setMsg('💥 Boom! Try again! Click 😊 to restart.');
+      setMsg('💥 ' + t('Boom! Try again! Click 😊 to restart.'));
     }
     renderAll();
   }
@@ -402,3 +407,4 @@ const MS = (() => {
 
   return { init, destroy, restart, setDiff, toggleMode };
 })();
+}

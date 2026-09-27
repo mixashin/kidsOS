@@ -1,11 +1,16 @@
 /* ===== Snake Game ===== */
+// All app files share one scope for a top-level const. The block keeps `t` inside this file.
+// `var` puts SnakeApp into the shared scope: the markup calls it.
+{
+const t = OS.texts('snake');
+
 OS.registerApp('snake', {
   singleInstance: true,
 
   getWindowOpts() {
     return {
       id: 'snake',
-      title: 'Snake',
+      title: t('Snake'),
       icon: '🐍',
       width: 440,
       height: 500,
@@ -17,14 +22,14 @@ OS.registerApp('snake', {
     return `
     <div class="snake-wrap">
       <div class="snake-score">
-        Score: <span id="snake-score">0</span>
-        &nbsp;&nbsp; Best: <span id="snake-hi">0</span>
+        ${t('Score:')} <span id="snake-score">0</span>
+        &nbsp;&nbsp; ${t('Best:')} <span id="snake-hi">0</span>
       </div>
       <canvas id="snake-canvas" width="400" height="400"
               style="display:block;cursor:pointer;"
               onclick="SnakeApp.handleClick()"></canvas>
       <div class="snake-controls">
-        <button class="snake-btn snake-play-btn" onclick="SnakeApp.handleClick()">▶ Play / Restart</button>
+        <button class="snake-btn snake-play-btn" onclick="SnakeApp.handleClick()">▶ ${t('Play / Restart')}</button>
         <div class="snake-dpad">
           <button class="snake-dpad-btn snake-dpad-up" ontouchstart="SnakeApp.changeDir(0,-1); event.preventDefault();" onclick="SnakeApp.changeDir(0,-1)"></button>
           <button class="snake-dpad-btn snake-dpad-left" ontouchstart="SnakeApp.changeDir(-1,0); event.preventDefault();" onclick="SnakeApp.changeDir(-1,0)"></button>
@@ -41,7 +46,7 @@ OS.registerApp('snake', {
   onClose() { SnakeApp.destroy(); },
 });
 
-const SnakeApp = (() => {
+var SnakeApp = (() => {
   const CELL = 20;
   const COLS = 20;
   const ROWS = 20;
@@ -170,7 +175,7 @@ const SnakeApp = (() => {
       updateScoreUI();
     }
     if (score > 0) {
-      OS.awardCoins(Math.max(1, Math.floor(score / 10)), 'snake', '🐍', 'Snake: scored ' + score);
+      OS.awardCoins(Math.max(1, Math.floor(score / 10)), 'snake', '🐍', t('Snake: scored {n}', { n: score }));
     }
     drawDeadScreen();
   }
@@ -252,8 +257,8 @@ const SnakeApp = (() => {
         ctx.fillStyle = '#4fc3f7';
       } else {
         // Body — gradient from green to darker green
-        const t = 1 - i / snake.length;
-        const lightness = 30 + t * 20;
+        const part = 1 - i / snake.length;
+        const lightness = 30 + part * 20;
         ctx.fillStyle = `hsl(130, 70%, ${lightness}%)`;
       }
 
@@ -322,20 +327,20 @@ const SnakeApp = (() => {
 
     // Title
     ctx.fillStyle = '#4fc3f7';
-    ctx.font = 'bold 36px sans-serif';
+    ctx.font = 'bold 36px Nunito, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('🐍 SNAKE', canvas.width / 2, canvas.height / 2 - 50);
+    ctx.fillText('🐍 ' + t('SNAKE'), canvas.width / 2, canvas.height / 2 - 50, canvas.width - 40);
 
     // Play prompt
     ctx.fillStyle = '#fff';
-    ctx.font = '18px sans-serif';
-    ctx.fillText('Click Play or press any arrow key', canvas.width / 2, canvas.height / 2 + 10);
+    ctx.font = '18px Nunito, sans-serif';
+    ctx.fillText(t('Click Play or press any arrow key'), canvas.width / 2, canvas.height / 2 + 10, canvas.width - 20);
 
     // High score
     ctx.fillStyle = '#aaa';
-    ctx.font = '14px sans-serif';
-    ctx.fillText(`Best: ${hiScore}`, canvas.width / 2, canvas.height / 2 + 45);
+    ctx.font = '14px Nunito, sans-serif';
+    ctx.fillText(t('Best: {n}', { n: hiScore }), canvas.width / 2, canvas.height / 2 + 45, canvas.width - 20);
   }
 
   function drawDeadScreen() {
@@ -355,20 +360,20 @@ const SnakeApp = (() => {
     ctx.textBaseline = 'middle';
 
     ctx.fillStyle = '#ff3b3b';
-    ctx.font = 'bold 28px sans-serif';
-    ctx.fillText('Game Over!', canvas.width / 2, canvas.height / 2 - 40);
+    ctx.font = 'bold 28px Nunito, sans-serif';
+    ctx.fillText(t('Game Over!'), canvas.width / 2, canvas.height / 2 - 40, 260);
 
     ctx.fillStyle = '#fff';
-    ctx.font = '18px sans-serif';
-    ctx.fillText(`Score: ${score}`, canvas.width / 2, canvas.height / 2);
+    ctx.font = '18px Nunito, sans-serif';
+    ctx.fillText(t('Score: {n}', { n: score }), canvas.width / 2, canvas.height / 2, 260);
 
     ctx.fillStyle = '#ffbd2e';
-    ctx.font = '14px sans-serif';
-    ctx.fillText(`Best: ${hiScore}`, canvas.width / 2, canvas.height / 2 + 28);
+    ctx.font = '14px Nunito, sans-serif';
+    ctx.fillText(t('Best: {n}', { n: hiScore }), canvas.width / 2, canvas.height / 2 + 28, 260);
 
     ctx.fillStyle = '#aaa';
-    ctx.font = '14px sans-serif';
-    ctx.fillText('Click Play or press arrow to restart', canvas.width / 2, canvas.height / 2 + 58);
+    ctx.font = '14px Nunito, sans-serif';
+    ctx.fillText(t('Click Play or press arrow to restart'), canvas.width / 2, canvas.height / 2 + 58, 260);
   }
 
   /* ---- Score UI ---- */
@@ -382,3 +387,4 @@ const SnakeApp = (() => {
 
   return { init, destroy, handleClick, changeDir, pause, state: () => state };
 })();
+}

@@ -1,11 +1,16 @@
 /* ===== Soundboard ===== */
+// All app files share one scope for a top-level const. The block keeps `t` inside this file.
+// `var` puts SoundboardApp into the shared scope: the markup calls it.
+{
+const t = OS.texts('soundboard');
+
 OS.registerApp('soundboard', {
   singleInstance: true,
 
   getWindowOpts() {
     return {
       id: 'soundboard',
-      title: 'Soundboard',
+      title: t('Soundboard'),
       icon: '🔊',
       width: 420,
       height: 480,
@@ -14,24 +19,24 @@ OS.registerApp('soundboard', {
   },
 
   getHTML() {
-    const sounds = [
-      { emoji: '💨', label: 'Fart',     file: 'fart.mp3' },
-      { emoji: '😂', label: 'Laugh',    file: 'laugh.mp3' },
-      { emoji: '😛', label: 'Raspberry', file: 'raspberry.mp3' },
-      { emoji: '🤧', label: 'Sneeze',   file: 'sneeze.mp3' },
-      { emoji: '👏', label: 'Clap',     file: 'clap.mp3' },
-      { emoji: '🔔', label: 'Bell',     file: 'bell.mp3' },
-      { emoji: '💥', label: 'Boom',     file: 'boom.mp3' },
-      { emoji: '😱', label: 'Scream',   file: 'scream.mp3' },
-      { emoji: '🐔', label: 'Chicken',  file: 'chicken.mp3' },
-      { emoji: '🐄', label: 'Moo',      file: 'moo.mp3' },
-      { emoji: '🎺', label: 'Trumpet',  file: 'trumpet.mp3' },
-      { emoji: '👾', label: 'Laser',    file: 'laser.mp3' },
-      { emoji: '🥁', label: 'Drumroll', file: 'drumroll.mp3' },
-      { emoji: '😜', label: 'Boing',    file: 'boing.mp3' },
-      { emoji: '🎉', label: 'Airhorn',  file: 'airhorn.mp3' },
-      { emoji: '🤪', label: 'Whoopee',  file: 'whoopee.mp3' },
-    ];
+    const sounds = t.list('soundboard.sounds', [
+      { id: 'fart', emoji: '💨', label: 'Fart',     file: 'fart.mp3' },
+      { id: 'laugh', emoji: '😂', label: 'Laugh',    file: 'laugh.mp3' },
+      { id: 'raspberry', emoji: '😛', label: 'Raspberry', file: 'raspberry.mp3' },
+      { id: 'sneeze', emoji: '🤧', label: 'Sneeze',   file: 'sneeze.mp3' },
+      { id: 'clap', emoji: '👏', label: 'Clap',     file: 'clap.mp3' },
+      { id: 'bell', emoji: '🔔', label: 'Bell',     file: 'bell.mp3' },
+      { id: 'boom', emoji: '💥', label: 'Boom',     file: 'boom.mp3' },
+      { id: 'scream', emoji: '😱', label: 'Scream',   file: 'scream.mp3' },
+      { id: 'chicken', emoji: '🐔', label: 'Chicken',  file: 'chicken.mp3' },
+      { id: 'moo', emoji: '🐄', label: 'Moo',      file: 'moo.mp3' },
+      { id: 'trumpet', emoji: '🎺', label: 'Trumpet',  file: 'trumpet.mp3' },
+      { id: 'laser', emoji: '👾', label: 'Laser',    file: 'laser.mp3' },
+      { id: 'drumroll', emoji: '🥁', label: 'Drumroll', file: 'drumroll.mp3' },
+      { id: 'boing', emoji: '😜', label: 'Boing',    file: 'boing.mp3' },
+      { id: 'airhorn', emoji: '🎉', label: 'Airhorn',  file: 'airhorn.mp3' },
+      { id: 'whoopee', emoji: '🤪', label: 'Whoopee',  file: 'whoopee.mp3' },
+    ]);
 
     const colors = [
       '#e74c3c', '#e67e22', '#f1c40f', '#2ecc71',
@@ -54,7 +59,7 @@ OS.registerApp('soundboard', {
   onClose() { SoundboardApp.stopAll(); },
 });
 
-const SoundboardApp = (() => {
+var SoundboardApp = (() => {
   const playing = [];
 
   function play(file, btn) {
@@ -77,3 +82,4 @@ const SoundboardApp = (() => {
 
   return { play, stopAll };
 })();
+}

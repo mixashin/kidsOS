@@ -1,11 +1,16 @@
 /* ===== File Manager App ===== */
+// All app files share one scope for a top-level const. The block keeps `t` inside this file.
+// `var` puts FM into the shared scope: the markup, Notepad, and Paint call it.
+{
+const t = OS.texts('filemanager');
+
 OS.registerApp('filemanager', {
   singleInstance: true,
 
   getWindowOpts() {
     return {
       id: 'filemanager',
-      title: 'File Manager',
+      title: t('File Manager'),
       icon: '📁',
       width: 620,
       height: 420,
@@ -17,24 +22,24 @@ OS.registerApp('filemanager', {
     return `
     <div class="fm-wrap">
       <div class="fm-toolbar">
-        <button onclick="FM.goBack()">◀ Back</button>
-        <button onclick="FM.goHome()">🏠 Home</button>
-        <input class="fm-path" id="fm-path" readonly value="/home/kidsuser">
-        <button onclick="FM.newFolder()">📁+ New Folder</button>
-        <button onclick="FM.newFile()">📄+ New File</button>
+        <button onclick="FM.goBack()">◀ ${t('Back')}</button>
+        <button onclick="FM.goHome()">🏠 ${t('Home')}</button>
+        <input class="fm-path" id="fm-path" readonly value="${t('/home/kidsuser')}">
+        <button onclick="FM.newFolder()">📁+ ${t('New Folder')}</button>
+        <button onclick="FM.newFile()">📄+ ${t('New File')}</button>
       </div>
       <div class="fm-body">
         <div class="fm-sidebar">
-          <div class="fm-sidebar-item active" onclick="FM.navigate('home')">🏠 Home</div>
-          <div class="fm-sidebar-item" onclick="FM.navigate('documents')">📄 Documents</div>
-          <div class="fm-sidebar-item" onclick="FM.navigate('pictures')">🖼️ Pictures</div>
-          <div class="fm-sidebar-item" onclick="FM.navigate('music')">🎵 Music</div>
-          <div class="fm-sidebar-item" onclick="FM.navigate('videos')">🎬 Videos</div>
-          <div class="fm-sidebar-item" onclick="FM.navigate('trash')">🗑️ Trash</div>
+          <div class="fm-sidebar-item active" onclick="FM.navigate('home')">🏠 ${t('Home')}</div>
+          <div class="fm-sidebar-item" onclick="FM.navigate('documents')">📄 ${t('Documents')}</div>
+          <div class="fm-sidebar-item" onclick="FM.navigate('pictures')">🖼️ ${t('Pictures')}</div>
+          <div class="fm-sidebar-item" onclick="FM.navigate('music')">🎵 ${t('Music')}</div>
+          <div class="fm-sidebar-item" onclick="FM.navigate('videos')">🎬 ${t('Videos')}</div>
+          <div class="fm-sidebar-item" onclick="FM.navigate('trash')">🗑️ ${t('Trash')}</div>
         </div>
         <div class="fm-files" id="fm-files" oncontextmenu="FM.onContextMenu(event)"></div>
       </div>
-      <div class="fm-statusbar"><span id="fm-status">Loading...</span></div>
+      <div class="fm-statusbar"><span id="fm-status">${t('Loading...')}</span></div>
     </div>`;
   },
 
@@ -42,27 +47,29 @@ OS.registerApp('filemanager', {
   onClose() {},
 });
 
-const FM = (() => {
+var FM = (() => {
   // Virtual file system stored in localStorage
   const FS_KEY = 'kidsOS_fs';
   let currentPath = 'home';
   let history = [];
   let selected = null;
 
+  // Start content of a new device, in the language of the device.
+  // The names of the 5 folders are keys of the stored data: they do not change.
   const defaultFS = {
     home: {
       type: 'folder',
       children: {
         'documents': { type: 'folder', children: {
-          'my_story.txt': { type: 'file', ext: 'txt', content: 'Once upon a time...' },
-          'homework.txt': { type: 'file', ext: 'txt', content: 'Math homework:\n1+1=2' },
+          [t('my_story') + '.txt']: { type: 'file', ext: 'txt', content: t('Once upon a time...') },
+          [t('homework') + '.txt']: { type: 'file', ext: 'txt', content: t('Math homework:') + '\n1+1=2' },
         }},
         'pictures': { type: 'folder', children: {
-          'drawing1.png': { type: 'file', ext: 'png', content: '' },
-          'photo.jpg': { type: 'file', ext: 'jpg', content: '' },
+          [t('drawing1') + '.png']: { type: 'file', ext: 'png', content: '' },
+          [t('photo') + '.jpg']: { type: 'file', ext: 'jpg', content: '' },
         }},
         'music': { type: 'folder', children: {
-          'my_song.mp3': { type: 'file', ext: 'mp3', content: '' },
+          [t('my_song') + '.mp3']: { type: 'file', ext: 'mp3', content: '' },
         }},
         'videos': { type: 'folder', children: {} },
         'trash': { type: 'folder', children: {} },
@@ -112,10 +119,21 @@ const FM = (() => {
     return icons[ext] || '📄';
   }
 
-  function pathLabel(p) {
-    const map = { documents: 'Documents', pictures: 'Pictures', music: 'Music', videos: 'Videos', trash: 'Trash' };
-    return p === 'home' ? '/home/kidsuser' : '/home/kidsuser/' + (map[p] || p);
+  // A folder of the system has a key in the stored data, and a name that the child sees
+  function shownName(name, path = currentPath) {
+    const names = { documents: t('folder|documents'), pictures: t('folder|pictures'), music: t('folder|music'), videos: t('folder|videos'), trash: t('folder|trash') };
+    return path === 'home' && Object.hasOwn(names, name) ? names[name] : name;
   }
+
+  function pathLabel(p) {
+    const map = { documents: t('Documents'), pictures: t('Pictures'), music: t('Music'), videos: t('Videos'), trash: t('Trash') };
+    if (p === 'home') return t('/home/kidsuser');
+    const parts = p.split('/');
+    if (parts.length > 1) parts[0] = shownName(parts[0], 'home');
+    return t('/home/kidsuser') + '/' + (map[p] || parts.join('/'));
+  }
+
+  const countText = n => t('{n} {items}', { n, items: t.plural(n, 'item', 'items') });
 
   function render() {
     const container = document.getElementById('fm-files');
@@ -134,8 +152,8 @@ const FM = (() => {
 
     const node = getNode(currentPath);
     if (!node || !node.children) {
-      container.innerHTML = '<div style="padding:20px;color:#999;grid-column:1/-1">Empty folder</div>';
-      if (statusEl) statusEl.textContent = '0 items';
+      container.innerHTML = '<div style="padding:20px;color:#999;grid-column:1/-1">' + t('Empty folder') + '</div>';
+      if (statusEl) statusEl.textContent = countText(0);
       return;
     }
 
@@ -148,7 +166,7 @@ const FM = (() => {
       const div = document.createElement('div');
       div.className = 'fm-file';
       div.dataset.name = name;
-      div.innerHTML = `<div class="file-icon">${fileIcon(name, item.type)}</div><span>${name}</span>`;
+      div.innerHTML = `<div class="file-icon">${fileIcon(name, item.type)}</div><span>${shownName(name)}</span>`;
 
       let lastTapTime = 0;
       div.onclick = () => {
@@ -168,7 +186,7 @@ const FM = (() => {
           document.querySelectorAll('.fm-file').forEach(f => f.classList.remove('selected'));
           div.classList.add('selected');
           selected = name;
-          if (statusEl) statusEl.textContent = `"${name}" — tap again to open`;
+          if (statusEl) statusEl.textContent = t('"{name}" — tap again to open', { name: shownName(name) });
         }
       };
 
@@ -183,7 +201,7 @@ const FM = (() => {
       container.appendChild(div);
     });
 
-    if (statusEl) statusEl.textContent = `${entries.length} item${entries.length !== 1 ? 's' : ''}`;
+    if (statusEl) statusEl.textContent = countText(entries.length);
   }
 
   function openFile(name, item) {
@@ -210,26 +228,26 @@ const FM = (() => {
   function goHome() { history = []; currentPath = 'home'; render(); }
 
   function newFolder() {
-    const name = prompt('Enter folder name:');
+    const name = prompt(t('Enter folder name:'));
     if (!name || !name.trim()) return;
     const safeName = name.trim().replace(/[/\\:*?"<>|]/g, '_');
     const fs = loadFS();
     const node = getNodeInFS(fs, currentPath);
     if (!node.children) node.children = {};
-    if (node.children[safeName]) { alert('Name already exists!'); return; }
+    if (node.children[safeName]) { alert(t('Name already exists!')); return; }
     node.children[safeName] = { type: 'folder', children: {} };
     saveFS(fs);
     render();
   }
 
   function newFile() {
-    const name = prompt('Enter file name (e.g. note.txt):');
+    const name = prompt(t('Enter file name (e.g. {example}):', { example: t('note') + '.txt' }));
     if (!name || !name.trim()) return;
     const safeName = name.trim().replace(/[/\\:*?"<>|]/g, '_');
     const fs = loadFS();
     const node = getNodeInFS(fs, currentPath);
     if (!node.children) node.children = {};
-    if (node.children[safeName]) { alert('Name already exists!'); return; }
+    if (node.children[safeName]) { alert(t('Name already exists!')); return; }
     const ext = safeName.split('.').pop().toLowerCase();
     node.children[safeName] = { type: 'file', ext, content: '' };
     saveFS(fs);
@@ -237,12 +255,13 @@ const FM = (() => {
   }
 
   function renameItem(name) {
-    const newName = prompt('Rename to:', name);
-    if (!newName || !newName.trim() || newName === name) return;
+    const shown = shownName(name);
+    const newName = prompt(t('Rename to:'), shown);
+    if (!newName || !newName.trim() || newName === shown) return;
     const safeName = newName.trim().replace(/[/\\:*?"<>|]/g, '_');
     const fs = loadFS();
     const node = getNodeInFS(fs, currentPath);
-    if (node.children[safeName]) { alert('Name already exists!'); return; }
+    if (node.children[safeName]) { alert(t('Name already exists!')); return; }
     node.children[safeName] = node.children[name];
     delete node.children[name];
     saveFS(fs);
@@ -250,7 +269,7 @@ const FM = (() => {
   }
 
   function deleteItem(name) {
-    if (!confirm(`Delete "${name}"?`)) return;
+    if (!confirm(t('Delete "{name}"?', { name: shownName(name) }))) return;
     const fs = loadFS();
     const node = getNodeInFS(fs, currentPath);
     delete node.children[name];
@@ -261,21 +280,21 @@ const FM = (() => {
   function showFileMenu(e, name, item) {
     e.preventDefault();
     OS.showContextMenu([
-      { icon: item.type === 'folder' ? '📂' : '📄', label: 'Open', action: () => {
+      { icon: item.type === 'folder' ? '📂' : '📄', label: t('Open'), action: () => {
         if (item.type === 'folder') navigate(currentPath === 'home' ? name : currentPath + '/' + name);
         else openFile(name, item);
       }},
       'sep',
-      { icon: '✏️', label: 'Rename', action: () => renameItem(name) },
-      { icon: '🗑️', label: 'Delete', action: () => deleteItem(name) },
+      { icon: '✏️', label: t('Rename'), action: () => renameItem(name) },
+      { icon: '🗑️', label: t('Delete'), action: () => deleteItem(name) },
     ], e.clientX, e.clientY);
   }
 
   function onContextMenu(e) {
     e.preventDefault();
     OS.showContextMenu([
-      { icon: '📁', label: 'New Folder', action: newFolder },
-      { icon: '📄', label: 'New File', action: newFile },
+      { icon: '📁', label: t('New Folder'), action: newFolder },
+      { icon: '📄', label: t('New File'), action: newFile },
     ], e.clientX, e.clientY);
   }
 
@@ -324,3 +343,4 @@ const FM = (() => {
 
   return { init, navigate, goBack, goHome, newFolder, newFile, onContextMenu, render, writeFile, saveNewFile };
 })();
+}

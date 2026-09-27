@@ -5,48 +5,54 @@
 
    Two devices: see connect(). Each device runs the same simulation with the same inputs
    (js/lib/lockstep.js). The connection is direct, with no server (js/lib/pairing.js). */
-const PongApp = (() => {
+// All app files share one scope for a top-level const. The block keeps `t` inside this file.
+// `var` puts PongApp into the shared scope: the tests and the test pages read it.
+{
+const t = OS.texts('pong');
+
+var PongApp = (() => {
   const STORE_KEY = 'kidsOS_pong';
 
-  // All text in one place, ready for translation
+  // All text in one place. Each entry gets its text from the language layer.
   const T = {
-    title: 'Pong',
-    classic: 'Classic',
-    plus: 'Pong+',
-    onePlayer: '1 Player',
-    twoPlayers: '2 Players',
-    playAgain: 'Play again',
-    menu: 'Menu',
-    resume: 'Play',
-    paused: 'Pause',
-    wins: 'wins!',
-    players: ['Blue', 'Orange'],
-    computer: 'Computer',
-    coinsSolo: 'Pong: you beat the computer!',
-    coinsDuo: 'Pong: a game for two!',
-    twoDevices: '2 Devices',
-    howTo: 'One tablet shows the code. The other tablet scans it.',
-    showCode: 'Show code',
-    scanCode: 'Scan code',
-    scanMe: 'Scan this code with the other tablet',
-    next: 'Next',
-    scanOther: 'Point the camera at the code of the other tablet',
-    nowOther: 'Now the other tablet scans this code',
-    otherCamera: 'Camera',
-    wrongCode: 'That is another code',
-    linking: 'Connecting',
-    tryAgain: 'Try again',
-    failed: 'That did not work',
-    noCamera: 'The camera is needed to scan the code',
-    noReader: 'This device cannot scan codes',
-    noNetwork: 'No Wi-Fi network',
-    connected: 'Connected!',
-    youWin: 'You win!',
-    youLose: 'The other player wins',
-    otherPaused: 'The other player takes a break',
-    waiting: 'Wait for the other player',
-    lost: 'The other player is gone',
-    apart: 'Oops, the game got mixed up',
+    title: t('Pong'),
+    classic: t('Classic'),
+    plus: t('Pong+'),
+    onePlayer: t('1 Player'),
+    twoPlayers: t('2 Players'),
+    playAgain: t('Play again'),
+    menu: t('Menu'),
+    resume: t('Play'),
+    paused: t('Pause'),
+    sound: t('Sound'),
+    // Full sentences: a language can need another word order or another word form
+    wins: [t('Blue wins!'), t('Orange wins!')],
+    computerWins: t('Computer wins!'),
+    coinsSolo: t('Pong: you beat the computer!'),
+    coinsDuo: t('Pong: a game for two!'),
+    twoDevices: t('2 Devices'),
+    howTo: t('One tablet shows the code. The other tablet scans it.'),
+    showCode: t('Show code'),
+    scanCode: t('Scan code'),
+    scanMe: t('Scan this code with the other tablet'),
+    next: t('Next'),
+    scanOther: t('Point the camera at the code of the other tablet'),
+    nowOther: t('Now the other tablet scans this code'),
+    otherCamera: t('Camera'),
+    wrongCode: t('That is another code'),
+    linking: t('Connecting'),
+    tryAgain: t('Try again'),
+    failed: t('That did not work'),
+    noCamera: t('The camera is needed to scan the code'),
+    noReader: t('This device cannot scan codes'),
+    noNetwork: t('No Wi-Fi network'),
+    connected: t('Connected!'),
+    youWin: t('You win!'),
+    youLose: t('The other player wins'),
+    otherPaused: t('The other player takes a break'),
+    waiting: t('Wait for the other player'),
+    lost: t('The other player is gone'),
+    apart: t('Oops, the game got mixed up'),
   };
 
   /* ---- Simulation ----
@@ -96,9 +102,9 @@ const PongApp = (() => {
     // mulberry32: small seeded random number generator
     function random(state) {
       state.seed = (state.seed + 0x6D2B79F5) | 0;
-      let t = Math.imul(state.seed ^ (state.seed >>> 15), 1 | state.seed);
-      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      let v = Math.imul(state.seed ^ (state.seed >>> 15), 1 | state.seed);
+      v = (v + Math.imul(v ^ (v >>> 7), 61 | v)) ^ v;
+      return ((v ^ (v >>> 14)) >>> 0) / 4294967296;
     }
 
     function newBall(state, values) {
@@ -459,7 +465,7 @@ const PongApp = (() => {
       <canvas class="pg-canvas"></canvas>
       <div class="pg-hud">
         <button class="pg-round-btn" data-act="pause" aria-label="${T.paused}">⏸</button>
-        <button class="pg-round-btn" data-act="sound" aria-label="Sound">🔊</button>
+        <button class="pg-round-btn" data-act="sound" aria-label="${T.sound}">🔊</button>
       </div>
       <div class="pg-overlay"></div>
     </div>`;
@@ -732,7 +738,7 @@ const PongApp = (() => {
     render(1); // show the final score behind the end screen
     const w = state.winner;
     const lost = mode === 3 ? w !== net.player : mode === 1 && w === 1;
-    const text = mode === 3 ? (lost ? T.youLose : T.youWin) : `${mode === 1 && w === 1 ? T.computer : T.players[w]} ${T.wins}`;
+    const text = mode === 3 ? (lost ? T.youLose : T.youWin) : mode === 1 && w === 1 ? T.computerWins : T.wins[w];
     overlay.innerHTML = `
       <div class="pg-panel">
         <div class="pg-logo">${lost ? (mode === 1 ? '🤖' : '🎈') : '🏆'}</div>
@@ -1339,7 +1345,7 @@ OS.registerApp('pong', {
   getWindowOpts() {
     return {
       id: 'pong',
-      title: 'Pong',
+      title: t('Pong'),
       icon: '🏓',
       stage: false, // Pong fits its court to the window
       width: 760,
@@ -1352,3 +1358,4 @@ OS.registerApp('pong', {
   onClose() { PongApp.destroy(); },
   onMinimize() { PongApp.pause(); },
 });
+}

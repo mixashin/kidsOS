@@ -1,11 +1,16 @@
 /* ===== Breakout Game ===== */
+// All app files share one scope for a top-level const. The block keeps `t` inside this file.
+// `var` puts BreakoutApp into the shared scope: the markup calls it.
+{
+const t = OS.texts('breakout');
+
 OS.registerApp('breakout', {
   singleInstance: true,
 
   getWindowOpts() {
     return {
       id: 'breakout',
-      title: 'Breakout',
+      title: t('Breakout'),
       icon: '🧱',
       width: 520,
       height: 600,
@@ -17,10 +22,10 @@ OS.registerApp('breakout', {
     return `
     <div class="bo-wrap">
       <div class="bo-hud">
-        <span>Score: <b id="bo-score">0</b></span>
-        <span>Best: <b id="bo-hi">0</b></span>
-        <span>Lives: <b id="bo-lives">3</b></span>
-        <button class="bo-play-btn" onclick="BreakoutApp.handleClick()">&#9654; Play</button>
+        <span>${t('Score:')} <b id="bo-score">0</b></span>
+        <span>${t('Best:')} <b id="bo-hi">0</b></span>
+        <span>${t('Lives:')} <b id="bo-lives">3</b></span>
+        <button class="bo-play-btn" onclick="BreakoutApp.handleClick()">&#9654; ${t('Play')}</button>
       </div>
       <canvas id="bo-canvas" style="display:block;cursor:pointer;"></canvas>
     </div>`;
@@ -32,7 +37,7 @@ OS.registerApp('breakout', {
   onClose() { BreakoutApp.destroy(); },
 });
 
-const BreakoutApp = (() => {
+var BreakoutApp = (() => {
   // Game constants (fixed ratios, scaled to canvas)
   const BRICK_ROWS = 5;
   const BRICK_COLS = 8;
@@ -412,7 +417,7 @@ const BreakoutApp = (() => {
       localStorage.setItem('kidsOS_breakout', hiScore);
     }
     if (score > 0) {
-      const label = won ? 'Breakout: cleared all bricks!' : 'Breakout: scored ' + score;
+      const label = won ? t('Breakout: cleared all bricks!') : t('Breakout: scored {n}', { n: score });
       OS.awardCoins(Math.max(1, Math.floor(score / 10)), 'breakout', '🧱', label);
     }
     updateUI();
@@ -431,10 +436,10 @@ const BreakoutApp = (() => {
 
     if (state === 'serving') {
       ctx.fillStyle = 'rgba(255,255,255,0.7)';
-      ctx.font = '16px sans-serif';
+      ctx.font = '16px Nunito, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('Click to launch!', W / 2, PADDLE_Y - 36);
+      ctx.fillText(t('Click to launch!'), W / 2, PADDLE_Y - 36, W - 20);
     }
   }
 
@@ -488,22 +493,22 @@ const BreakoutApp = (() => {
     ctx.fillRect(0, 0, W, H);
 
     ctx.fillStyle = '#5b8cff';
-    ctx.font = 'bold 36px sans-serif';
+    ctx.font = 'bold 36px Nunito, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('\u{1f9f1} BREAKOUT', W / 2, H / 2 - 50);
+    ctx.fillText('\u{1f9f1} ' + t('BREAKOUT'), W / 2, H / 2 - 50, W - 20);
 
     ctx.fillStyle = '#fff';
-    ctx.font = '18px sans-serif';
-    ctx.fillText('Click Play to start', W / 2, H / 2 + 10);
+    ctx.font = '18px Nunito, sans-serif';
+    ctx.fillText(t('Click Play to start'), W / 2, H / 2 + 10, W - 20);
 
     ctx.fillStyle = '#aaa';
-    ctx.font = '14px sans-serif';
-    ctx.fillText('Move mouse or drag to control paddle', W / 2, H / 2 + 40);
+    ctx.font = '14px Nunito, sans-serif';
+    ctx.fillText(t('Move mouse or drag to control paddle'), W / 2, H / 2 + 40, W - 20);
 
     ctx.fillStyle = '#aaa';
-    ctx.font = '14px sans-serif';
-    ctx.fillText('Best: ' + hiScore, W / 2, H / 2 + 70);
+    ctx.font = '14px Nunito, sans-serif';
+    ctx.fillText(t('Best: {n}', { n: hiScore }), W / 2, H / 2 + 70, W - 20);
   }
 
   function drawOverlayPanel(borderColor, titleColor, title) {
@@ -522,24 +527,24 @@ const BreakoutApp = (() => {
     ctx.textBaseline = 'middle';
 
     ctx.fillStyle = titleColor;
-    ctx.font = 'bold 28px sans-serif';
-    ctx.fillText(title, W / 2, H / 2 - 40);
+    ctx.font = 'bold 28px Nunito, sans-serif';
+    ctx.fillText(title, W / 2, H / 2 - 40, 260);
 
     ctx.fillStyle = '#fff';
-    ctx.font = '18px sans-serif';
-    ctx.fillText('Score: ' + score, W / 2, H / 2);
+    ctx.font = '18px Nunito, sans-serif';
+    ctx.fillText(t('Score: {n}', { n: score }), W / 2, H / 2, 260);
 
     ctx.fillStyle = '#ffbd2e';
-    ctx.font = '14px sans-serif';
-    ctx.fillText('Best: ' + hiScore, W / 2, H / 2 + 28);
+    ctx.font = '14px Nunito, sans-serif';
+    ctx.fillText(t('Best: {n}', { n: hiScore }), W / 2, H / 2 + 28, 260);
 
     ctx.fillStyle = '#aaa';
-    ctx.font = '14px sans-serif';
-    ctx.fillText('Click Play to try again', W / 2, H / 2 + 58);
+    ctx.font = '14px Nunito, sans-serif';
+    ctx.fillText(t('Click Play to try again'), W / 2, H / 2 + 58, 260);
   }
 
-  function drawDeadScreen() { drawOverlayPanel('#ff4757', '#ff4757', 'Game Over!'); }
-  function drawWinScreen()  { drawOverlayPanel('#2ed573', '#2ed573', 'You Win!'); }
+  function drawDeadScreen() { drawOverlayPanel('#ff4757', '#ff4757', t('Game Over!')); }
+  function drawWinScreen()  { drawOverlayPanel('#2ed573', '#2ed573', t('You Win!')); }
 
   /* ---- UI ---- */
 
@@ -554,3 +559,4 @@ const BreakoutApp = (() => {
 
   return { init, destroy, handleClick, pause, state: () => state };
 })();
+}

@@ -1,11 +1,16 @@
 /* ===== Memory Card Game ===== */
+// All app files share one scope for a top-level const. The block keeps `t` inside this file.
+// `var` puts MemoryApp into the shared scope: the markup calls it.
+{
+const t = OS.texts('memory');
+
 OS.registerApp('memory', {
   singleInstance: true,
 
   getWindowOpts() {
     return {
       id: 'memory',
-      title: 'Memory Match',
+      title: t('Memory Match'),
       icon: '🃏',
       width: 480,
       height: 560,
@@ -17,13 +22,13 @@ OS.registerApp('memory', {
     return `
     <div class="memory-wrap">
       <div class="memory-info">
-        <span>Moves: <b id="mem-moves">0</b></span>
-        <span>Pairs: <b id="mem-pairs">0</b>/8</span>
-        <span>Time: <b id="mem-time">0s</b></span>
+        <span>${t('Moves:')} <b id="mem-moves">0</b></span>
+        <span>${t('Pairs:')} <b id="mem-pairs">0</b>/8</span>
+        <span>${t('Time:')} <b id="mem-time">${t('{n}s', { n: 0 })}</b></span>
       </div>
       <div id="memory-grid"></div>
       <div class="memory-msg" id="mem-msg"></div>
-      <button class="memory-btn" onclick="MemoryApp.newGame()">🔀 New Game</button>
+      <button class="memory-btn" onclick="MemoryApp.newGame()">🔀 ${t('New Game')}</button>
     </div>`;
   },
 
@@ -31,7 +36,7 @@ OS.registerApp('memory', {
   onClose() { MemoryApp.stop(); },
 });
 
-const MemoryApp = (() => {
+var MemoryApp = (() => {
   const EMOJIS = ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮'];
   let cards = [], flipped = [], matched = 0, moves = 0, locked = false;
   let timerInterval = null, elapsed = 0;
@@ -70,8 +75,8 @@ const MemoryApp = (() => {
     updateUI();
     timerInterval = setInterval(() => {
       elapsed++;
-      const t = document.getElementById('mem-time');
-      if (t) t.textContent = elapsed + 's';
+      const timeEl = document.getElementById('mem-time');
+      if (timeEl) timeEl.textContent = t('{n}s', { n: elapsed });
     }, 1000);
   }
 
@@ -103,7 +108,7 @@ const MemoryApp = (() => {
           if (matched === 8) {
             clearInterval(timerInterval);
             const msgEl = document.getElementById('mem-msg');
-            if (msgEl) msgEl.textContent = `🎉 You won in ${moves} moves & ${elapsed}s!`;
+            if (msgEl) msgEl.textContent = '🎉 ' + t('You won in {n} {moves} & {seconds}s!', { n: moves, moves: t.plural(moves, 'move', 'moves'), seconds: elapsed });
           }
         }, 500);
       } else {
@@ -137,3 +142,4 @@ const MemoryApp = (() => {
 
   return { init, stop, newGame };
 })();
+}
