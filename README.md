@@ -1,6 +1,6 @@
 # KidsOS
 
-A fun browser-based OS simulator for kids learning to use computers. Built with vanilla HTML, CSS, and JavaScript — no frameworks, no build tools.
+A fun browser-based OS simulator for kids learning to use computers. Built with vanilla HTML, CSS, and JavaScript — no frameworks, no dependencies.
 
 <img src="media/screenshot1.jpg" alt="KidsOS Screenshot 1" width="400">
 
@@ -10,7 +10,8 @@ A fun browser-based OS simulator for kids learning to use computers. Built with 
 
 - **Window Manager** — Draggable, resizable windows with minimize/maximize/close
 - **Taskbar & App Menu** — Windows-style taskbar with clock and start menu
-- **19 Apps** — Games, creativity tools, and silly parody apps
+- **24 Apps** — Games, creativity tools, and silly parody apps
+- **Private** — No trackers, no telemetry, no requests to other servers. All data stays on the device
 - **Dark/Light Theme** — With accent color picker
 - **PWA Support** — Installable on Android and iOS, works offline
 - **Virtual Filesystem** — Save files in localStorage
@@ -38,6 +39,11 @@ A fun browser-based OS simulator for kids learning to use computers. Built with 
 | **TreasureMapper** | Parody maps app with silly navigation |
 | **Zoomer** | Parody ride-hailing app with funny vehicles |
 | **TinyScanner** | Object scanner with real camera and silly results |
+| **SillySkies** | Parody weather app for silly places |
+| **Breakout** | Classic brick breaker game |
+| **Captain Cardio** | Starship fitness app with exercise moves |
+| **Pebbles** | Virtual pet rock |
+| **Pocket Pal** | Virtual pet corgi in 3D |
 | **Settings** | Username, wallpaper, theme, and update management |
 
 ## Installation
@@ -71,6 +77,25 @@ Open **https://mixashin.github.io/kidsOS/** in any browser — it runs as a desk
 - Service Worker for offline PWA support
 - Canvas API for Paint and Kidstagram
 - getUserMedia API (optional) — used only in TinyScanner as a camera passthrough for the fake object scanner. Camera access is requested only when the app is opened and only if the user grants permission. No photos are stored, uploaded, or sent anywhere. The app works without camera access (falls back to a static background).
+
+- three.js (r149) for Pocket Pal, stored in `vendor/`, not loaded from a CDN
+
+## Privacy
+
+KidsOS is made for children. The app contacts only the server it was loaded from, and only to load its own files and to check for a new release. It has no analytics, no ads, no accounts, and no third-party scripts. Everything a child makes or types stays in the browser storage of the device.
+
+## Development
+
+Needs Node.js 20.12 or later. No packages to install.
+
+```
+python -m http.server 8080 --bind 127.0.0.1   # run the source files, no service worker
+node build.mjs                                # build the deployable site into dist/
+```
+
+- The version number lives in `version.json` only. The build puts it everywhere else.
+- `sw.js` is a template. The build fills in the file list, so offline mode covers every file.
+- A push to `main` starts the GitHub Actions workflow, which builds `dist/` and publishes it to GitHub Pages.
 
 ## License
 

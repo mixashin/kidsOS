@@ -286,13 +286,12 @@ const SettingsApp = {
     statusEl.innerHTML = '🔍 Checking for updates...';
     checkBtn.disabled = true;
 
-    OS.fetchRemoteVersion().then(remote => {
+    OS.checkForUpdate().then(remote => {
       const local = OS.VERSION;
-      const remoteVer = remote.version;
 
-      if (OS._isNewer(remoteVer, local)) {
+      if (remote.available) {
         statusEl.innerHTML = `✅ <b>Update available!</b><br>
-          <span style="font-size:12px">Current: v${local} → New: v${OS.esc(remoteVer)}</span>
+          <span style="font-size:12px">Current: v${local} → New: v${OS.esc(remote.version)}</span>
           ${remote.build ? '<br><span style="font-size:12px;color:#888">Build: ' + OS.esc(remote.build) + '</span>' : ''}`;
         applyBtn.style.display = 'inline-block';
       } else {
@@ -307,7 +306,9 @@ const SettingsApp = {
   },
 
   applyUpdate() {
-    OS._nukeAndReload();
+    const applyBtn = document.getElementById('update-apply-btn');
+    if (applyBtn) { applyBtn.textContent = '⏳ Updating...'; applyBtn.disabled = true; }
+    OS.applyUpdate();
   },
 
   forceReload() {

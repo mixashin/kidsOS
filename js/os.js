@@ -1,6 +1,7 @@
 /* ===== KidsOS Core ===== */
 const OS = (() => {
-  const VERSION = '0.24.5';
+  // version.json is the only place the version number lives. Loaded at boot.
+  let version = 'dev';
 
   let zCounter = 100;
   let windowMap = {};     // id -> { el, taskbarBtn, app }
@@ -48,32 +49,81 @@ const OS = (() => {
 
     startClock();
     initBackButton();
-
-    // Auto-check for updates a few seconds after boot
-    setTimeout(checkBootUpdate, 4000);
+    loadVersion();
+    initServiceWorker();
   }
 
-  /* ---- Boot Update Check ---- */
+  function loadVersion() {
+    return fetch('version.json').then(res => res.json()).then(v => { version = v.version; }).catch(() => {});
+  }
+
+  /* ---- Updates ---- */
+  // The service worker downloads a new release in the background. When the download
+  // is complete, a popup shows. "Update" switches to the new release and reloads.
+  // No pressure wording here: children must not learn to press urgent prompts.
   const UPDATE_MESSAGES = [
-    { title: '🐧 Penguin Express Delivery!', body: 'A shiny new version of KidsOS just waddled in! Update now before the penguin gets tired!' },
+    { title: '🐧 Penguin Express Delivery!', body: 'A shiny new version of KidsOS just waddled in! The penguin will wait until you are ready.' },
     { title: '🚀 Houston, We Have an Update!', body: 'Mission Control has detected a newer version of KidsOS orbiting nearby. Initiate download sequence?' },
-    { title: '🍪 Fresh Cookies from the Oven!', body: 'A fresh batch of KidsOS improvements just came out of the oven. Grab them while they\'re warm!' },
-    { title: '🦄 Unicorn Update Available!', body: 'A magical unicorn galloped by and dropped off a new version of KidsOS. Don\'t let the sparkles fade!' },
+    { title: '🍪 Fresh Cookies from the Oven!', body: 'A fresh batch of KidsOS improvements just came out of the oven. They stay warm until you are ready!' },
+    { title: '🦄 Unicorn Update Available!', body: 'A magical unicorn galloped by and dropped off a new version of KidsOS. The sparkles will wait for you!' },
     { title: '🎁 Surprise Package!', body: 'The KidsOS elves have been working overtime! A brand new update is wrapped up and ready for you!' },
     { title: '🧙 Wizard Update Detected!', body: 'The update wizard has conjured a new spell — er, version! Wave your wand (click the button) to apply it!' },
     { title: '🐸 Ribbit! New Version!', body: 'A little frog just hopped in with a new KidsOS update on its back. Kiss the button to transform your OS!' },
-    { title: '🎸 Rock & Roll Update!', body: 'KidsOS just dropped a new album — wait, we mean VERSION. Turn it up to 11 and update now!' },
+    { title: '🎸 Rock & Roll Update!', body: 'KidsOS just dropped a new album — wait, we mean VERSION. Turn it up to 11 when you are ready!' },
   ];
 
-  function checkBootUpdate() {
-    // Skip if we just came from an update reload
-    if (location.search.includes('_update')) return;
+  let swReg = null;
+  let updateRequested = false;
 
-    fetchRemoteVersion().then(remote => {
-      if (_isNewer(remote.version, VERSION)) {
-        showUpdatePopup(remote.version, remote.build);
-      }
-    }).catch(() => {}); // silently fail — not critical
+  function initServiceWorker() {
+    // build.mjs sets data-build. Source files served directly (development) run with no service worker.
+    if (!('serviceWorker' in navigator) || !document.documentElement.dataset.build) return;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      // Also fires on first install. Reload only when the user asked for the update.
+      if (updateRequested) location.reload();
+    });
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      swReg = reg;
+      if (reg.waiting) announceUpdate();
+      if (reg.installing) watchInstall(reg.installing);
+      reg.addEventListener('updatefound', () => watchInstall(reg.installing));
+      setTimeout(() => reg.update().catch(() => {}), 4000);
+    }).catch(err => console.warn('KidsOS: service worker registration failed', err));
+  }
+
+  function watchInstall(sw) {
+    sw.addEventListener('statechange', () => {
+      // A controller exists only when an older release runs this page. First install shows no popup.
+      if (sw.state === 'installed' && navigator.serviceWorker.controller) announceUpdate();
+    });
+  }
+
+  function announceUpdate() {
+    if (document.querySelector('.update-popup-overlay')) return;
+    fetchRemoteVersion()
+      .then(remote => showUpdatePopup(remote.version, remote.build))
+      .catch(() => showUpdatePopup());
+  }
+
+  // Resolves to { available, version, build } of the release on the server
+  function checkForUpdate() {
+    const swCheck = swReg
+      ? swReg.update().then(() => !!(swReg.installing || swReg.waiting))
+      : Promise.resolve(null);
+    return Promise.all([swCheck, fetchRemoteVersion()]).then(([swHasUpdate, remote]) => ({
+      available: swHasUpdate ?? _isNewer(remote.version, version),
+      version: remote.version,
+      build: remote.build,
+    }));
+  }
+
+  function applyUpdate() {
+    const sw = swReg && (swReg.waiting || swReg.installing);
+    if (!sw) return _nukeAndReload(); // no service worker: load all files again from the network
+    updateRequested = true;
+    const activate = () => sw.postMessage({ type: 'SKIP_WAITING' });
+    if (sw.state === 'installed') activate();
+    else sw.addEventListener('statechange', () => { if (sw.state === 'installed') activate(); });
   }
 
   // Relative URL on purpose: KidsOS only ever contacts the origin it was loaded from
@@ -111,7 +161,7 @@ const OS = (() => {
         <div class="update-popup-icon">🐧</div>
         <div class="update-popup-title">${msg.title}</div>
         <div class="update-popup-body">${msg.body}</div>
-        <div class="update-popup-version">v${VERSION} → v${esc(newVer)}${build ? ' (build ' + esc(build) + ')' : ''}</div>
+        <div class="update-popup-version">${newVer && newVer !== version ? `v${esc(version)} → v${esc(newVer)}${build ? ' (build ' + esc(build) + ')' : ''}` : ''}</div>
         <div class="update-popup-buttons">
           <button class="update-popup-btn update-popup-later" id="update-later-btn">Later</button>
           <button class="update-popup-btn update-popup-go" id="update-go-btn">🚀 Update Now!</button>
@@ -133,10 +183,11 @@ const OS = (() => {
       const btn = document.getElementById('update-go-btn');
       btn.textContent = '⏳ Updating...';
       btn.disabled = true;
-      _nukeAndReload();
+      applyUpdate();
     };
   }
 
+  // Repair tool (Settings > Force Reload): remove cached files and load all files again
   function _nukeAndReload() {
     const hardNav = () => {
       const base = window.location.href.split('?')[0].split('#')[0];
@@ -679,7 +730,8 @@ const OS = (() => {
     updateMenuUsername,
     getStorageUsage, factoryReset, isStandalone,
     applyTheme, ACCENT_COLORS,
-    VERSION, fetchRemoteVersion, _isNewer, _nukeAndReload,
+    get VERSION() { return version; },
+    checkForUpdate, applyUpdate, _nukeAndReload,
     awardCoins, esc,
   };
 })();
