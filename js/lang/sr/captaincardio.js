@@ -10,7 +10,7 @@ Lang.add('sr', 'captaincardio', {
   'Today: {done} / {goal} missions': 'Мисије данас: {done} / {goal}',
   'Streak: {n} {days}': 'Низ: {n} {days} заредом',
   'day / days': ['дан', 'дана', 'дана'],
-  'Best: {n}': 'Рекорд: {n}',
+  'Best: {n}': 'Најдужи низ: {n}',
   'Start Mission': 'Крени у мисију',
   'Suggested for today:': 'Предлог за данас:',
   "Captain's Log": 'Капетанов дневник',
@@ -31,7 +31,7 @@ Lang.add('sr', 'captaincardio', {
 
   // Log
   'Total Missions': 'Укупно мисија',
-  'Current Streak': 'Низ сада',
+  'Current Streak': 'Тренутни низ',
   'Best Streak': 'Најдужи низ',
   'Days Active': 'Дани вежбања',
   'Badges': 'Значке',

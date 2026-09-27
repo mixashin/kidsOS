@@ -1,7 +1,7 @@
 /* Serbian texts of Zoomer */
 Lang.add('sr', 'zoomer', {
   'Zoomer': 'Зумер',
-  'Where to, tiny boss?': 'Куда идемо, ваше мало височанство?',
+  'Where to, tiny boss?': 'Куда идемо, Ваше мало височанство?',
   "* No real rides. No real drivers. You're not going anywhere.": '* Вожње нису праве. Возачи нису прави. Не идеш никуд.',
   'Pick Your Ride': 'Изабери превоз',
   'Going to {place}': 'Следећа станица: {place}',

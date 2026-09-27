@@ -237,7 +237,7 @@ function kgGradientBg(ctx, W, H, top, bot) {
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
 }
 function kgText(ctx, text, x, y, size, color, font, max) {
-  ctx.fillStyle = color; ctx.font = `bold ${size}px Nunito, ${font||'sans-serif'}`;
+  ctx.fillStyle = color; ctx.font = `bold ${size}px ${font || 'Nunito, sans-serif'}`;
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, x, y, max);
 }
 

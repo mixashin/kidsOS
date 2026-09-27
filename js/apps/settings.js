@@ -322,7 +322,7 @@ var SettingsApp = {
           ${remote.build ? '<br><span style="font-size:12px;color:#888">' + t('Build: {build}', { build: OS.esc(remote.build) }) + '</span>' : ''}`;
         applyBtn.style.display = 'inline-block';
       } else {
-        statusEl.innerHTML = `👍 ${t('KidsOS is up to date!')} <span style="font-size:12px">(v${OS.esc(local)})</span>`;
+        statusEl.innerHTML = `👍 ${t('KidsOS is up to date!')} <span style="font-size:12px">${t('(v{version})', { version: OS.esc(local) })}</span>`;
         applyBtn.style.display = 'none';
       }
     }).catch(() => {

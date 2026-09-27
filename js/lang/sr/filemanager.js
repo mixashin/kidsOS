@@ -35,7 +35,7 @@ Lang.add('sr', 'filemanager', {
   'my_story': 'моја_прича',
   'homework': 'домаћи',
   'drawing1': 'цртеж1',
-  'photo': 'фотка',
+  'photo': 'слика',
   'my_song': 'моја_песма',
   'Once upon a time...': 'Некада давно...',
   'Math homework:': 'Домаћи из математике:',

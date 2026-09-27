@@ -549,7 +549,7 @@ var KidsChat = (() => {
         const enemies = [[0.2, 0.15], [0.5, 0.12], [0.8, 0.18], [0.35, 0.28], [0.65, 0.25]];
         enemies.forEach(([ex, ey]) => { ctx.fillStyle = '#f44'; ctx.fillRect(w * ex - 8, h * ey, 16, 12); ctx.fillStyle = '#ff0'; ctx.fillRect(w * ex - 4, h * ey + 3, 3, 3); ctx.fillRect(w * ex + 2, h * ey + 3, 3, 3); });
         // Score
-        ctx.fillStyle = '#0f0'; ctx.font = 'bold 11px Nunito, monospace'; ctx.fillText(t('SCORE: 4280'), 6, 14, w - 52);
+        ctx.fillStyle = '#0f0'; ctx.font = 'bold 11px monospace'; ctx.fillText(t('SCORE: 4280'), 6, 14, w - 52);
         ctx.fillStyle = '#f44'; ctx.fillText('♥♥♥', w - 40, 14);
         break;
       }

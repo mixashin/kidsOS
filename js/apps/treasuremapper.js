@@ -394,7 +394,7 @@
       else { ctx.strokeStyle = theme.inkColor; ctx.lineWidth = 1; ctx.stroke(); }
       // Label
       const ld = r * 1.2;
-      ctx.font = `bold ${Math.max(7, Math.round(r * 0.35))}px Nunito, serif`;
+      ctx.font = `bold ${Math.max(7, Math.round(r * 0.35))}px serif`;
       ctx.fillStyle = theme.inkColor;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -459,7 +459,7 @@
 
   /* -- Helper: map labels -- */
   function drawMapLabels(ctx, W, H, theme, rand) {
-    ctx.font = 'italic 8px Nunito, serif';
+    ctx.font = 'italic 8px serif';
     ctx.fillStyle = theme.inkLight;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -493,7 +493,7 @@
     // "Here be dragons" on water/outdoor themes
     if (theme.waterColor) {
       ctx.save();
-      ctx.font = 'italic 7px Nunito, serif';
+      ctx.font = 'italic 7px serif';
       ctx.fillStyle = theme.inkLight;
       ctx.globalAlpha = 0.4;
       const hx = W * (0.15 + rand() * 0.3), hy = H * (0.7 + rand() * 0.2);
@@ -628,7 +628,7 @@
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('\u2693', start.x, start.y - 14);
-    ctx.font = 'bold 6px Nunito, serif';
+    ctx.font = 'bold 6px serif';
     ctx.fillStyle = theme.inkColor;
     ctx.fillText(t('START'), start.x, start.y + 10, 40);
 

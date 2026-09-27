@@ -110,7 +110,7 @@ Lang.add('sr', 'chorequest', {
     bed: { name: 'Кревет под конац' },
     homework: { name: 'Чаролија домаћег' },
     tidy: { name: 'Торнадо чистоће' },
-    star: { name: 'Супер звезда' },
+    star: { name: 'Суперзвезда' },
     trophy: { name: 'Пехар за обавезе' },
     hero: { name: 'Супермоћ одговорности' },
     quest: { name: 'Пун погодак' },

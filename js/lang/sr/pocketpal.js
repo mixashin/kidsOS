@@ -49,7 +49,7 @@ Lang.add('sr', 'pocketpal', {
   'happy': 'срећа',
   'wave': 'шапа',
   'boop': 'њушка',
-  'shake': 'дрмање',
+  'shake': 'отресање',
   'Pop!': 'Пуц!',
   'Nice throw!': 'Леп шут!',
   'That was fun! Score: {n}': 'Баш је било забавно! Поени: {n}',
@@ -69,8 +69,8 @@ Lang.add('sr', 'pocketpal', {
     water: { name: 'Чинија воде', desc: 'Освежење!' },
   },
   'pocketpal.games': {
-    bubble: { name: 'Балончићи', desc: 'Пуцај балончиће!' },
-    ball: { name: 'Лоптица', desc: 'Закотрљај лопту!' },
+    bubble: { name: 'Балончићи', desc: 'Буши балончиће!' },
+    ball: { name: 'Лоптица', desc: 'Закотрљај лоптицу!' },
     copyme: { name: 'Ради као ја', desc: 'Погоди покрет!' },
   },
   'pocketpal.tools': {
