@@ -1,4 +1,7 @@
 /* ===== Settings App ===== */
+// All app files share one scope for a top-level const. The block keeps t inside this file.
+// var puts SettingsApp into the shared scope: the markup calls it (onclick).
+{
 const t = OS.texts('settings');
 
 OS.registerApp('settings', {
@@ -185,7 +188,7 @@ OS.registerApp('settings', {
   onClose() {},
 });
 
-const SettingsApp = {
+var SettingsApp = {
   showPanel(name, sidebarEl) {
     document.querySelectorAll('.settings-panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.settings-sidebar-item').forEach(i => i.classList.remove('active'));
@@ -350,3 +353,4 @@ const SettingsApp = {
     alert(t('Username saved: "{name}"', { name }) + ' ✅');
   },
 };
+}

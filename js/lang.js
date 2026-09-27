@@ -3,7 +3,9 @@
    This file has no page code, so a test can load it outside of a browser.
 
    App code:
-     const t = OS.texts('memory');          one time, at the top of the app file
+     const t = OS.texts('memory');          one time for each app file, inside a block or a function:
+                                            all app files share one scope, so a top-level const t
+                                            in two files stops the second file
      t('New Game')                          text
      t('Score: {n}', { n: score })          text with values
      t('bank|Save')                         the same English word with another meaning:
