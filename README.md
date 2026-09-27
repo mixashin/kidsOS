@@ -11,6 +11,7 @@ A fun browser-based OS simulator for kids learning to use computers. Built with 
 - **Window Manager** — Draggable, resizable windows with minimize/maximize/close
 - **Taskbar & App Menu** — Windows-style taskbar with clock and start menu
 - **25 Apps** — Games, creativity tools, and silly parody apps
+- **Painted pictures** — Each app has its own picture in a hand-painted style. Each device shows the same pictures
 - **Private** — No trackers, no telemetry, no requests to other servers. All data stays on the device
 - **Dark/Light Theme** — With accent color picker
 - **PWA Support** — Installable on Android and iOS, works offline
@@ -101,6 +102,10 @@ node build.mjs                                # build the deployable site into d
 - The version number lives in `version.json` only. The build puts it everywhere else.
 - `sw.js` is a template. The build fills in the file list, so offline mode covers every file.
 - A push to `main` starts the GitHub Actions workflow, which builds `dist/` and publishes it to GitHub Pages.
+
+## Art
+
+The app pictures, the penguin, and the home screen icon are original pictures in a hand-painted style. An AI image tool made them for KidsOS. They use no stock picture and no character of a film, a game, or a book. The files are in `art/` and `icons/`. They are free to use under the license of this project.
 
 ## License
 
