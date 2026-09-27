@@ -6,14 +6,16 @@ const OS = (() => {
   let zCounter = 100;
   let windowMap = {};     // id -> { el, taskbarBtn, app }
   let focusHistory = [];  // ordered list of window ids, most recent last
-  let settings = {
+  // Values of a new device
+  const DEFAULTS = {
     username: 'KidsUser',
-    wallpaper: '0',
+    wallpaper: 'meadow',
     theme: 'light',
-    accentColor: '#5b8cff',
+    accentColor: '#4F8FC0',
     timeOffset: 0,       // minutes offset from real time
     dateOverride: null,
   };
+  let settings = { ...DEFAULTS };
   let clockInterval = null;
 
   /* ---- Standalone / PWA detection ---- */
@@ -749,12 +751,21 @@ const OS = (() => {
   function loadSettings() {
     try {
       const s = JSON.parse(localStorage.getItem('kidsOS_settings') || '{}');
-      Object.assign(settings, s);
+      if (s && typeof s === 'object') Object.assign(settings, s);
     } catch(e) {}
+    // The storage can hold values of an older release, or values that are not valid
+    if (!WALLPAPERS.some(w => w.id === settings.wallpaper)) settings.wallpaper = DEFAULTS.wallpaper;
+    const color = String(settings.accentColor).toLowerCase();
+    const old = OLD_ACCENTS.indexOf(color);
+    const now = ACCENT_COLORS.find(c => c.hex.toLowerCase() === color);
+    settings.accentColor = old >= 0 ? ACCENT_COLORS[old].hex : now ? now.hex : DEFAULTS.accentColor;
+    if (settings.theme !== 'dark') settings.theme = 'light';
+    if (typeof settings.username !== 'string' || !settings.username.trim()) settings.username = DEFAULTS.username;
   }
 
   function saveSettings(newSettings) {
     Object.assign(settings, newSettings);
+    if (!WALLPAPERS.some(w => w.id === settings.wallpaper)) settings.wallpaper = DEFAULTS.wallpaper;
     localStorage.setItem('kidsOS_settings', JSON.stringify(settings));
     applyTheme();
     applyWallpaper();
@@ -763,36 +774,39 @@ const OS = (() => {
 
   function getSettings() { return settings; }
 
+  // look: value for the CSS property background-image
   const WALLPAPERS = [
-    'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
-    'linear-gradient(135deg, #0d7377 0%, #14a085 50%, #0d7377 100%)',
-    'linear-gradient(135deg, #4a0e8f 0%, #9b3dca 50%, #e040fb 100%)',
-    'linear-gradient(135deg, #1a472a 0%, #2d6a4f 50%, #40916c 100%)',
-    'linear-gradient(135deg, #7b2d8b 0%, #d63384 50%, #fd7e14 100%)',
-    'linear-gradient(135deg, #003566 0%, #0077b6 50%, #00b4d8 100%)',
-    'linear-gradient(135deg, #1b1b1b 0%, #3d3d3d 50%, #1b1b1b 100%)',
-    'linear-gradient(135deg, #f72585 0%, #7209b7 30%, #3a0ca3 60%, #4361ee 100%)',
-    'linear-gradient(135deg, #f77f00 0%, #fcbf49 50%, #eae2b7 100%)',
+    { id: 'meadow',  name: 'Meadow',  look: "url('art/wallpapers/meadow.webp')" },
+    { id: 'forest',  name: 'Forest',  look: 'linear-gradient(160deg, #cfe6b8, #4E8B5A)' },
+    { id: 'seaside', name: 'Seaside', look: 'linear-gradient(180deg, #cdeaf7 40%, #4F8FC0)' },
+    { id: 'sunset',  name: 'Sunset',  look: 'linear-gradient(180deg, #F7B5C4, #F4A261 60%, #E76F51)' },
+    { id: 'night',   name: 'Night',   look: 'linear-gradient(180deg, #2B3A67, #6b5fa8)' },
+    { id: 'rain',    name: 'Rain',    look: 'linear-gradient(180deg, #b9c6d6, #8cae9a)' },
   ];
+  // The night theme puts this layer over the wallpaper
+  const NIGHT_LAYER = 'linear-gradient(rgba(34, 44, 92, 0.8), rgba(24, 28, 66, 0.88))';
 
+  // Each color has a contrast to white text of 3.49 or more
   const ACCENT_COLORS = [
-    { name: 'Blue',   hex: '#5b8cff' },
-    { name: 'Green',  hex: '#4caf50' },
-    { name: 'Purple', hex: '#9c27b0' },
-    { name: 'Orange', hex: '#ff9800' },
-    { name: 'Pink',   hex: '#e91e8c' },
-    { name: 'Teal',   hex: '#009688' },
+    { name: 'Sky',       hex: '#4F8FC0' },
+    { name: 'Leaf',      hex: '#4E8B5A' },
+    { name: 'Plum',      hex: '#8466B5' },
+    { name: 'Persimmon', hex: '#D95F43' },
+    { name: 'Rose',      hex: '#C9587C' },
+    { name: 'Amber',     hex: '#B9770E' },
   ];
+  // Colors of the releases before 0.30.0. A stored color changes to the new color at the same position.
+  const OLD_ACCENTS = ['#5b8cff', '#4caf50', '#9c27b0', '#ff9800', '#e91e8c', '#009688'];
 
   function applyTheme() {
-    document.documentElement.setAttribute('data-theme', settings.theme || 'light');
-    document.documentElement.style.setProperty('--accent', settings.accentColor || '#5b8cff');
+    document.documentElement.setAttribute('data-theme', settings.theme);
+    document.documentElement.style.setProperty('--accent', settings.accentColor);
   }
 
-  function applyWallpaper(idx) {
-    const i = idx !== undefined ? idx : (settings.wallpaper || 0);
-    document.getElementById('desktop').style.background = WALLPAPERS[i] || WALLPAPERS[0];
-    settings.wallpaper = String(i);
+  function applyWallpaper(id) {
+    const paper = WALLPAPERS.find(w => w.id === (id !== undefined ? id : settings.wallpaper)) || WALLPAPERS[0];
+    settings.wallpaper = paper.id;
+    document.getElementById('desktop').style.backgroundImage = (settings.theme === 'dark' ? NIGHT_LAYER + ', ' : '') + paper.look;
   }
 
   function getWallpapers() { return WALLPAPERS; }
@@ -881,18 +895,11 @@ const OS = (() => {
     // Close windows first: some apps save their state in onClose
     Object.keys(windowMap).forEach(closeWindow);
     storageKeys().forEach(key => localStorage.removeItem(key));
-    // Reset in-memory settings to defaults
-    Object.assign(settings, {
-      username: 'KidsUser',
-      wallpaper: '0',
-      theme: 'light',
-      accentColor: '#5b8cff',
-      timeOffset: 0,
-      dateOverride: null,
-    });
+    Object.assign(settings, DEFAULTS);
     applyTheme();
-    applyWallpaper(0);
+    applyWallpaper();
     updateMenuUsername();
+    updateCoins();
   }
 
   /* ---- Game loop helper ---- */

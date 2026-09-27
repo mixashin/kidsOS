@@ -16,14 +16,13 @@ OS.registerApp('settings', {
   getHTML() {
     const s = OS.getSettings();
     const wallpapers = OS.getWallpapers();
-    const gradientPreviews = wallpapers.map((wp, i) => `
-      <div class="wp-option ${s.wallpaper == i ? 'selected' : ''}"
-           style="background:${wp}"
-           onclick="SettingsApp.selectWallpaper(${i}, this)"
-           title="Wallpaper ${i+1}"></div>`).join('');
+    const gradientPreviews = wallpapers.map(wp => `
+      <div class="wp-option ${s.wallpaper === wp.id ? 'selected' : ''}"
+           style="background:${wp.look} center / cover"
+           onclick="SettingsApp.selectWallpaper('${wp.id}', this)"><b>${wp.name}</b></div>`).join('');
 
     const accentSwatches = OS.ACCENT_COLORS.map(c => `
-      <div class="accent-option ${(s.accentColor || '#5b8cff') === c.hex ? 'active' : ''}"
+      <div class="accent-option ${s.accentColor === c.hex ? 'active' : ''}"
            style="background:${c.hex}" data-color="${c.hex}"
            onclick="SettingsApp.setAccent('${c.hex}')"
            title="${c.name}"></div>`).join('');
@@ -66,10 +65,10 @@ OS.registerApp('settings', {
           <label>Theme</label>
           <div class="theme-options">
             <div class="theme-option ${s.theme !== 'dark' ? 'active' : ''}" onclick="SettingsApp.setTheme('light')">
-              <span>☀️</span> Light
+              <span>☀️</span> Day
             </div>
             <div class="theme-option ${s.theme === 'dark' ? 'active' : ''}" onclick="SettingsApp.setTheme('dark')">
-              <span>🌙</span> Dark
+              <span>🌙</span> Night
             </div>
           </div>
         </div>
@@ -167,6 +166,7 @@ OS.registerApp('settings', {
             ${OS.APPS.map(a => a.label).join(' · ')}
           </div>
           <div style="text-align:center;color:var(--text-muted);font-size:13px">Built with HTML, CSS &amp; JavaScript ❤️</div>
+          <button class="settings-btn settings-btn-danger" style="align-self:center" onclick="OS.shutdown()">⏻ Shut down</button>
         </div>
       </div>
     </div>`;
@@ -200,11 +200,10 @@ const SettingsApp = {
     });
   },
 
-  selectWallpaper(idx, el) {
+  selectWallpaper(id, el) {
     document.querySelectorAll('.wp-option').forEach(w => w.classList.remove('selected'));
     if (el) el.classList.add('selected');
-    OS.applyWallpaper(idx);
-    OS.saveSettings({ wallpaper: String(idx) });
+    OS.saveSettings({ wallpaper: id });
   },
 
   saveDateTime() {
