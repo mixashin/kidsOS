@@ -1,5 +1,6 @@
 /* ===== Pocket Pal 3D — Virtual Pet Corgi ===== */
 (() => {
+  const t = OS.texts('pocketpal');
   const STORE_KEY = 'kidsOS_pocketpal';
 
   /* ── Constants ── */
@@ -33,6 +34,21 @@
     needy:   ['Hey... notice me?', 'I need something...', '*whimper*'],
     sad:     ['Please help me...', '*sad puppy eyes*', 'I miss you...'],
   };
+
+  function thoughtsOf(mood) {
+    if (mood === 'happy') return t.list('pocketpal.thoughts.happy', THOUGHTS.happy);
+    if (mood === 'meh') return t.list('pocketpal.thoughts.meh', THOUGHTS.meh);
+    if (mood === 'needy') return t.list('pocketpal.thoughts.needy', THOUGHTS.needy);
+    if (mood === 'sad') return t.list('pocketpal.thoughts.sad', THOUGHTS.sad);
+    return t.list('pocketpal.thoughts.content', THOUGHTS.content);
+  }
+
+  function poseName(pose) {
+    if (pose === 'happy') return t('happy');
+    if (pose === 'wave') return t('wave');
+    if (pose === 'boop') return t('boop');
+    return t('shake');
+  }
 
   const DECAY_PER_HOUR = { hunger: 3, happiness: 2, cleanliness: 1, energy: 2 };
 
@@ -166,7 +182,7 @@
   /* ── Three.js Setup ── */
   function initScene(container) {
     if (!THREE) {
-      container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#999;text-align:center;padding:20px;">Pocket Pal could not load its 3D engine.<br>Close the app and open it again.</div>';
+      container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#999;text-align:center;padding:20px;">' + t('Pocket Pal could not load its 3D engine.') + '<br>' + t('Close the app and open it again.') + '</div>';
       return false;
     }
 
@@ -703,18 +719,18 @@
 
   function randomThought() {
     const mood = getMood();
-    const pool = THOUGHTS[mood] || THOUGHTS.content;
+    const pool = thoughtsOf(mood);
     showThought(pool[Math.floor(Math.random() * pool.length)]);
   }
 
   /* ── Action Handlers ── */
   function doFeed(foodId) {
-    const food = FOODS.find(f => f.id === foodId);
+    const food = t.list('pocketpal.foods', FOODS).find(f => f.id === foodId);
     if (!food) return;
     // Too full?
     if (state.hunger >= 95) {
       playAnimOnce('boop', 1200);
-      showThought("I'm so full! 🤭");
+      showThought(t("I'm so full!") + ' 🤭');
       return;
     }
     state.hunger = clamp(state.hunger + food.hunger);
@@ -726,12 +742,12 @@
     updateHUD();
     // Award coins occasionally
     if (state.totalFeeds % 5 === 0) {
-      OS.awardCoins(2, 'Pocket Pal', '🐶', 'Fed your pet ' + state.totalFeeds + ' times!');
+      OS.awardCoins(2, 'Pocket Pal', '🐶', t('Fed your pet {n} times!', { n: state.totalFeeds }));
     }
   }
 
   function doClean(toolId) {
-    const tool = CLEAN_TOOLS.find(t => t.id === toolId);
+    const tool = t.list('pocketpal.tools', CLEAN_TOOLS).find(c => c.id === toolId);
     if (!tool) return;
     state.cleanliness = clamp(state.cleanliness + tool.clean);
     state.totalCleans++;
@@ -742,7 +758,7 @@
     addBubbleBurst();
     updateHUD();
     if (state.totalCleans % 5 === 0) {
-      OS.awardCoins(2, 'Pocket Pal', '🧼', 'Kept your pet squeaky clean!');
+      OS.awardCoins(2, 'Pocket Pal', '🧼', t('Kept your pet squeaky clean!'));
     }
   }
 
@@ -753,7 +769,7 @@
       state.sleepStart = null;
       save();
       playAnimOnce('shake', 1000, getIdleAnimForMood());
-      showThought('Good morning! ☀️');
+      showThought(t('Good morning!') + ' ☀️');
       clearInterval(ui.sleepInterval);
       ui.sleepInterval = null;
     } else {
@@ -762,7 +778,7 @@
       state.totalSleeps++;
       save();
       playAnim('sleep');
-      showThought('Zzz... 💤');
+      showThought(t('Zzz...') + ' 💤');
       // Recover energy over time while window is open
       ui.sleepInterval = setInterval(() => {
         if (state.isSleeping) {
@@ -785,13 +801,13 @@
     const rand = Math.random();
     if (rand < 0.3) {
       playAnimOnce('boop', 1200);
-      showThought('Boop! 👃');
+      showThought(t('Boop!') + ' 👃');
     } else if (rand < 0.6) {
       playAnimOnce('wave', 1500);
-      showThought('Hi there! 🐾');
+      showThought(t('Hi there!') + ' 🐾');
     } else {
       playAnimOnce('happy', 1500);
-      showThought('Yay! 💕');
+      showThought(t('Yay!') + ' 💕');
     }
     state.happiness = clamp(state.happiness + 2);
     save();
@@ -945,7 +961,7 @@
     mgState._currentPose = poses[Math.floor(Math.random() * poses.length)];
     mgState._waitingForInput = true;
     playAnim(mgState._currentPose);
-    showThought('Copy this pose!');
+    showThought(t('Copy this pose!'));
     updateGameHUD();
   }
 
@@ -953,10 +969,10 @@
     if (!mgState || !mgState._waitingForInput) return;
     if (pose === mgState._currentPose) {
       mgState.score += 10;
-      showThought('Correct! 🎉');
+      showThought(t('Correct!') + ' 🎉');
       playAnimOnce('happy', 800);
     } else {
-      showThought('Not quite! 😅');
+      showThought(t('Not quite!') + ' 😅');
       playAnimOnce('boop', 800);
     }
     mgState._waitingForInput = false;
@@ -998,10 +1014,10 @@
     if (ui.miniGame === 'copyme' && mgState._waitingForInput) {
       const poseEmojis = { happy: '😃', wave: '👋', boop: '👃', shake: '🐕' };
       extra = `<div class="pp-copyme-btns">
-        ${mgState._poses.map(p => `<button class="pp-copyme-btn" onclick="window._ppCopyGuess('${p}')">${poseEmojis[p] || '❓'} ${p}</button>`).join('')}
+        ${mgState._poses.map(p => `<button class="pp-copyme-btn" onclick="window._ppCopyGuess('${p}')">${poseEmojis[p] || '❓'} ${poseName(p)}</button>`).join('')}
       </div>`;
     }
-    hud.innerHTML = `<span>⭐ ${mgState.score}</span><span>⏱️ ${mgState.timeLeft}s</span>${extra}`;
+    hud.innerHTML = `<span>⭐ ${mgState.score}</span><span>⏱️ ${t('{n}s', { n: mgState.timeLeft })}</span>${extra}`;
   }
 
   function endMiniGame() {
@@ -1025,12 +1041,12 @@
 
     // Award coins based on score
     if (score >= 30) {
-      OS.awardCoins(3, 'Pocket Pal', '🫧', 'Great game with ' + (state.name || 'your pet') + '!');
+      OS.awardCoins(3, 'Pocket Pal', '🫧', state.name ? t('Great game with {name}!', { name: state.name }) : t('Great game with your pet!'));
     } else if (score >= 10) {
-      OS.awardCoins(1, 'Pocket Pal', '⚽', 'Played with ' + (state.name || 'your pet') + '!');
+      OS.awardCoins(1, 'Pocket Pal', '⚽', state.name ? t('Played with {name}!', { name: state.name }) : t('Played with your pet!'));
     }
 
-    showThought('That was fun! Score: ' + score + ' ⭐');
+    showThought(t('That was fun! Score: {n}', { n: score }) + ' ⭐');
     playAnimOnce('happy', 2000, getIdleAnimForMood());
     ui.miniGame = null;
     mgState = null;
@@ -1045,21 +1061,21 @@
   let _pointerStart = null;
 
   function onPointerDown(e) {
-    const t = e.touches ? e.touches[0] : e;
-    _pointerStart = { x: t.clientX, y: t.clientY, time: Date.now() };
+    const p = e.touches ? e.touches[0] : e;
+    _pointerStart = { x: p.clientX, y: p.clientY, time: Date.now() };
   }
 
   function onPointerUp(e) {
     if (!_pointerStart) return;
-    const t = e.changedTouches ? e.changedTouches[0] : e;
-    const dx = t.clientX - _pointerStart.x;
-    const dy = t.clientY - _pointerStart.y;
+    const p = e.changedTouches ? e.changedTouches[0] : e;
+    const dx = p.clientX - _pointerStart.x;
+    const dy = p.clientY - _pointerStart.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
     const elapsed = Date.now() - _pointerStart.time;
     _pointerStart = null;
     // Only treat as tap if short duration and small distance (not a drag/orbit)
     if (dist > 10 || elapsed > 300) return;
-    handleTap(t.clientX, t.clientY);
+    handleTap(p.clientX, p.clientY);
   }
 
   function handleTap(cx, cy) {
@@ -1077,7 +1093,7 @@
         hit.visible = false;
         mgState.score += 10;
         updateGameHUD();
-        showThought('Pop! 🫧');
+        showThought(t('Pop!') + ' 🫧');
         return;
       }
     }
@@ -1091,7 +1107,7 @@
         ball._velZ = (Math.random() - 0.5) * 0.06;
         mgState.score += 10;
         updateGameHUD();
-        showThought('Nice throw! ⚽');
+        showThought(t('Nice throw!') + ' ⚽');
         return;
       }
     }
@@ -1141,14 +1157,14 @@
   function renderNamePicker(body) {
     body.innerHTML = `
       <div class="pp-name-picker">
-        <div class="pp-name-title">🐶 Name Your Corgi!</div>
-        <div class="pp-name-subtitle">Pick a name for your new best friend</div>
+        <div class="pp-name-title">🐶 ${t('Name Your Corgi!')}</div>
+        <div class="pp-name-subtitle">${t('Pick a name for your new best friend')}</div>
         <div class="pp-name-grid">
-          ${PET_NAMES.map(n => `<button class="pp-name-btn" onclick="window._ppName('${n}')">${n}</button>`).join('')}
+          ${t.list('pocketpal.names', PET_NAMES).map(n => `<button class="pp-name-btn" onclick="window._ppName('${n}')">${n}</button>`).join('')}
         </div>
         <div class="pp-name-custom">
-          <input type="text" id="pp-custom-name" class="pp-name-input" placeholder="Or type a custom name..." maxlength="14">
-          <button class="pp-name-go" onclick="window._ppCustomName()">Go!</button>
+          <input type="text" id="pp-custom-name" class="pp-name-input" placeholder="${t('Or type a custom name...')}" maxlength="14">
+          <button class="pp-name-go" onclick="window._ppCustomName()">${t('Go!')}</button>
         </div>
       </div>
     `;
@@ -1158,7 +1174,7 @@
     return `
       <div class="pp-wrap">
         <div class="pp-hud" id="pp-hud">
-          <div class="pp-pet-name">${OS.esc(state.name || 'Corgi')} ${getMoodEmoji()}</div>
+          <div class="pp-pet-name">${OS.esc(state.name || t('Corgi'))} ${getMoodEmoji()}</div>
           <div class="pp-stats">
             <div class="pp-stat">
               <span class="pp-stat-icon">🍖</span>
@@ -1183,10 +1199,10 @@
         <div class="pp-overlay" id="pp-overlay"></div>
         <div class="pp-game-hud pp-hidden" id="pp-game-hud"></div>
         <div class="pp-controls" id="pp-controls">
-          <button class="pp-btn pp-btn-feed" onclick="window._ppGo('feed')">🍖<span>Feed</span></button>
-          <button class="pp-btn pp-btn-play" onclick="window._ppGo('play')">⚽<span>Play</span></button>
-          <button class="pp-btn pp-btn-clean" onclick="window._ppGo('clean')">🧼<span>Clean</span></button>
-          <button class="pp-btn pp-btn-sleep" onclick="window._ppGo('sleep')">💤<span>${state.isSleeping ? 'Wake' : 'Sleep'}</span></button>
+          <button class="pp-btn pp-btn-feed" onclick="window._ppGo('feed')">🍖<span>${t('Feed')}</span></button>
+          <button class="pp-btn pp-btn-play" onclick="window._ppGo('play')">⚽<span>${t('Play')}</span></button>
+          <button class="pp-btn pp-btn-clean" onclick="window._ppGo('clean')">🧼<span>${t('Clean')}</span></button>
+          <button class="pp-btn pp-btn-sleep" onclick="window._ppGo('sleep')">💤<span>${state.isSleeping ? t('Wake') : t('Sleep')}</span></button>
         </div>
       </div>
     `;
@@ -1195,17 +1211,17 @@
   function renderFeedTray() {
     return `
       <div class="pp-tray">
-        <div class="pp-tray-title">🍖 Feed ${OS.esc(state.name)}</div>
+        <div class="pp-tray-title">🍖 ${t('Feed {name}', { name: OS.esc(state.name) })}</div>
         <div class="pp-tray-grid">
-          ${FOODS.map(f => `
+          ${t.list('pocketpal.foods', FOODS).map(f => `
             <button class="pp-tray-item" onclick="window._ppFeed('${f.id}')">
               <span class="pp-tray-emoji">${f.emoji}</span>
               <span class="pp-tray-name">${f.name}</span>
-              <span class="pp-tray-desc">+${f.hunger} hunger</span>
+              <span class="pp-tray-desc">${t('+{n} hunger', { n: f.hunger })}</span>
             </button>
           `).join('')}
         </div>
-        <button class="pp-tray-back" onclick="window._ppGo('home')">← Back</button>
+        <button class="pp-tray-back" onclick="window._ppGo('home')">← ${t('Back')}</button>
       </div>
     `;
   }
@@ -1213,9 +1229,9 @@
   function renderPlayMenu() {
     return `
       <div class="pp-tray">
-        <div class="pp-tray-title">⚽ Play with ${OS.esc(state.name)}</div>
+        <div class="pp-tray-title">⚽ ${t('Play with {name}', { name: OS.esc(state.name) })}</div>
         <div class="pp-tray-grid">
-          ${GAMES.map(g => `
+          ${t.list('pocketpal.games', GAMES).map(g => `
             <button class="pp-tray-item" onclick="window._ppPlay('${g.id}')">
               <span class="pp-tray-emoji">${g.emoji}</span>
               <span class="pp-tray-name">${g.name}</span>
@@ -1223,7 +1239,7 @@
             </button>
           `).join('')}
         </div>
-        <button class="pp-tray-back" onclick="window._ppGo('home')">← Back</button>
+        <button class="pp-tray-back" onclick="window._ppGo('home')">← ${t('Back')}</button>
       </div>
     `;
   }
@@ -1231,17 +1247,17 @@
   function renderCleanTray() {
     return `
       <div class="pp-tray">
-        <div class="pp-tray-title">🧼 Clean ${OS.esc(state.name)}</div>
+        <div class="pp-tray-title">🧼 ${t('Clean {name}', { name: OS.esc(state.name) })}</div>
         <div class="pp-tray-grid">
-          ${CLEAN_TOOLS.map(t => `
-            <button class="pp-tray-item" onclick="window._ppClean('${t.id}')">
-              <span class="pp-tray-emoji">${t.emoji}</span>
-              <span class="pp-tray-name">${t.name}</span>
-              <span class="pp-tray-desc">+${t.clean} clean</span>
+          ${t.list('pocketpal.tools', CLEAN_TOOLS).map(c => `
+            <button class="pp-tray-item" onclick="window._ppClean('${c.id}')">
+              <span class="pp-tray-emoji">${c.emoji}</span>
+              <span class="pp-tray-name">${c.name}</span>
+              <span class="pp-tray-desc">${t('+{n} clean', { n: c.clean })}</span>
             </button>
           `).join('')}
         </div>
-        <button class="pp-tray-back" onclick="window._ppGo('home')">← Back</button>
+        <button class="pp-tray-back" onclick="window._ppGo('home')">← ${t('Back')}</button>
       </div>
     `;
   }
@@ -1252,15 +1268,15 @@
         <div class="pp-sleep-stars">
           ${'⭐'.repeat(5)} 🌙 ${'⭐'.repeat(5)}
         </div>
-        <div class="pp-sleep-text">💤 ${OS.esc(state.name)} is sleeping... 💤</div>
-        <div class="pp-sleep-hint">Tap to wake up</div>
+        <div class="pp-sleep-text">💤 ${t('{name} is sleeping...', { name: OS.esc(state.name) })} 💤</div>
+        <div class="pp-sleep-hint">${t('Tap to wake up')}</div>
       </div>
     `;
   }
 
   function renderMiniGameOverlay() {
     return `<div class="pp-game-overlay">
-      <div class="pp-game-info">Tap the 3D objects!</div>
+      <div class="pp-game-info">${t('Tap the 3D objects!')}</div>
     </div>`;
   }
 
@@ -1269,7 +1285,7 @@
     const hud = document.getElementById('pp-hud');
     if (!hud) return;
     const nameEl = hud.querySelector('.pp-pet-name');
-    if (nameEl) nameEl.textContent = (state.name || 'Corgi') + ' ' + getMoodEmoji();
+    if (nameEl) nameEl.textContent = (state.name || t('Corgi')) + ' ' + getMoodEmoji();
     // Update stat bars
     const fills = hud.querySelectorAll('.pp-stat-fill');
     if (fills.length >= 4) {
@@ -1280,7 +1296,7 @@
     }
     // Update sleep button text
     const sleepBtn = document.querySelector('.pp-btn-sleep span');
-    if (sleepBtn) sleepBtn.textContent = state.isSleeping ? 'Wake' : 'Sleep';
+    if (sleepBtn) sleepBtn.textContent = state.isSleeping ? t('Wake') : t('Sleep');
   }
 
   /* ── Window Handlers (global) ── */
@@ -1312,7 +1328,7 @@
 
   window._ppCustomName = function() {
     const input = document.getElementById('pp-custom-name');
-    const name = (input ? input.value.trim() : '') || 'Buddy';
+    const name = (input ? input.value.trim() : '') || t('Buddy');
     state.name = name.slice(0, 14);
     save();
     initMainView();
@@ -1328,7 +1344,7 @@
       // Load Three.js dynamically
       const loaded = await loadThreeJS();
       if (!loaded) {
-        canvasWrap.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#999;text-align:center;padding:20px;">Pocket Pal could not load its 3D engine.<br>Close the app and open it again.</div>';
+        canvasWrap.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#999;text-align:center;padding:20px;">' + t('Pocket Pal could not load its 3D engine.') + '<br>' + t('Close the app and open it again.') + '</div>';
         return;
       }
       const ok = initScene(canvasWrap);
@@ -1399,11 +1415,11 @@
     getWindowOpts() {
       return {
         id: 'pocketpal',
-        title: 'Pocket Pal',
+        title: t('Pocket Pal'),
         icon: '🐶',
         width: 420,
         height: 560,
-        content: '<div class="pp-loading">Loading Pocket Pal...</div>',
+        content: '<div class="pp-loading">' + t('Loading Pocket Pal...') + '</div>',
       };
     },
     onOpen(id) {

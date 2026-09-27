@@ -1,5 +1,7 @@
 /* ===== TinyBank — Parody Banking App for Kids ===== */
 (() => {
+  const t = OS.texts('tinybank');
+
   /* ---- Data Constants ---- */
   const EARN_TASKS = [
     { id: 'bed', emoji: '🛏️', name: 'Made the Bed (Without Being Asked!)', coins: 10 },
@@ -13,12 +15,12 @@
   ];
 
   const RAISE_RESPONSES = [
-    { text: "The board of directors (Mom) says: 'Lol, no.'", coins: 0 },
-    { text: "Your request has been forwarded to the Department of Maybe. They're on lunch.", coins: 0 },
-    { text: "Congratulations! You've been awarded 5 Sympathy Coins.", coins: 5 },
-    { text: "The CEO (Dad) reviewed your case. Here's 10 coins and a pat on the head.", coins: 10 },
-    { text: "JACKPOT! Grandma heard about your raise request. Here's 25 coins!", coins: 25 },
-    { text: "HR says you get 3 coins and a participation trophy.", coins: 3 },
+    { id: 'board', text: "The board of directors (Mom) says: 'Lol, no.'", coins: 0 },
+    { id: 'maybe', text: "Your request has been forwarded to the Department of Maybe. They're on lunch.", coins: 0 },
+    { id: 'sympathy', text: "Congratulations! You've been awarded 5 Sympathy Coins.", coins: 5 },
+    { id: 'ceo', text: "The CEO (Dad) reviewed your case. Here's 10 coins and a pat on the head.", coins: 10 },
+    { id: 'grandma', text: "JACKPOT! Grandma heard about your raise request. Here's 25 coins!", coins: 25 },
+    { id: 'hr', text: "HR says you get 3 coins and a participation trophy.", coins: 3 },
   ];
 
   const JARS = [
@@ -50,9 +52,9 @@
   ];
 
   const FRAUD_RESPONSES = [
-    { label: 'It was me 😅', result: 'Transaction approved. The rubber ducks are on their way.' },
-    { label: 'Blame the cat 🐱', result: 'We\'ve flagged the cat as a suspect. Case closed.' },
-    { label: 'Call the Bank 📞', result: 'You\'re already IN the bank. But okay, we\'ll investigate.' },
+    { id: 'me', label: 'It was me 😅', result: 'Transaction approved. The rubber ducks are on their way.' },
+    { id: 'cat', label: 'Blame the cat 🐱', result: 'We\'ve flagged the cat as a suspect. Case closed.' },
+    { id: 'bank', label: 'Call the Bank 📞', result: 'You\'re already IN the bank. But okay, we\'ll investigate.' },
   ];
 
   const BADGES_DEF = [
@@ -105,12 +107,13 @@
   function jarTotal(s) { return JARS.reduce((sum, j) => sum + (s.jars[j.id] || 0), 0); }
   function goalTotal(s) { return GOALS.reduce((sum, g) => sum + (getGoalSaved(s, g.id)), 0); }
   function getGoalSaved(s, gid) { const g = s.goals.find(x => x.id === gid); return g ? g.saved : 0; }
-  function fmt(n) { return n.toLocaleString(); }
+  function fmt(n) { return n.toLocaleString(OS.locale()); }
+  function gc(n) { return t('{n} GC', { n }); }
   function today() { return new Date().toISOString().slice(0, 10); }
   function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
   function dateStr() {
     const d = new Date();
-    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    return d.toLocaleDateString(OS.locale(), { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
   }
 
   /* ---- State ---- */
@@ -220,7 +223,11 @@
   }
 
   function renderHome() {
-    const msg = DAILY_MESSAGES[Math.floor(Date.now() / 86400000) % DAILY_MESSAGES.length];
+    // t.plural with 'Giggle Coins' two times: English shows one form for each number, Serbian has 3 forms
+    const messages = t.list('tinybank.news', DAILY_MESSAGES);
+    const msg = messages[Math.floor(Date.now() / 86400000) % messages.length];
+    const pool = t.list('tinybank.missions', DAILY_MISSIONS_POOL);
+    const badges = t.list('tinybank.badges', BADGES_DEF);
     const missions = state.dailyMissions ? state.dailyMissions.missions : [];
     const earned = state.badges || [];
 
@@ -228,9 +235,9 @@
     if (showBadges) {
       badgeOverlay = `<div class="tb-overlay" onclick="window._tbCloseBadges(event)">
         <div class="tb-overlay-box" onclick="event.stopPropagation()">
-          <div class="tb-overlay-title">🏆 All Badges</div>
+          <div class="tb-overlay-title">🏆 ${t('All Badges')}</div>
           <div class="tb-badge-grid">
-            ${BADGES_DEF.map(b => {
+            ${badges.map(b => {
               const unlocked = earned.includes(b.id);
               return `<div class="tb-badge-card ${unlocked ? 'tb-badge-unlocked' : 'tb-badge-locked'}">
                 <div class="tb-badge-icon">${unlocked ? b.emoji : '🔒'}</div>
@@ -239,7 +246,7 @@
               </div>`;
             }).join('')}
           </div>
-          <button class="tb-btn tb-btn-sm" onclick="window._tbCloseBadges(event)">Close</button>
+          <button class="tb-btn tb-btn-sm" onclick="window._tbCloseBadges(event)">${t('Close')}</button>
         </div>
       </div>`;
     }
@@ -247,42 +254,42 @@
     return `<div class="tb-wrap">
       ${badgeOverlay}
       <div class="tb-header">
-        <span class="tb-logo">🏦 TinyBank</span>
-        <span class="tb-bal-pill">${fmt(state.balance)} GC</span>
+        <span class="tb-logo">🏦 ${t('TinyBank')}</span>
+        <span class="tb-bal-pill">${gc(fmt(state.balance))}</span>
       </div>
       <div class="tb-home-scroll">
         <div class="tb-hero">
-          <div class="tb-hero-label">Your Balance</div>
+          <div class="tb-hero-label">${t('Your Balance')}</div>
           <div class="tb-hero-amount">${fmt(state.balance)}</div>
-          <div class="tb-hero-unit">Giggle Coins</div>
+          <div class="tb-hero-unit">${t.plural(state.balance, 'Giggle Coins', 'Giggle Coins')}</div>
         </div>
         <div class="tb-daily-msg">${msg}</div>
         <div class="tb-missions">
-          <div class="tb-section-title">Daily Missions</div>
+          <div class="tb-section-title">${t('Daily Missions')}</div>
           ${missions.map(m => {
-            const def = DAILY_MISSIONS_POOL.find(x => x.id === m.id);
+            const def = pool.find(x => x.id === m.id);
             return `<div class="tb-mission ${m.done ? 'tb-mission-done' : ''}">
               <span>${m.done ? '✅' : '⬜'}</span> ${def ? def.text : m.id}
             </div>`;
           }).join('')}
         </div>
         <div class="tb-nav-grid">
-          <button class="tb-nav-btn" onclick="window._tbGo('earn')"><span>💰</span>Earn</button>
-          <button class="tb-nav-btn" onclick="window._tbGo('save')"><span>🏺</span>Save</button>
-          <button class="tb-nav-btn" onclick="window._tbGo('goals')"><span>🎯</span>Goals</button>
-          <button class="tb-nav-btn" onclick="window._tbGo('history')"><span>📜</span>History</button>
-          <button class="tb-nav-btn" onclick="window._tbGo('card')"><span>💳</span>Card</button>
-          <button class="tb-nav-btn" onclick="window._tbGo('give')"><span>🎁</span>Give</button>
+          <button class="tb-nav-btn" onclick="window._tbGo('earn')"><span>💰</span>${t('Earn')}</button>
+          <button class="tb-nav-btn" onclick="window._tbGo('save')"><span>🏺</span>${t('bank|Save')}</button>
+          <button class="tb-nav-btn" onclick="window._tbGo('goals')"><span>🎯</span>${t('Goals')}</button>
+          <button class="tb-nav-btn" onclick="window._tbGo('history')"><span>📜</span>${t('History')}</button>
+          <button class="tb-nav-btn" onclick="window._tbGo('card')"><span>💳</span>${t('Card')}</button>
+          <button class="tb-nav-btn" onclick="window._tbGo('give')"><span>🎁</span>${t('Give')}</button>
         </div>
         <div class="tb-badges-row">
-          <div class="tb-section-title">Badges</div>
+          <div class="tb-section-title">${t('Badges')}</div>
           <div class="tb-badges-icons">
             ${earned.length ? earned.map(id => {
-              const b = BADGES_DEF.find(x => x.id === id);
+              const b = badges.find(x => x.id === id);
               return b ? `<span class="tb-badge-mini" title="${b.name}">${b.emoji}</span>` : '';
-            }).join('') : '<span class="tb-muted">No badges yet — keep going!</span>'}
+            }).join('') : `<span class="tb-muted">${t('No badges yet — keep going!')}</span>`}
           </div>
-          <button class="tb-link" onclick="window._tbShowBadges()">View All Badges</button>
+          <button class="tb-link" onclick="window._tbShowBadges()">${t('View All Badges')}</button>
         </div>
       </div>
     </div>`;
@@ -291,34 +298,34 @@
   function renderEarn() {
     return `<div class="tb-wrap">
       <div class="tb-header">
-        <button class="tb-back" onclick="window._tbGo('home')">← Back</button>
-        <span class="tb-header-title">💰 Earn Coins</span>
-        <span class="tb-bal-pill">${fmt(state.balance)} GC</span>
+        <button class="tb-back" onclick="window._tbGo('home')">← ${t('Back')}</button>
+        <span class="tb-header-title">💰 ${t('Earn Coins')}</span>
+        <span class="tb-bal-pill">${gc(fmt(state.balance))}</span>
       </div>
       <div class="tb-scroll">
         <div class="tb-earn-list">
-          ${EARN_TASKS.map(t => {
-            const claimed = state.earnedToday.includes(t.id);
+          ${t.list('tinybank.tasks', EARN_TASKS).map(task => {
+            const claimed = state.earnedToday.includes(task.id);
             return `<div class="tb-earn-item ${claimed ? 'tb-earn-claimed' : ''}">
               <div class="tb-earn-left">
-                <span class="tb-earn-emoji">${t.emoji}</span>
+                <span class="tb-earn-emoji">${task.emoji}</span>
                 <div>
-                  <div class="tb-earn-name">${t.name}</div>
-                  <div class="tb-earn-coins">+${t.coins} GC</div>
+                  <div class="tb-earn-name">${task.name}</div>
+                  <div class="tb-earn-coins">${gc('+' + task.coins)}</div>
                 </div>
               </div>
               ${claimed
                 ? '<span class="tb-earn-check">✅</span>'
-                : `<button class="tb-btn tb-btn-sm" onclick="window._tbClaim('${t.id}')">Claim</button>`}
+                : `<button class="tb-btn tb-btn-sm" onclick="window._tbClaim('${task.id}')">${t('Claim')}</button>`}
             </div>`;
           }).join('')}
         </div>
         <div class="tb-raise-section">
-          <div class="tb-section-title">Feeling Brave?</div>
-          <button class="tb-btn tb-btn-raise" onclick="window._tbRaise()">💼 Ask for a Raise</button>
+          <div class="tb-section-title">${t('Feeling Brave?')}</div>
+          <button class="tb-btn tb-btn-raise" onclick="window._tbRaise()">💼 ${t('Ask for a Raise')}</button>
           ${raiseResult ? `<div class="tb-raise-result">
             <div class="tb-raise-text">${raiseResult.text}</div>
-            ${raiseResult.coins > 0 ? `<div class="tb-raise-coins">+${raiseResult.coins} GC</div>` : ''}
+            ${raiseResult.coins > 0 ? `<div class="tb-raise-coins">${gc('+' + raiseResult.coins)}</div>` : ''}
           </div>` : ''}
         </div>
       </div>
@@ -328,21 +335,21 @@
   function renderSave() {
     return `<div class="tb-wrap">
       <div class="tb-header">
-        <button class="tb-back" onclick="window._tbGo('home')">← Back</button>
-        <span class="tb-header-title">🏺 Save</span>
-        <span class="tb-bal-pill">${fmt(state.balance)} GC</span>
+        <button class="tb-back" onclick="window._tbGo('home')">← ${t('Back')}</button>
+        <span class="tb-header-title">🏺 ${t('bank|Save')}</span>
+        <span class="tb-bal-pill">${gc(fmt(state.balance))}</span>
       </div>
       <div class="tb-scroll">
         ${saveMsg ? `<div class="tb-save-msg">${saveMsg}</div>` : ''}
         <div class="tb-jars">
-          ${JARS.map(j => {
+          ${t.list('tinybank.jars', JARS).map(j => {
             const bal = state.jars[j.id] || 0;
             return `<div class="tb-jar">
               <div class="tb-jar-top">
                 <span class="tb-jar-emoji">${j.emoji}</span>
                 <div>
                   <div class="tb-jar-name">${j.name}</div>
-                  <div class="tb-jar-bal">${fmt(bal)} GC</div>
+                  <div class="tb-jar-bal">${gc(fmt(bal))}</div>
                 </div>
               </div>
               <div class="tb-jar-btns">
@@ -360,13 +367,13 @@
   function renderGoals() {
     return `<div class="tb-wrap">
       <div class="tb-header">
-        <button class="tb-back" onclick="window._tbGo('home')">← Back</button>
-        <span class="tb-header-title">🎯 Goals</span>
-        <span class="tb-bal-pill">${fmt(state.balance)} GC</span>
+        <button class="tb-back" onclick="window._tbGo('home')">← ${t('Back')}</button>
+        <span class="tb-header-title">🎯 ${t('Goals')}</span>
+        <span class="tb-bal-pill">${gc(fmt(state.balance))}</span>
       </div>
       <div class="tb-scroll">
         <div class="tb-goals">
-          ${GOALS.map(g => {
+          ${t.list('tinybank.goals', GOALS).map(g => {
             const saved = getGoalSaved(state, g.id);
             const pct = Math.min(100, Math.round(saved / g.target * 100));
             const done = saved >= g.target;
@@ -382,8 +389,8 @@
                 <div class="tb-progress-bar" style="width:${pct}%"></div>
               </div>
               <div class="tb-goal-bottom">
-                <span>${fmt(saved)} / ${fmt(g.target)} GC</span>
-                ${done ? '<span class="tb-goal-complete">Complete!</span>' : `<button class="tb-btn tb-btn-sm" onclick="window._tbGoalAdd('${g.id}')">+10 GC</button>`}
+                <span>${t('{n} / {total} GC', { n: fmt(saved), total: fmt(g.target) })}</span>
+                ${done ? `<span class="tb-goal-complete">${t('Complete!')}</span>` : `<button class="tb-btn tb-btn-sm" onclick="window._tbGoalAdd('${g.id}')">${gc('+10')}</button>`}
               </div>
             </div>`;
           }).join('')}
@@ -393,22 +400,22 @@
   }
 
   function renderHistory() {
-    const thisMonth = new Date().toLocaleDateString(undefined, { month: 'long' });
+    const thisMonth = new Date().toLocaleDateString(OS.locale(), { month: 'long' });
     const earned = state.history.filter(h => h.amount > 0).reduce((s, h) => s + h.amount, 0);
     const spent = state.history.filter(h => h.amount < 0).reduce((s, h) => s + Math.abs(h.amount), 0);
 
     return `<div class="tb-wrap">
       <div class="tb-header">
-        <button class="tb-back" onclick="window._tbGo('home')">← Back</button>
-        <span class="tb-header-title">📜 Drama Log</span>
-        <span class="tb-bal-pill">${fmt(state.balance)} GC</span>
+        <button class="tb-back" onclick="window._tbGo('home')">← ${t('Back')}</button>
+        <span class="tb-header-title">📜 ${t('Drama Log')}</span>
+        <span class="tb-bal-pill">${gc(fmt(state.balance))}</span>
       </div>
       <div class="tb-scroll">
         <div class="tb-history-summary">
-          <div class="tb-section-title">${thisMonth} Summary</div>
+          <div class="tb-section-title">${t('{month} Summary', { month: thisMonth })}</div>
           <div class="tb-summary-row">
-            <span class="tb-summary-in">↑ Earned: ${fmt(earned)} GC</span>
-            <span class="tb-summary-out">↓ Spent: ${fmt(spent)} GC</span>
+            <span class="tb-summary-in">↑ ${t('Earned: {n} GC', { n: fmt(earned) })}</span>
+            <span class="tb-summary-out">↓ ${t('Spent: {n} GC', { n: fmt(spent) })}</span>
           </div>
         </div>
         <div class="tb-history-list">
@@ -416,19 +423,20 @@
             <div class="tb-history-left">
               <span class="tb-history-emoji">${h.emoji}</span>
               <div>
-                <div class="tb-history-text">${h.text}</div>
+                <div class="tb-history-text">${OS.esc(h.text)}</div>
                 <div class="tb-history-date">${h.date}</div>
               </div>
             </div>
-            <span class="tb-history-amount ${h.amount >= 0 ? 'tb-green' : 'tb-red'}">${h.amount >= 0 ? '+' : ''}${fmt(h.amount)} GC</span>
-          </div>`).join('') : '<div class="tb-empty">No transactions yet. Go earn some coins!</div>'}
+            <span class="tb-history-amount ${h.amount >= 0 ? 'tb-green' : 'tb-red'}">${gc((h.amount >= 0 ? '+' : '') + fmt(h.amount))}</span>
+          </div>`).join('') : `<div class="tb-empty">${t('No transactions yet. Go earn some coins!')}</div>`}
         </div>
       </div>
     </div>`;
   }
 
   function renderCard() {
-    const skin = CARD_SKINS[state.cardSkin];
+    const skins = t.list('tinybank.skins', CARD_SKINS);
+    const skin = skins[state.cardSkin];
     let fraudOverlay = '';
     if (fraudAlert !== null) {
       if (fraudResult) {
@@ -436,16 +444,16 @@
           <div class="tb-overlay-box" onclick="event.stopPropagation()">
             <div class="tb-fraud-result-emoji">🔍</div>
             <div class="tb-fraud-result-text">${fraudResult}</div>
-            <button class="tb-btn" onclick="window._tbCloseFraud(event)">OK, Phew!</button>
+            <button class="tb-btn" onclick="window._tbCloseFraud(event)">${t('OK, Phew!')}</button>
           </div>
         </div>`;
       } else {
         fraudOverlay = `<div class="tb-overlay">
           <div class="tb-overlay-box" onclick="event.stopPropagation()">
             <div class="tb-fraud-alert-emoji">🚨</div>
-            <div class="tb-fraud-alert-text">${FRAUD_ALERTS[fraudAlert]}</div>
+            <div class="tb-fraud-alert-text">${fraudAlert}</div>
             <div class="tb-fraud-btns">
-              ${FRAUD_RESPONSES.map((r, i) => `<button class="tb-btn tb-btn-sm" onclick="window._tbFraudRespond(${i})">${r.label}</button>`).join('')}
+              ${t.list('tinybank.fraudReplies', FRAUD_RESPONSES).map((r, i) => `<button class="tb-btn tb-btn-sm" onclick="window._tbFraudRespond(${i})">${r.label}</button>`).join('')}
             </div>
           </div>
         </div>`;
@@ -455,36 +463,36 @@
     return `<div class="tb-wrap">
       ${fraudOverlay}
       <div class="tb-header">
-        <button class="tb-back" onclick="window._tbGo('home')">← Back</button>
-        <span class="tb-header-title">💳 TinyCard</span>
-        <span class="tb-bal-pill">${fmt(state.balance)} GC</span>
+        <button class="tb-back" onclick="window._tbGo('home')">← ${t('Back')}</button>
+        <span class="tb-header-title">💳 ${t('TinyCard')}</span>
+        <span class="tb-bal-pill">${gc(fmt(state.balance))}</span>
       </div>
       <div class="tb-scroll tb-card-scroll">
         <div class="tb-card" style="background:${skin.gradient}">
-          ${state.cardFrozen ? '<div class="tb-card-frozen">🧊 FROZEN</div>' : ''}
+          ${state.cardFrozen ? `<div class="tb-card-frozen">🧊 ${t('FROZEN')}</div>` : ''}
           <div class="tb-card-top">
-            <span class="tb-card-logo">TinyBank</span>
+            <span class="tb-card-logo">${t('TinyBank')}</span>
             <span class="tb-card-type">${skin.emoji} ${skin.name}</span>
           </div>
-          <div class="tb-card-number">1234 5678 LMAO 9999</div>
+          <div class="tb-card-number">${t('1234 5678 LMAO 9999')}</div>
           <div class="tb-card-bottom">
-            <div><div class="tb-card-label">CARD HOLDER</div><div class="tb-card-value">TINY BANKER</div></div>
-            <div><div class="tb-card-label">EXPIRES</div><div class="tb-card-value">99/99</div></div>
+            <div><div class="tb-card-label">${t('CARD HOLDER')}</div><div class="tb-card-value">${t('TINY BANKER')}</div></div>
+            <div><div class="tb-card-label">${t('EXPIRES')}</div><div class="tb-card-value">99/99</div></div>
           </div>
         </div>
         <div class="tb-card-section">
-          <div class="tb-section-title">Card Skin</div>
+          <div class="tb-section-title">${t('Card Skin')}</div>
           <div class="tb-skin-row">
-            ${CARD_SKINS.map((s, i) => `<button class="tb-skin-btn ${state.cardSkin === i ? 'tb-skin-active' : ''}" onclick="window._tbSkin(${i})">${s.emoji} ${s.name}</button>`).join('')}
+            ${skins.map((s, i) => `<button class="tb-skin-btn ${state.cardSkin === i ? 'tb-skin-active' : ''}" onclick="window._tbSkin(${i})">${s.emoji} ${s.name}</button>`).join('')}
           </div>
         </div>
         <div class="tb-card-section">
-          <div class="tb-section-title">Security</div>
+          <div class="tb-section-title">${t('Security')}</div>
           <button class="tb-btn ${state.cardFrozen ? 'tb-btn-danger' : ''}" onclick="window._tbFreeze()">
-            ${state.cardFrozen ? '🔥 Unfreeze Card' : '🧊 Freeze Card'}
+            ${state.cardFrozen ? '🔥 ' + t('Unfreeze Card') : '🧊 ' + t('Freeze Card')}
           </button>
           <button class="tb-btn tb-btn-outline" onclick="window._tbTriggerFraud()" style="margin-top:8px">
-            🚨 Test Fraud Alert
+            🚨 ${t('Test Fraud Alert')}
           </button>
         </div>
       </div>
@@ -494,17 +502,17 @@
   function renderGive() {
     return `<div class="tb-wrap">
       <div class="tb-header">
-        <button class="tb-back" onclick="window._tbGo('home')">← Back</button>
-        <span class="tb-header-title">🎁 Kindness Corner</span>
-        <span class="tb-bal-pill">${fmt(state.balance)} GC</span>
+        <button class="tb-back" onclick="window._tbGo('home')">← ${t('Back')}</button>
+        <span class="tb-header-title">🎁 ${t('Kindness Corner')}</span>
+        <span class="tb-bal-pill">${gc(fmt(state.balance))}</span>
       </div>
       <div class="tb-scroll">
         <div class="tb-give-total">
-          <span>💝 Lifetime Giving:</span>
-          <strong>${fmt(state.givenTotal)} GC</strong>
+          <span>💝 ${t('Lifetime Giving:')}</span>
+          <strong>${gc(fmt(state.givenTotal))}</strong>
         </div>
         <div class="tb-give-list">
-          ${GIVE_CATEGORIES.map(c => `<div class="tb-give-card">
+          ${t.list('tinybank.gifts', GIVE_CATEGORIES).map(c => `<div class="tb-give-card">
             <div class="tb-give-top">
               <span class="tb-give-emoji">${c.emoji}</span>
               <div>
@@ -513,8 +521,8 @@
               </div>
             </div>
             <div class="tb-give-btns">
-              <button class="tb-btn tb-btn-sm" onclick="window._tbGive('${c.id}',5)">Give 5 GC</button>
-              <button class="tb-btn tb-btn-sm" onclick="window._tbGive('${c.id}',10)">Give 10 GC</button>
+              <button class="tb-btn tb-btn-sm" onclick="window._tbGive('${c.id}',5)">${t('Give {n} GC', { n: 5 })}</button>
+              <button class="tb-btn tb-btn-sm" onclick="window._tbGive('${c.id}',10)">${t('Give {n} GC', { n: 10 })}</button>
             </div>
           </div>`).join('')}
         </div>
@@ -532,7 +540,7 @@
       missionTracking._cardVisited = true;
       // 20% chance of random fraud alert
       if (Math.random() < 0.2) {
-        fraudAlert = Math.floor(Math.random() * FRAUD_ALERTS.length);
+        fraudAlert = pick(t.list('tinybank.fraudAlerts', FRAUD_ALERTS));
       }
     }
     if (s === 'history') missionTracking._historyVisited = true;
@@ -540,26 +548,26 @@
   };
 
   window._tbClaim = function(taskId) {
-    const task = EARN_TASKS.find(t => t.id === taskId);
+    const task = t.list('tinybank.tasks', EARN_TASKS).find(x => x.id === taskId);
     if (!task || state.earnedToday.includes(taskId)) return;
     state.earnedToday.push(taskId);
     state.balance += task.coins;
     state.totalEarned += task.coins;
-    addHistory(task.emoji, `Earned: ${task.name}`, task.coins);
+    addHistory(task.emoji, t('Earned: {name}', { name: task.name }), task.coins);
     missionTracking._earned = true;
     saveState();
     render();
   };
 
   window._tbRaise = function() {
-    const resp = pick(RAISE_RESPONSES);
+    const resp = pick(t.list('tinybank.raises', RAISE_RESPONSES));
     raiseResult = resp;
     if (resp.coins > 0) {
       state.balance += resp.coins;
       state.totalEarned += resp.coins;
-      addHistory('💼', 'Asked for a raise', resp.coins);
+      addHistory('💼', t('Asked for a raise'), resp.coins);
     } else {
-      addHistory('💼', 'Asked for a raise... denied', 0);
+      addHistory('💼', t('Asked for a raise... denied'), 0);
     }
     missionTracking._raisedAsked = true;
     saveState();
@@ -568,7 +576,7 @@
 
   window._tbDeposit = function(jarId, amount) {
     if (state.balance < amount) {
-      saveMsg = "Not enough Giggle Coins! Go earn some more!";
+      saveMsg = t('Not enough Giggle Coins! Go earn some more!');
       render();
       clearTimeout(saveMsgTimer);
       saveMsgTimer = setTimeout(() => { saveMsg = null; render(); }, 2000);
@@ -576,9 +584,9 @@
     }
     state.balance -= amount;
     state.jars[jarId] = (state.jars[jarId] || 0) + amount;
-    const jar = JARS.find(j => j.id === jarId);
-    addHistory(jar.emoji, `Saved to ${jar.name}`, -amount);
-    saveMsg = pick(SAVE_CONFIRMATIONS);
+    const jar = t.list('tinybank.jars', JARS).find(j => j.id === jarId);
+    addHistory(jar.emoji, t('Saved to {name}', { name: jar.name }), -amount);
+    saveMsg = pick(t.list('tinybank.saved', SAVE_CONFIRMATIONS));
     missionTracking._saved = true;
     saveState();
     render();
@@ -588,18 +596,18 @@
 
   window._tbGoalAdd = function(goalId) {
     if (state.balance < 10) {
-      saveMsg = "Not enough Giggle Coins!";
+      saveMsg = t('Not enough Giggle Coins!');
       render();
       clearTimeout(saveMsgTimer);
       saveMsgTimer = setTimeout(() => { saveMsg = null; render(); }, 2000);
       return;
     }
     const goal = state.goals.find(g => g.id === goalId);
-    const def = GOALS.find(g => g.id === goalId);
+    const def = t.list('tinybank.goals', GOALS).find(g => g.id === goalId);
     if (!goal || !def || goal.saved >= def.target) return;
     state.balance -= 10;
     goal.saved = Math.min(goal.saved + 10, def.target);
-    addHistory(def.emoji, `Saved toward: ${def.name}`, -10);
+    addHistory(def.emoji, t('Saved toward: {name}', { name: def.name }), -10);
     missionTracking._goaled = true;
     saveState();
     render();
@@ -618,15 +626,15 @@
   };
 
   window._tbTriggerFraud = function() {
-    fraudAlert = Math.floor(Math.random() * FRAUD_ALERTS.length);
+    fraudAlert = pick(t.list('tinybank.fraudAlerts', FRAUD_ALERTS));
     fraudResult = null;
     render();
   };
 
   window._tbFraudRespond = function(idx) {
-    fraudResult = FRAUD_RESPONSES[idx].result;
+    fraudResult = t.list('tinybank.fraudReplies', FRAUD_RESPONSES)[idx].result;
     state.fraudsHandled++;
-    addHistory('🔍', 'Handled a fraud alert', 0);
+    addHistory('🔍', t('Handled a fraud alert'), 0);
     saveState();
     render();
   };
@@ -640,16 +648,16 @@
 
   window._tbGive = function(catId, amount) {
     if (state.balance < amount) {
-      saveMsg = "Not enough coins to give! Earn some first!";
+      saveMsg = t('Not enough coins to give! Earn some first!');
       render();
       clearTimeout(saveMsgTimer);
       saveMsgTimer = setTimeout(() => { saveMsg = null; render(); }, 2000);
       return;
     }
-    const cat = GIVE_CATEGORIES.find(c => c.id === catId);
+    const cat = t.list('tinybank.gifts', GIVE_CATEGORIES).find(c => c.id === catId);
     state.balance -= amount;
     state.givenTotal += amount;
-    addHistory(cat.emoji, `Donated to ${cat.name}`, -amount);
+    addHistory(cat.emoji, t('Donated to {name}', { name: cat.name }), -amount);
     missionTracking._given = true;
     saveState();
     render();
@@ -677,11 +685,11 @@
     getWindowOpts() {
       return {
         id: 'tinybank',
-        title: 'TinyBank',
+        title: t('TinyBank'),
         icon: '🏦',
         width: 420,
         height: 540,
-        content: '<div class="tb-wrap"><div class="tb-loading">Loading TinyBank...</div></div>',
+        content: '<div class="tb-wrap"><div class="tb-loading">' + t('Loading TinyBank...') + '</div></div>',
       };
     },
     onOpen(id) {

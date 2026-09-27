@@ -1,5 +1,7 @@
 /* ===== ChoreQuest — Daily Checklist App ===== */
 (() => {
+  const t = OS.texts('chorequest');
+
   /* ---- Chore Catalog (30 chores) ---- */
   const ALL_CHORES = [
     // Morning
@@ -58,14 +60,14 @@
   ];
 
   const EARLY_FINISH = [
-    { emoji: '⚡', title: 'SPEED DEMON!', msg: 'You finished so fast the clock is jealous!' },
-    { emoji: '🦸', title: 'SUPER KID!', msg: 'Faster than a speeding vacuum cleaner!' },
-    { emoji: '🏎️', title: 'TURBO TIDY!', msg: 'That room never stood a chance!' },
-    { emoji: '🌪️', title: 'TIDY TORNADO!', msg: 'You blew through that like a cleaning hurricane!' },
-    { emoji: '🚀', title: 'ROCKET CLEANER!', msg: 'Houston, the room is spotless!' },
-    { emoji: '💎', title: 'DIAMOND HANDS!', msg: 'You held nothing back. Pure tidying power!' },
-    { emoji: '👑', title: 'ROYALLY FAST!', msg: 'The King/Queen of Quick Cleaning!' },
-    { emoji: '🎯', title: 'BULLSEYE!', msg: 'Clean room. Record time. Nailed it.' },
+    { id: 'speed', emoji: '⚡', title: 'SPEED DEMON!', msg: 'You finished so fast the clock is jealous!' },
+    { id: 'super', emoji: '🦸', title: 'SUPER KID!', msg: 'Faster than a speeding vacuum cleaner!' },
+    { id: 'turbo', emoji: '🏎️', title: 'TURBO TIDY!', msg: 'That room never stood a chance!' },
+    { id: 'tornado', emoji: '🌪️', title: 'TIDY TORNADO!', msg: 'You blew through that like a cleaning hurricane!' },
+    { id: 'rocket', emoji: '🚀', title: 'ROCKET CLEANER!', msg: 'Houston, the room is spotless!' },
+    { id: 'diamond', emoji: '💎', title: 'DIAMOND HANDS!', msg: 'You held nothing back. Pure tidying power!' },
+    { id: 'royal', emoji: '👑', title: 'ROYALLY FAST!', msg: 'The King/Queen of Quick Cleaning!' },
+    { id: 'bullseye', emoji: '🎯', title: 'BULLSEYE!', msg: 'Clean room. Record time. Nailed it.' },
   ];
 
   const STICKERS = [
@@ -80,7 +82,12 @@
   ];
 
   const STORAGE_KEY = 'kidsOS_chorequest';
+  // A group name in GROUPS and in ALL_CHORES is a key. groupName() gives the text for the screen
   const GROUPS = ['Morning', 'After School', 'Evening'];
+  function groupName(group) {
+    return group === 'Morning' ? t('Morning') : group === 'After School' ? t('After School') : t('Evening');
+  }
+  function days(n) { return t.plural(n, 'day', 'days'); }
 
   /* ---- State ---- */
   let screen = 'today';      // 'today' | 'edit' | 'victory'
@@ -95,7 +102,7 @@
   /* ---- Helpers ---- */
   function getActiveChores() {
     const ids = data.activeChores || DEFAULT_ACTIVE;
-    return ALL_CHORES.filter(c => ids.includes(c.id));
+    return t.list('chorequest.chores', ALL_CHORES).filter(c => ids.includes(c.id));
   }
 
   /* ---- Persistence ---- */
@@ -177,7 +184,8 @@
   }
 
   function showAwesomePopup() {
-    const msg = EARLY_FINISH[Math.floor(Math.random() * EARLY_FINISH.length)];
+    const list = t.list('chorequest.early', EARLY_FINISH);
+    const msg = list[Math.floor(Math.random() * list.length)];
     const container = document.getElementById('cq-app');
     if (!container) return;
 
@@ -188,7 +196,7 @@
         <div class="cq-awesome-emoji">${msg.emoji}</div>
         <div class="cq-awesome-title">${msg.title}</div>
         <div class="cq-awesome-msg">${msg.msg}</div>
-        <div class="cq-awesome-sub">YOU ARE AWESOME!</div>
+        <div class="cq-awesome-sub">${t('YOU ARE AWESOME!')}</div>
       </div>`;
     container.appendChild(popup);
 
@@ -239,7 +247,7 @@
       saveData();
       const streakBonus = Math.min(25, data.streak * 5);
       const coins = 15 + streakBonus;
-      OS.awardCoins(coins, 'chorequest', '✅', 'ChoreQuest: all chores done!' + (data.streak > 0 ? ' (' + data.streak + ' day streak)' : ''));
+      OS.awardCoins(coins, 'chorequest', '✅', data.streak > 0 ? t('ChoreQuest: all chores done! ({n} day streak)', { n: data.streak }) : t('ChoreQuest: all chores done!'));
       screen = 'victory';
     }
     render();
@@ -284,10 +292,10 @@
     const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
 
     let html = `<div class="cq-header">
-      <div class="cq-title">✅ Today's Quest List</div>
+      <div class="cq-title">✅ ${t("Today's Quest List")}</div>
       <div class="cq-header-right">
-        ${data.streak > 0 ? `<div class="cq-streak">🔥 ${data.streak} day${data.streak > 1 ? 's' : ''}</div>` : ''}
-        <button class="cq-edit-btn" onclick="window._cqEditChores()" title="Edit chores">✏️</button>
+        ${data.streak > 0 ? `<div class="cq-streak">🔥 ${t('{n} {days}', { n: data.streak, days: days(data.streak) })}</div>` : ''}
+        <button class="cq-edit-btn" onclick="window._cqEditChores()" title="${t('Edit chores')}">✏️</button>
       </div>
     </div>`;
 
@@ -295,14 +303,14 @@
       <div class="cq-progress">
         <div class="cq-progress-bar" style="width:${pct}%"></div>
       </div>
-      <div class="cq-progress-text">${doneCount}/${total} done</div>
+      <div class="cq-progress-text">${t('{n}/{total} done', { n: doneCount, total })}</div>
     </div>`;
 
     if (total === 0) {
       html += `<div class="cq-empty">
         <div class="cq-empty-emoji">📋</div>
-        <div class="cq-empty-text">No chores selected yet!</div>
-        <button class="cq-done-btn" style="margin-top:10px" onclick="window._cqEditChores()">✏️ Pick your chores</button>
+        <div class="cq-empty-text">${t('No chores selected yet!')}</div>
+        <button class="cq-done-btn" style="margin-top:10px" onclick="window._cqEditChores()">✏️ ${t('Pick your chores')}</button>
       </div>`;
       html += renderFooter();
       return html;
@@ -311,11 +319,11 @@
     if (timerActive) {
       html += `<div class="cq-timer">
         <div class="cq-timer-emoji">🧸</div>
-        <div class="cq-timer-label">Tidy Time!</div>
+        <div class="cq-timer-label">${t('Tidy Time!')}</div>
         <div class="cq-timer-display" id="cq-timer-display">${formatTime(timerSeconds)}</div>
-        <div class="cq-timer-hint">Clean up before the clock runs out!</div>
-        <button class="cq-early-btn" onclick="window._cqFinishEarly()">✨ Done Early!</button>
-        <button class="cq-timer-cancel" onclick="window._cqCancelTimer()">Cancel</button>
+        <div class="cq-timer-hint">${t('Clean up before the clock runs out!')}</div>
+        <button class="cq-early-btn" onclick="window._cqFinishEarly()">✨ ${t('Done Early!')}</button>
+        <button class="cq-timer-cancel" onclick="window._cqCancelTimer()">${t('Cancel')}</button>
       </div>`;
     }
 
@@ -323,7 +331,7 @@
       const chores = active.filter(c => c.group === group);
       if (chores.length === 0) continue;
       html += `<div class="cq-section">
-        <div class="cq-section-title">${group === 'Morning' ? '🌅' : group === 'After School' ? '🏠' : '🌙'} ${group}</div>`;
+        <div class="cq-section-title">${group === 'Morning' ? '🌅' : group === 'After School' ? '🏠' : '🌙'} ${groupName(group)}</div>`;
       for (const chore of chores) {
         const isDone = data.checkedItems.includes(chore.id);
         const hintOpen = expandedHints[chore.id];
@@ -337,13 +345,13 @@
             <div class="cq-chore-actions">
               ${isDone ? '<span class="cq-check-mark">✔️</span>' :
                 chore.timer && !timerActive
-                  ? `<button class="cq-timer-btn" onclick="window._cqStartTimer('${chore.id}')">⏱️ Timer</button>`
+                  ? `<button class="cq-timer-btn" onclick="window._cqStartTimer('${chore.id}')">⏱️ ${t('Timer')}</button>`
                   : !timerActive
-                    ? `<button class="cq-done-btn" onclick="window._cqDone('${chore.id}')">DONE!</button>`
+                    ? `<button class="cq-done-btn" onclick="window._cqDone('${chore.id}')">${t('DONE!')}</button>`
                     : ''}
             </div>
           </div>
-          ${!isDone ? `<button class="cq-hint-toggle" onclick="window._cqHint('${chore.id}')">${hintOpen ? 'Hide hint' : '💡 Hint'}</button>` : ''}
+          ${!isDone ? `<button class="cq-hint-toggle" onclick="window._cqHint('${chore.id}')">${hintOpen ? t('Hide hint') : '💡 ' + t('Hint')}</button>` : ''}
         </div>`;
       }
       html += `</div>`;
@@ -355,28 +363,28 @@
 
   function renderFooter() {
     return `<div class="cq-footer">
-      <div class="cq-sticker-count">🏆 Stickers earned: ${data.stickers.length}/${STICKERS.length}</div>
-      ${data.streak === 0 && data.totalDaysCompleted > 0 ? `<div class="cq-streak-msg">No worries. Today is a fresh start! 🌅</div>` : ''}
-      ${data.streak > 0 ? `<div class="cq-streak-msg">🔥 ${data.streak} day${data.streak > 1 ? 's' : ''} in a row! Keep it going!</div>` : ''}
-      ${data.bestStreak > 0 ? `<div class="cq-best-streak">Best streak: ${data.bestStreak} day${data.bestStreak > 1 ? 's' : ''}</div>` : ''}
+      <div class="cq-sticker-count">🏆 ${t('Stickers earned: {n}/{total}', { n: data.stickers.length, total: STICKERS.length })}</div>
+      ${data.streak === 0 && data.totalDaysCompleted > 0 ? `<div class="cq-streak-msg">${t('No worries. Today is a fresh start!')} 🌅</div>` : ''}
+      ${data.streak > 0 ? `<div class="cq-streak-msg">🔥 ${t('{n} {days} in a row! Keep it going!', { n: data.streak, days: days(data.streak) })}</div>` : ''}
+      ${data.bestStreak > 0 ? `<div class="cq-best-streak">${t('Best streak: {n} {days}', { n: data.bestStreak, days: days(data.bestStreak) })}</div>` : ''}
     </div>`;
   }
 
   function renderEdit() {
     const activeSet = new Set(data.activeChores);
     let html = `<div class="cq-header">
-      <div class="cq-title">✏️ Edit My Chores</div>
+      <div class="cq-title">✏️ ${t('Edit My Chores')}</div>
       <div class="cq-header-right">
-        <button class="cq-edit-done-btn" onclick="window._cqEditDone()">Done</button>
+        <button class="cq-edit-done-btn" onclick="window._cqEditDone()">${t('Done')}</button>
       </div>
     </div>`;
 
-    html += `<div class="cq-edit-info">Pick which chores appear on your daily list. You have <b>${activeSet.size}</b> selected.</div>`;
+    html += `<div class="cq-edit-info">${t('Pick which chores appear on your daily list. You have <b>{n}</b> selected.', { n: activeSet.size })}</div>`;
 
     for (const group of GROUPS) {
-      const chores = ALL_CHORES.filter(c => c.group === group);
+      const chores = t.list('chorequest.chores', ALL_CHORES).filter(c => c.group === group);
       html += `<div class="cq-section">
-        <div class="cq-section-title">${group === 'Morning' ? '🌅' : group === 'After School' ? '🏠' : '🌙'} ${group}</div>`;
+        <div class="cq-section-title">${group === 'Morning' ? '🌅' : group === 'After School' ? '🏠' : '🌙'} ${groupName(group)}</div>`;
       for (const chore of chores) {
         const on = activeSet.has(chore.id);
         html += `<div class="cq-edit-row ${on ? 'cq-edit-on' : ''}" onclick="window._cqToggleChore('${chore.id}')">
@@ -391,16 +399,17 @@
     }
 
     html += `<div class="cq-footer" style="padding-bottom:18px">
-      <button class="cq-edit-reset-btn" onclick="window._cqResetChores()">↩️ Reset to defaults</button>
+      <button class="cq-edit-reset-btn" onclick="window._cqResetChores()">↩️ ${t('Reset to defaults')}</button>
     </div>`;
 
     return html;
   }
 
   function renderVictory() {
-    const compliment = COMPLIMENTS[Math.floor(Math.random() * COMPLIMENTS.length)];
+    const compliments = t.list('chorequest.compliments', COMPLIMENTS);
+    const compliment = compliments[Math.floor(Math.random() * compliments.length)];
     const stickerIdx = (data.totalDaysCompleted - 1) % STICKERS.length;
-    const sticker = STICKERS[stickerIdx];
+    const sticker = t.list('chorequest.stickers', STICKERS)[stickerIdx];
 
     const confettiEmojis = ['🎉', '⭐', '🏆', '✅', '🎊', '💪', '🌟', '🦸'];
     let confettiHTML = '';
@@ -414,18 +423,18 @@
 
     return `<div class="cq-victory">
       <div class="cq-confetti">${confettiHTML}</div>
-      <div class="cq-stamp">🏆 DAILY WIN!</div>
+      <div class="cq-stamp">🏆 ${t('DAILY WIN!')}</div>
       <div class="cq-compliment">${compliment}</div>
       <div class="cq-sticker-earned">
-        <div class="cq-sticker-earned-label">Sticker of the Day:</div>
+        <div class="cq-sticker-earned-label">${t('Sticker of the Day:')}</div>
         <div class="cq-sticker-earned-icon">${sticker.emoji}</div>
         <div class="cq-sticker-earned-name">${sticker.name}</div>
       </div>
       <div class="cq-victory-streak">
-        ${data.streak > 0 ? `🔥 ${data.streak} day streak!` : 'First win! Start a streak tomorrow!'}
+        ${data.streak > 0 ? '🔥 ' + t('{n} day streak!', { n: data.streak }) : t('First win! Start a streak tomorrow!')}
       </div>
-      <div class="cq-victory-total">Total days completed: ${data.totalDaysCompleted}</div>
-      <button class="cq-victory-btn" onclick="window._cqBackToToday()">See you tomorrow! 👋</button>
+      <div class="cq-victory-total">${t('Total days completed: {n}', { n: data.totalDaysCompleted })}</div>
+      <button class="cq-victory-btn" onclick="window._cqBackToToday()">${t('See you tomorrow!')} 👋</button>
     </div>`;
   }
 
@@ -451,7 +460,7 @@
     getWindowOpts() {
       return {
         id: 'chorequest-' + Date.now(),
-        title: 'ChoreQuest',
+        title: t('ChoreQuest'),
         icon: '✅',
         width: 400,
         height: 520,
