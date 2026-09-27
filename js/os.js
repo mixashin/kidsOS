@@ -1095,7 +1095,9 @@ const OS = (() => {
 
   return {
     boot, launch, registerApp, APPS, appName, icon, mode, goHome,
-    texts: Lang.texts, lang: () => Lang.code, locale: () => Lang.locale, setLanguage, missingTexts: () => Lang.missing,
+    texts: Lang.texts, lang: () => Lang.code, setLanguage, missingTexts: () => Lang.missing,
+    // First parameter for the date and number functions. English gives undefined: the device decides the form, as in each release before
+    locale: () => Lang.code === 'en' ? undefined : Lang.locale,
     createWindow, closeWindow, minimizeWindow, restoreWindow, toggleMaximize, focusWindow,
     toggleAppMenu, shutdown,
     saveSettings, loadSettings, getSettings, applyWallpaper, getWallpapers,
