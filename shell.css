@@ -271,7 +271,9 @@ button.k-pill:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--k-s
 [data-mode="touch"] #desktop-icons {
   display: grid; align-content: safe center; padding: 4px 28px;
   overflow-x: hidden; overflow-y: auto; touch-action: pan-y;
+  scrollbar-width: none; /* a scroll bar with a width changes the number of columns */
 }
+[data-mode="touch"] #desktop-icons::-webkit-scrollbar { display: none; }
 [data-mode="touch"] .desktop-icon { display: grid; justify-items: center; align-content: center; gap: 2px; }
 [data-mode="touch"] .desktop-icon span { padding: 3px 11px 4px; font-size: 15px; line-height: 1.35; }
 [data-mode="touch"] #desktop-icons.small-labels .desktop-icon span { padding: 3px 8px 4px; font-size: 13.5px; }

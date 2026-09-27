@@ -35,12 +35,61 @@ const OS = (() => {
   function applyMode() {
     document.documentElement.dataset.mode = mode();
     updateFront();
+    fitHome();
   }
 
   // front is 'app' when a window is in view, and 'home' when not
   function updateFront() {
     const front = Object.values(windowMap).some(w => !w.el.classList.contains('minimized')) ? 'app' : 'home';
     document.documentElement.dataset.front = front;
+    if (front === 'home') updateCoins(); // an app can change the balance
+  }
+
+  /* ---- Home (touch mode) ---- */
+  const ICON_MAX = 124, ICON_MIN = 64, ICON_SCROLL = 68;
+  const ICON_FILE = 256; // pixels of a picture file in art/icons/
+
+  // Number of columns with the largest picture size that shows each app with no scroll.
+  // Below ICON_MIN the grid scrolls.
+  function homeFit(count, width, height, label) {
+    const limit = Math.min(ICON_MAX, Math.floor(ICON_FILE / (window.devicePixelRatio || 1)));
+    let best = { icon: 0 };
+    for (let cols = 3; cols <= 10; cols++) {
+      const rows = Math.ceil(count / cols);
+      const size = Math.floor(Math.min(width / cols - 34, height / rows - label - 10, limit));
+      if (size > best.icon) best = { icon: size, cols, rows };
+    }
+    if (best.icon >= ICON_MIN) return best;
+    return { icon: ICON_SCROLL, cols: Math.max(3, Math.floor(width / (ICON_SCROLL + 18))), scroll: true };
+  }
+
+  function fitHome() {
+    const grid = document.getElementById('desktop-icons');
+    grid.removeAttribute('style');
+    grid.classList.remove('small-labels');
+    if (mode() !== 'touch') return;
+    const narrow = window.innerWidth < 600;
+    const label = narrow ? 24 : 30;
+    const width = grid.clientWidth - (narrow ? 16 : 56), height = grid.clientHeight - 8;
+    const f = homeFit(APPS.length, width, height, label);
+    grid.style.setProperty('--app-icon', f.icon + 'px');
+    grid.style.gridTemplateColumns = `repeat(${f.cols}, minmax(0, 1fr))`;
+    grid.style.rowGap = f.scroll ? '10px' : Math.max(4, Math.floor((height - f.rows * (f.icon + label)) / (f.rows + 1))) + 'px';
+    if (f.scroll) grid.style.alignContent = 'start';
+    grid.classList.toggle('small-labels', f.icon < 90);
+  }
+
+  /* ---- Coin counter ---- */
+  function coinBalance() {
+    try {
+      const n = JSON.parse(localStorage.getItem('kidsOS_tinybank')).balance;
+      return Number.isFinite(n) ? n : 50;
+    } catch (e) { return 50; } // no bank data yet: start balance of TinyBank
+  }
+
+  function updateCoins() {
+    const n = coinBalance();
+    document.querySelectorAll('.k-coin-count').forEach(el => { el.textContent = n; });
   }
 
   // Home button: each app in view goes to the dock and stays open
@@ -60,6 +109,7 @@ const OS = (() => {
     applyMode();
     coarse.addEventListener('change', applyMode);
     window.addEventListener('resize', applyMode);
+    document.querySelectorAll('[data-coins]').forEach(el => el.addEventListener('click', () => launch('tinybank')));
     // Add body class when running as installed PWA
     if (isStandalone()) document.body.classList.add('standalone');
 
@@ -406,10 +456,9 @@ const OS = (() => {
     w.taskbarBtn.remove();
     delete windowMap[id];
     focusHistory = focusHistory.filter(wid => wid !== id);
-    // Auto-focus previous window in history
-    if (focusHistory.length > 0) {
-      focusWindow(focusHistory[focusHistory.length - 1]);
-    }
+    // The window below gets the focus. An app in the dock stays in the dock.
+    const below = [...focusHistory].reverse().find(wid => !windowMap[wid].el.classList.contains('minimized'));
+    if (below) focusWindow(below);
     updateFront();
   }
 
@@ -720,8 +769,12 @@ const OS = (() => {
   function getWallpapers() { return WALLPAPERS; }
 
   function updateMenuUsername() {
+    const name = settings.username || 'User';
     const el = document.getElementById('menu-username');
-    if (el) el.textContent = '👤 ' + (settings.username || 'User');
+    if (el) el.textContent = '👤 ' + name;
+    // KidsUser is the name of a new device: no name in the greeting
+    const hello = document.getElementById('hello-text');
+    if (hello) hello.textContent = name === 'KidsUser' ? 'Hello!' : `Hello, ${name}!`;
   }
 
   /* ---- Shutdown ---- */
@@ -875,6 +928,7 @@ const OS = (() => {
     tb.history.unshift({ emoji: emoji || '🪙', text: description || (source + ': +' + amount), amount: amount, date: dateStr });
     if (tb.history.length > 30) tb.history.pop();
     localStorage.setItem('kidsOS_tinybank', JSON.stringify(tb));
+    updateCoins();
     if (typeof window._tbExternalDeposit === 'function') window._tbExternalDeposit();
     showCoinToast(amount, emoji, description);
   }
