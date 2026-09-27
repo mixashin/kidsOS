@@ -3166,6 +3166,22 @@ button { font-family: var(--font); }
 .pg-logo { font-size: 64px; line-height: 1; }
 .pg-title { font-size: 30px; font-weight: 700; }
 .pg-final { font-size: 40px; font-weight: 700; letter-spacing: 4px; }
+/* Text that the child needs to understand the screen. It stays on a low screen. */
+.pg-note { font-size: 24px; font-weight: 700; line-height: 1.25; }
+/* Pong: menu with three kinds of game, and the screens that pair two devices */
+.pg-wide { width: min(560px, 100%); }
+.pg-modes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; }
+.pg-modes .pg-btn { flex-direction: column; gap: 4px; min-height: 96px; padding: 8px 4px; font-size: 19px; }
+.pg-modes .pg-btn span { font-size: 28px; white-space: nowrap; }
+.pg-row { display: flex; gap: 10px; width: 100%; }
+.pg-row .pg-btn { flex: 1; min-height: 64px; padding: 8px 12px; font-size: 20px; }
+.pg-qr { border-radius: 12px; background: #fff; image-rendering: pixelated; }
+.pg-cam { border-radius: 18px; background: #000; object-fit: cover; }
+/* Low and wide window: picture at the left, text and buttons at the right */
+.pg-side { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: 1fr auto; column-gap: 16px; row-gap: 10px; align-items: center; width: min(760px, 100%); }
+.pg-side > :first-child { grid-row: 1 / 3; }
+.pg-side .pg-note { align-self: end; }
+.pg-side .pg-row { align-self: start; flex-direction: column; }
 /* Large buttons: a child of age 5 must hit them with no effort */
 .pg-btn { display: flex; align-items: center; justify-content: center; gap: 14px; width: 100%; min-height: 76px; padding: 10px 20px; border: none; border-radius: 22px; background: var(--pg-c, #4fc3f7); color: #10213d; font: 700 24px var(--font); cursor: pointer; box-shadow: 0 6px 0 rgba(0,0,0,0.28); touch-action: manipulation; }
 .pg-btn span { font-size: 30px; }
@@ -3181,6 +3197,8 @@ button { font-family: var(--font); }
 /* Short screen (phone in landscape): the menu must fit, so the logo goes */
 @media (max-height: 520px) {
   .pg-logo, .pg-title { display: none; }
+  .pg-title.pg-keep { display: block; font-size: 22px; }
+  .pg-note { font-size: 20px; }
   .pg-panel { gap: 10px; }
   .pg-btn { min-height: 62px; }
   .pg-final { font-size: 30px; }

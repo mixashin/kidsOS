@@ -1,7 +1,10 @@
-/* ===== Pong — one or two players on one device =====
+/* ===== Pong — one or two players on one device, or two players on two devices =====
    Two styles:
    classic  the old game: ball, two paddles, nothing else
-   plus     trick shots with spin, and power-ups on the court */
+   plus     trick shots with spin, and power-ups on the court
+
+   Two devices: see connect(). Each device runs the same simulation with the same inputs
+   (js/lib/lockstep.js). The connection is direct, with no server (js/lib/pairing.js). */
 const PongApp = (() => {
   const STORE_KEY = 'kidsOS_pong';
 
@@ -21,6 +24,29 @@ const PongApp = (() => {
     computer: 'Computer',
     coinsSolo: 'Pong: you beat the computer!',
     coinsDuo: 'Pong: a game for two!',
+    twoDevices: '2 Devices',
+    howTo: 'One tablet shows the code. The other tablet scans it.',
+    showCode: 'Show code',
+    scanCode: 'Scan code',
+    scanMe: 'Scan this code with the other tablet',
+    next: 'Next',
+    scanOther: 'Point the camera at the code of the other tablet',
+    nowOther: 'Now the other tablet scans this code',
+    otherCamera: 'Camera',
+    wrongCode: 'That is another code',
+    linking: 'Connecting',
+    tryAgain: 'Try again',
+    failed: 'That did not work',
+    noCamera: 'The camera is needed to scan the code',
+    noReader: 'This device cannot scan codes',
+    noNetwork: 'No Wi-Fi network',
+    connected: 'Connected!',
+    youWin: 'You win!',
+    youLose: 'The other player wins',
+    otherPaused: 'The other player takes a break',
+    waiting: 'Wait for the other player',
+    lost: 'The other player is gone',
+    apart: 'Oops, the game got mixed up',
   };
 
   /* ---- Simulation ----
@@ -377,10 +403,19 @@ const PongApp = (() => {
       return state.paddles[player] + Math.max(-AI_STEP, Math.min(AI_STEP, delta));
     }
 
+    // The numbers of a state. Two devices compare a check value of them (Lockstep.hash).
+    function values(s) {
+      return [
+        s.tick, s.seed, s.nextItem, s.item ? s.item.x : -1, s.bricks.length,
+        s.paddles[0], s.paddles[1], s.stun[0], s.stun[1], s.score[0], s.score[1],
+        s.balls.length, ...s.balls.flatMap(b => [b.id, b.x, b.y, b.vx, b.vy, b.speed, b.spin, b.owner]),
+      ];
+    }
+
     return {
       W, H, HZ, BALL_R, PADDLE_X, PADDLE_HALF, PADDLE_THICK, PADDLE_SPEED, WIN_SCORE, ITEM_R, ITEMS,
       SPEED_START, SPEED_UP, SLICE_MIN, SPIN_SLOW, KICK, FIRE, STUN_STEPS, ITEM_WAIT, ITEM_LIFE, WALL_LIFE,
-      create, step, computerTarget, speedOf, newBall,
+      create, step, computerTarget, speedOf, newBall, values,
     };
   })();
 
@@ -398,10 +433,17 @@ const PongApp = (() => {
   let loop = null, observer = null, controller = null;
   let state = null;
   let before = null;       // positions one step back, for smooth drawing between two steps
-  let mode = 0;            // 1 or 2 players, 0 = menu
+  let mode = 0;            // 1 or 2 players on this device, 3 = two devices, 0 = menu
   let style = 'plus';      // 'classic' | 'plus'
   let paused = false;
   let turned = false;      // true: window is taller than wide, players are at the bottom and at the top
+  let flipped = false;     // true: the court is shown mirrored. Two devices: the own paddle is at the left on each.
+  // Game on two devices: { link, player, lock, game, live, log, otherPaused, waitShown }
+  let net = null;
+  // Pairing of two devices, before the game: { role, session, scanner, code, accept, front, timer, hintTimer }
+  let pair = null;
+  const CHECK_EACH = 60;  // steps between two checks that both devices have the same game
+  const WAIT_SHOW = 60;    // ticks with no step before the wait screen shows: 0.5 s
   let view = { scale: 1, ratio: 1, left: 0, top: 0, width: 0, height: 0 };
   const pointers = new Map(); // pointerId -> player
   const targets = [null, null];
@@ -460,6 +502,8 @@ const PongApp = (() => {
   }
 
   function destroy() {
+    dropPair();
+    dropNet();
     if (loop) loop.stop();
     if (observer) observer.disconnect();
     if (controller) controller.abort();
@@ -496,7 +540,9 @@ const PongApp = (() => {
   }
 
   // Court units to canvas pixels. Turned: player 0 is at the bottom, player 1 at the top.
+  // Flipped: the two players change places on the screen.
   function toScreen(x, y) {
+    if (flipped) x = sim.W - x;
     return turned
       ? [view.left + y * view.scale, view.top + (sim.W - x) * view.scale]
       : [view.left + x * view.scale, view.top + y * view.scale];
@@ -507,16 +553,21 @@ const PongApp = (() => {
     const box = canvas.getBoundingClientRect();
     const px = (e.clientX - box.left) * view.ratio - view.left;
     const py = (e.clientY - box.top) * view.ratio - view.top;
-    return turned
+    const p = turned
       ? { x: sim.W - py / view.scale, y: px / view.scale }
       : { x: px / view.scale, y: py / view.scale };
+    if (flipped) p.x = sim.W - p.x;
+    return p;
   }
+
+  // The paddle that an input moves, when the place of the input does not select it
+  const ownPlayer = () => (mode === 3 ? net.player : 0);
 
   /* ---- Input ---- */
   function onPointerDown(e) {
     if (!state || mode === 0) return;
     const p = toCourt(e);
-    const player = mode === 1 ? 0 : (p.x < sim.W / 2 ? 0 : 1);
+    const player = mode === 2 ? (p.x < sim.W / 2 ? 0 : 1) : ownPlayer();
     pointers.set(e.pointerId, player);
     targets[player] = p.y;
     try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* pointer is gone already */ }
@@ -546,11 +597,11 @@ const PongApp = (() => {
   function onKey(e, down) {
     const win = root && root.closest('.window');
     if (!win || !win.classList.contains('focused') || win.classList.contains('minimized')) return;
-    if (down && e.code === 'Space' && mode !== 0 && state.phase !== 'over') { e.preventDefault(); setPaused(!paused); return; }
+    if (down && e.code === 'Space' && canPause()) { e.preventDefault(); setPaused(!paused); return; }
     const key = KEYS[e.code];
-    if (!key || mode === 0) return;
+    if (!key || mode === 0 || !state) return;
     e.preventDefault();
-    const player = mode === 1 ? 0 : key[0]; // one player: both key sets move the same paddle
+    const player = mode === 2 ? key[0] : ownPlayer(); // one player on this device: both key sets move the same paddle
     // Turned court: "left" on screen is a lower y in court units, same as "up" when not turned
     if (down) {
       if (keys[player] !== key[1]) held[player] = 0;
@@ -568,18 +619,47 @@ const PongApp = (() => {
     const act = btn.dataset.act;
     if (act === 'one') start(1);
     else if (act === 'two') start(2);
-    else if (act === 'again') start(mode);
+    else if (act === 'net') openPairing();
+    else if (act === 'host') pairHost();
+    else if (act === 'host-scan') pairHostScan();
+    else if (act === 'join') pairJoin();
+    else if (act === 'flip') { if (pair && pair.scanner) startScanner(pair.accept, !pair.front); }
+    else if (act === 'go') requestStart();
+    else if (act === 'again') { if (mode === 3) requestStart(); else start(mode); }
     else if (act === 'menu') showMenu();
-    else if (act === 'pause') { if (mode !== 0 && state.phase !== 'over') setPaused(!paused); }
+    else if (act === 'pause') { if (canPause()) setPaused(!paused); }
     else if (act === 'resume') setPaused(false);
     else if (act === 'sound') setMuted(!muted);
     else if (act === 'classic' || act === 'plus') { style = act; saveStore(); showMenu(); }
   }
 
   /* ---- Game flow ---- */
+  const newSeed = () => (Date.now() ^ (Math.random() * 0x7fffffff)) | 0;
+  const canPause = () => mode !== 0 && !!state && state.phase !== 'over' && (mode !== 3 || net.live);
+
+  function panel(logo, note, buttons) {
+    overlay.innerHTML = `<div class="pg-panel"><div class="pg-logo">${logo}</div><div class="pg-note">${note}</div>${buttons}</div>`;
+    overlay.classList.add('pg-show');
+  }
+
+  function noPanel() {
+    overlay.innerHTML = '';
+    overlay.classList.remove('pg-show');
+  }
+
+  const button = (act, icon, label, plain) => `<button class="pg-btn${plain ? ' pg-btn-plain' : ''}" data-act="${act}" style="--pg-c:${COLORS[0]}"><span>${icon}</span>${label}</button>`;
+  const menuButton = () => button('menu', '🏠', T.menu, true);
+
   function start(players) {
     mode = players;
-    state = sim.create((Date.now() ^ (Math.random() * 0x7fffffff)) | 0, style);
+    begin(newSeed());
+    // Two players: the game waits for a tap, so the two children are ready
+    if (players === 2) { render(1); setPaused(true, '👆'); } else loop.start();
+  }
+
+  // A new game on this device. The loop does not run yet.
+  function begin(seed) {
+    state = sim.create(seed, style);
     before = snapshot();
     targets[0] = targets[1] = null;
     keys[0] = keys[1] = 0;
@@ -587,39 +667,50 @@ const PongApp = (() => {
     pointers.clear();
     trails = new Map(); sparks = [];
     paused = false;
-    overlay.innerHTML = '';
-    overlay.classList.remove('pg-show');
+    noPanel();
     root.classList.add('pg-playing');
     root.classList.toggle('pg-classic', style === 'classic');
-    // Two players: the game waits for a tap, so the two children are ready
-    if (players === 2) { render(1); setPaused(true, '👆'); } else loop.start();
   }
 
   function showMenu() {
+    dropPair();
+    dropNet();
     if (loop) loop.stop();
     mode = 0;
     state = null;
     paused = false;
+    flipped = false;
     trails = new Map(); sparks = [];
     root.classList.remove('pg-playing');
     root.classList.toggle('pg-classic', style === 'classic');
     const pick = (id, icon, label) => `<button class="pg-pick${style === id ? ' pg-on' : ''}" data-act="${id}" aria-pressed="${style === id}"><span>${icon}</span>${label}</button>`;
     overlay.innerHTML = `
-      <div class="pg-panel">
-        <div class="pg-logo">🏓</div>
-        <div class="pg-title">${T.title}</div>
+      <div class="pg-panel pg-wide">
+        <div class="pg-title">🏓 ${T.title}</div>
         <div class="pg-picks">${pick('classic', '🕹️', T.classic)}${pick('plus', '🔥', T.plus)}</div>
-        <button class="pg-btn" data-act="one" style="--pg-c:${COLORS[0]}"><span>🧒 🤖</span>${T.onePlayer}</button>
-        <button class="pg-btn" data-act="two" style="--pg-c:${COLORS[1]}"><span>🧒 🧒</span>${T.twoPlayers}</button>
+        <div class="pg-modes">
+          <button class="pg-btn" data-act="one" style="--pg-c:${COLORS[0]}"><span>🧒🤖</span>${T.onePlayer}</button>
+          <button class="pg-btn" data-act="two" style="--pg-c:${COLORS[1]}"><span>🧒🧒</span>${T.twoPlayers}</button>
+          <button class="pg-btn" data-act="net" style="--pg-c:#81c784"><span>📱📱</span>${T.twoDevices}</button>
+        </div>
       </div>`;
     overlay.classList.add('pg-show');
     setMuted(muted);
     render(1);
   }
 
-  function setPaused(value, logo = '⏸') {
-    paused = value;
-    if (paused) {
+  // remote: the other device paused or continued (two devices only)
+  function setPaused(value, logo = '⏸', remote = false) {
+    if (remote) net.otherPaused = value;
+    else {
+      paused = value;
+      if (mode === 3) net.link.talk({ t: 'pause', on: value });
+    }
+    if (mode === 3 && !paused && net.otherPaused) {
+      // The child who paused is the one who continues
+      loop.stop();
+      panel('⏸', T.otherPaused, menuButton());
+    } else if (paused) {
       loop.stop();
       overlay.innerHTML = `
         <div class="pg-panel">
@@ -629,45 +720,311 @@ const PongApp = (() => {
         </div>`;
       overlay.classList.add('pg-show');
     } else {
-      overlay.innerHTML = '';
-      overlay.classList.remove('pg-show');
+      noPanel();
+      if (net) net.waitShown = false; // the next step shows the wait screen again, if the game still waits
       loop.start();
     }
   }
 
   function gameOver() {
-    loop.stop();
+    // Two devices: the loop continues, so the other device gets the last inputs
+    if (mode === 3) net.live = false; else loop.stop();
     render(1); // show the final score behind the end screen
     const w = state.winner;
-    const name = mode === 1 && w === 1 ? T.computer : T.players[w];
+    const lost = mode === 3 ? w !== net.player : mode === 1 && w === 1;
+    const text = mode === 3 ? (lost ? T.youLose : T.youWin) : `${mode === 1 && w === 1 ? T.computer : T.players[w]} ${T.wins}`;
     overlay.innerHTML = `
       <div class="pg-panel">
-        <div class="pg-logo">${mode === 1 && w === 1 ? '🤖' : '🏆'}</div>
-        <div class="pg-title" style="color:${COLORS[w]}">${name} ${T.wins}</div>
+        <div class="pg-logo">${lost ? (mode === 1 ? '🤖' : '🎈') : '🏆'}</div>
+        <div class="pg-title pg-keep" style="color:${COLORS[w]}">${text}</div>
         <div class="pg-final">${state.score[0]} : ${state.score[1]}</div>
         <button class="pg-btn" data-act="again" style="--pg-c:${COLORS[w]}"><span>🔁</span>${T.playAgain}</button>
         <button class="pg-btn pg-btn-plain" data-act="menu"><span>🏠</span>${T.menu}</button>
       </div>`;
     overlay.classList.add('pg-show');
     root.classList.remove('pg-playing');
-    if (mode === 2) OS.awardCoins(2, 'pong', '🏓', T.coinsDuo);
+    if (mode !== 1) OS.awardCoins(2, 'pong', '🏓', T.coinsDuo);
     else if (w === 0) OS.awardCoins(3, 'pong', '🏓', T.coinsSolo);
+  }
+
+  /* ---- Two devices: pairing ----
+     The first device shows a QR code. The second device scans it and shows its own code.
+     The first device scans that code. Then the connection opens (js/lib/pairing.js). */
+  function openPairing() {
+    Promise.all(['pairing', 'lockstep', 'qr'].map(name => OS.loadLib(name))).then(
+      () => { if (root && mode === 0) pairStart(); },
+      () => { if (root) panel('😕', T.failed, menuButton()); },
+    );
+  }
+
+  function pairStart() {
+    dropPair();
+    panel('📡', T.howTo, `<div class="pg-row">${button('host', '🔳', T.showCode)}${button('join', '📷', T.scanCode)}</div>${menuButton()}`);
+  }
+
+  // Ends a pairing that is not complete: camera off, connection closed
+  function dropPair() {
+    if (!pair) return;
+    const { session, scanner, timer, hintTimer } = pair;
+    pair = null;
+    clearTimeout(timer);
+    clearTimeout(hintTimer);
+    if (scanner) scanner.stop();
+    if (session) {
+      session.link.onopen = session.link.onclose = null;
+      session.link.close();
+    }
+  }
+
+  function pairFailed(logo = '😕', note = T.failed) {
+    dropPair();
+    panel(logo, note, button('net', '🔁', T.tryAgain) + menuButton());
+  }
+
+  function watch(link) {
+    link.onopen = () => {
+      const role = pair.role;
+      pair.session = null; // the game has the connection now
+      dropPair();
+      connect(link, role);
+    };
+    link.onclose = () => pairFailed();
+  }
+
+  // Screen with a picture (QR code or camera), a text, and buttons. The picture is as large as
+  // the window permits. In a low and wide window it is at the left of the text.
+  // ratio: width of the picture divided by its height. Returns the picture element.
+  function pictureScreen(picture, ratio, note, buttons) {
+    const w = root.clientWidth, h = root.clientHeight;
+    const side = h < 420 && w > h * 1.4;
+    overlay.innerHTML = `<div class="pg-panel pg-wide${side ? ' pg-side' : ''}">${picture}<div class="pg-note">${note}</div><div class="pg-row">${buttons}</div></div>`;
+    overlay.classList.add('pg-show');
+    const el = overlay.querySelector('.pg-panel').firstElementChild;
+    const height = Math.max(140, Math.min(side ? h - 32 : h - 190, 460));
+    const width = Math.min(height * ratio, side ? w * 0.5 : w - 40);
+    el.style.width = Math.round(width) + 'px';
+    el.style.height = Math.round(width / ratio) + 'px';
+    return el;
+  }
+
+  function showCode(code, note, more = '') {
+    const c = pictureScreen('<canvas class="pg-qr"></canvas>', 1, note, more + menuButton());
+    c.width = c.height = Math.round(parseInt(c.style.width, 10) * Math.min(window.devicePixelRatio || 1, 3));
+    QR.draw(c, code);
+  }
+
+  // accept(text): true when the text is the code that this device waits for
+  function showScanner(note, accept) {
+    pictureScreen('<video class="pg-cam" playsinline muted></video>', 4 / 3, note, button('flip', '🔄', T.otherCamera, true) + menuButton());
+    startScanner(accept, false);
+  }
+
+  function startScanner(accept, front) {
+    const mine = pair;
+    if (mine.scanner) mine.scanner.stop();
+    Object.assign(mine, { accept, front });
+    // The camera can see more than one code. Each code is tried, one after the other.
+    let queue = Promise.resolve(), done = false;
+    mine.scanner = QR.scan(overlay.querySelector('.pg-cam'), text => {
+      queue = queue.then(async () => {
+        if (done || pair !== mine) return;
+        if (await accept(text)) done = true;
+        else if (pair === mine) hint(T.wrongCode);
+      }).catch(() => {});
+    }, front);
+    mine.scanner.ready.then(result => {
+      if (pair !== mine || result === 'ok') return;
+      if (result === 'no-reader') pairFailed('🚫', T.noReader); else pairFailed('📷', T.noCamera);
+    });
+  }
+
+  // Shows a text in place of the note for a moment
+  function hint(text) {
+    const note = overlay.querySelector('.pg-note');
+    if (!note) return;
+    note.dataset.text ||= note.textContent;
+    note.textContent = text;
+    clearTimeout(pair.hintTimer);
+    pair.hintTimer = setTimeout(() => { note.textContent = note.dataset.text; }, 2000);
+  }
+
+  async function pairHost() {
+    dropPair();
+    const mine = pair = { role: 0, session: null, scanner: null, code: '' };
+    panel('⏳', T.linking, menuButton());
+    const session = await Pairing.host();
+    if (pair !== mine) { if (session) session.link.close(); return; } // the child left this screen
+    if (!session) return pairFailed('📵', T.noNetwork);
+    Object.assign(mine, { session, code: session.code });
+    watch(session.link);
+    showCode(session.code, T.scanMe, button('host-scan', '📷', T.next));
+  }
+
+  function pairHostScan() {
+    const mine = pair;
+    if (!mine || mine.role !== 0 || !mine.session) return;
+    showScanner(T.scanOther, async text => {
+      if (Pairing.kind(text) !== 'answer' || !(await mine.session.accept(text))) return false;
+      if (pair !== mine) return true;
+      mine.scanner.stop();
+      panel('⏳', T.linking, menuButton());
+      mine.timer = setTimeout(() => { if (pair === mine) pairFailed(); }, 12000);
+      return true;
+    });
+  }
+
+  function pairJoin() {
+    dropPair();
+    const mine = pair = { role: 1, session: null, scanner: null, code: '' };
+    showScanner(T.scanOther, async text => {
+      if (Pairing.kind(text) !== 'offer') return false;
+      mine.scanner.stop();
+      const session = await Pairing.join(text);
+      if (pair !== mine) { if (session) session.link.close(); return true; }
+      if (!session) { pairFailed(); return true; }
+      Object.assign(mine, { session, code: session.code });
+      watch(session.link);
+      showCode(session.code, T.nowOther);
+      return true;
+    });
+  }
+
+  /* ---- Two devices: game ----
+     The devices send inputs only, never the game state. Messages of the other device are
+     not trusted: each field is checked before use. */
+
+  // link: open connection from Pairing. player: 0 on the device that made the first code, 1 on the other.
+  function connect(link, player) {
+    if (!root) { link.close(); return; } // the Pong window closed in the meantime
+    dropNet();
+    loop.stop();
+    net = { link, player: player === 1 ? 1 : 0, lock: null, game: 0, live: false, log: [], otherPaused: false, waitShown: false };
+    link.ontalk = onTalk;
+    link.onfast = onFast;
+    link.onclose = onLost;
+    mode = 3;
+    state = null;
+    paused = false;
+    flipped = net.player === 1;
+    root.classList.remove('pg-playing');
+    render(1);
+    if (link.state !== 'open') return onLost();
+    panel('🤝', T.connected, button('go', '▶', T.resume) + menuButton());
+  }
+
+  // Ends the network game on this device. The other device sees that the connection closed.
+  function dropNet() {
+    if (!net) return;
+    const link = net.link;
+    net = null;
+    link.ontalk = link.onfast = link.onclose = null;
+    link.close();
+  }
+
+  function onLost() {
+    if (!net) return;
+    dropNet();
+    loop.stop();
+    mode = 0; // no input moves a paddle now
+    paused = false;
+    root.classList.remove('pg-playing');
+    panel('🔌', T.lost, menuButton());
+  }
+
+  // Each of the two children can ask for a game. The first device sets seed and style.
+  function requestStart() {
+    if (!net || net.live) return;
+    if (net.player === 0) startNet(newSeed(), style, (net.game + 1) & 255);
+    else net.link.talk({ t: 'again' });
+  }
+
+  function startNet(seed, look, game) {
+    if (net.player === 0) net.link.talk({ t: 'start', seed, style: look, game });
+    style = look;
+    Object.assign(net, { game, live: true, log: [], otherPaused: false, waitShown: false });
+    // The game number is the first byte of each input message. A late message of the game before is dropped.
+    net.lock = Lockstep.create({
+      player: net.player,
+      send(buf) {
+        const out = new Uint8Array(buf.byteLength + 1);
+        out[0] = game;
+        out.set(new Uint8Array(buf), 1);
+        net.link.fast(out.buffer);
+      },
+    });
+    begin(seed);
+    loop.start();
+  }
+
+  function onFast(buf) {
+    if (!net.lock || buf.byteLength < 2 || new Uint8Array(buf, 0, 1)[0] !== net.game) return;
+    net.lock.receive(buf.slice(1));
+  }
+
+  function onTalk(v) {
+    if (v.t === 'start' && net.player === 1) {
+      const ok = Number.isInteger(v.seed) && (v.seed | 0) === v.seed && (v.style === 'classic' || v.style === 'plus') && Number.isInteger(v.game) && v.game >= 0 && v.game <= 255;
+      if (ok) startNet(v.seed, v.style, v.game);
+    } else if (v.t === 'again' && net.player === 0) requestStart();
+    else if (v.t === 'pause' && typeof v.on === 'boolean' && net.live) setPaused(v.on, undefined, true);
+    else if (v.t === 'apart' && net.live) apart(false);
+  }
+
+  // The two devices do not have the same game. This game cannot continue, a new one can start.
+  function apart(tell) {
+    net.live = false;
+    loop.stop();
+    if (tell) net.link.talk({ t: 'apart' });
+    root.classList.remove('pg-playing');
+    panel('🙈', T.apart, button('again', '🔁', T.playAgain) + menuButton());
+  }
+
+  function showWait(on) {
+    net.waitShown = on;
+    if (on) panel('⏳', T.waiting, menuButton()); else noPanel();
+  }
+
+  function netStep() {
+    if (!net.live) { net.lock.tick(null); return; } // game is over: the other device can still need the last inputs
+    for (const pair of net.lock.tick(ownInput(net.player))) {
+      before = snapshot();
+      sim.step(state, pair);
+      effects();
+      if (!net.live) return;
+      if (state.tick % CHECK_EACH === 0) {
+        const value = Lockstep.hash(sim.values(state));
+        net.log.push([state.tick, value]);
+        if (net.log.length > 40) net.log.shift();
+        net.lock.check(state.tick, value);
+      }
+    }
+    if (net.lock.apart) return apart(true);
+    const wait = net.lock.waiting >= WAIT_SHOW;
+    if (wait !== net.waitShown) showWait(wait);
   }
 
   function snapshot() {
     return { paddles: state.paddles.slice(), balls: new Map(state.balls.map(b => [b.id, [b.x, b.y]])) };
   }
 
+  // Where the player wants the paddle: place of the finger, or a place from the keys
+  function ownInput(i) {
+    if (keys[i] === 0) return targets[i];
+    held[i]++;
+    return state.paddles[i] + keys[i] * Math.min(sim.PADDLE_SPEED, KEY_SLOW + held[i] * KEY_GAIN);
+  }
+
   function step() {
+    if (mode === 3) return netStep();
     before = snapshot();
-    const input = [targets[0], targets[1]];
-    for (let i = 0; i < 2; i++) {
-      if (keys[i] === 0) continue;
-      held[i]++;
-      input[i] = state.paddles[i] + keys[i] * Math.min(sim.PADDLE_SPEED, KEY_SLOW + held[i] * KEY_GAIN);
-    }
+    const input = [ownInput(0), ownInput(1)];
     if (mode === 1) input[1] = sim.computerTarget(state, 1);
     sim.step(state, input);
+    effects();
+  }
+
+  // Sounds and sparks for what occurred in the last step
+  function effects() {
     for (const [ev, x, y, extra] of state.events) {
       if (ev === 'hit') tone(520, 520, 0.05);
       else if (ev === 'wall') tone(330, 330, 0.04);
@@ -965,10 +1322,12 @@ const PongApp = (() => {
   }
 
   return {
-    getHTML, init, destroy, sim,
-    pause() { if (mode !== 0 && state && state.phase !== 'over' && !paused) setPaused(true); },
+    getHTML, init, destroy, sim, connect,
+    pause() { if (canPause() && !paused) setPaused(true); },
     // For the tests
     get state() { return state; },
+    get pairing() { return pair && { role: pair.role, code: pair.code }; },
+    get net() { return net && { player: net.player, game: net.game, live: net.live, log: net.log.slice(), waiting: net.waitShown, otherPaused: net.otherPaused }; },
     get running() { return !!(loop && loop.running); },
     get style() { return style; },
   };

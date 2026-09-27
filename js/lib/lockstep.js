@@ -14,6 +14,7 @@
 const Lockstep = (() => {
   const NONE = -32768;      // input "no target": the paddle stays
   const HEAD = 12;
+  const AHEAD = 2048;       // inputs for steps farther away than this are not kept (17 s of game)
 
   // player: 0 or 1. send(ArrayBuffer). delay in steps. repeat: inputs in each message.
   function create({ player, send, delay = 6, repeat = 16, maxRun = 4 }) {
@@ -24,8 +25,15 @@ const Lockstep = (() => {
     let known = delay - 1;      // inputs of the other player are here up to this step, with no gap
     let waiting = 0;            // ticks in a row with no step
     let lastHeard = 0, ticks = 0;
-    let hashes = new Map();     // step -> state check value from the other device
+    const hashes = new Map();   // step -> state check value from the other device
+    const own = new Map();      // step -> state check value of this device
     let outHash = null;
+    let apart = false;          // true: the two devices had a different state at the same step
+
+    // The two values for one step arrive in any order, so both sides of the pair call this
+    function compare(s) {
+      if (own.has(s) && hashes.has(s) && own.get(s) !== hashes.get(s)) apart = true;
+    }
 
     for (let s = 0; s < delay; s++) { mine.set(s, NONE); theirs.set(s, NONE); }
 
@@ -75,22 +83,29 @@ const Lockstep = (() => {
         lastHeard = ticks;
         for (let i = 0; i < count; i++) {
           const s = first + i;
-          if (s > known && !theirs.has(s)) theirs.set(s, v.getInt16(HEAD + i * 2));
+          // A good device is never more than some steps ahead. The limit keeps the memory small.
+          if (s > known && s <= step + AHEAD && !theirs.has(s)) theirs.set(s, v.getInt16(HEAD + i * 2));
         }
         while (theirs.has(known + 1)) known++;
         const hashStep = v.getUint32(8);
-        if (hashStep !== 0xffffffff) hashes.set(hashStep, v.getUint16(6));
+        if (hashStep !== 0xffffffff && !hashes.has(hashStep)) {
+          hashes.set(hashStep, v.getUint16(6));
+          compare(hashStep);
+        }
       },
 
-      // The caller gives a check value of its state after a step. The other device compares.
-      // Returns false when the two devices have a different state at that step.
+      // The caller gives a check value of its state after a step. The other device gets it
+      // with the next messages and compares. Returns false when the two devices were apart.
       check(atStep, value) {
         outHash = [atStep, value & 0xffff];
-        const other = hashes.get(atStep);
-        for (const s of hashes.keys()) if (s < atStep - 600) hashes.delete(s);
-        return other === undefined || other === (value & 0xffff);
+        own.set(atStep, value & 0xffff);
+        compare(atStep);
+        for (const map of [own, hashes]) for (const s of map.keys()) if (s < atStep - 600) map.delete(s);
+        return !apart;
       },
 
+      get apart() { return apart; },
+      get held() { return mine.size + theirs.size; }, // inputs in memory, for the tests
       get step() { return step; },
       get waiting() { return waiting; },          // ticks with no progress: the game shows "wait"
       get silent() { return ticks - lastHeard; }, // ticks with no message from the other device

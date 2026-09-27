@@ -41,7 +41,7 @@ A fun browser-based OS simulator for kids learning to use computers. Built with 
 | **TinyScanner** | Object scanner with real camera and silly results |
 | **SillySkies** | Parody weather app for silly places |
 | **Breakout** | Classic brick breaker game |
-| **Pong** | Ball game for one player against the computer, or for two players on one device. Classic style, and Pong+ with spin trick shots and power-ups |
+| **Pong** | Ball game for one player against the computer, for two players on one device, or for two players on two devices in the same Wi-Fi. Classic style, and Pong+ with spin trick shots and power-ups |
 | **Captain Cardio** | Starship fitness app with exercise moves |
 | **Pebbles** | Virtual pet rock |
 | **Pocket Pal** | Virtual pet corgi in 3D |
@@ -77,13 +77,17 @@ Open **https://mixashin.github.io/kidsOS/** in any browser — it runs as a desk
 - localStorage for persistence
 - Service Worker for offline PWA support
 - Canvas API for Paint and Kidstagram
-- getUserMedia API (optional) — used only in TinyScanner as a camera passthrough for the fake object scanner. Camera access is requested only when the app is opened and only if the user grants permission. No photos are stored, uploaded, or sent anywhere. The app works without camera access (falls back to a static background).
+- getUserMedia API (optional) — used in TinyScanner as a camera passthrough for the fake object scanner, and in Pong to scan the QR code of the other device. Camera access is requested only when the child opens that function and only if the user grants permission. No photos are stored, uploaded, or sent anywhere. The apps work without camera access, except the game on two devices.
+- WebRTC data channel for the game on two devices. The list of ICE servers is empty, so the connection uses addresses of the local network only
+- QR code encoder and lockstep code are part of this repo (`js/lib/`), no library
 
 - three.js (r149) for Pocket Pal, stored in `vendor/`, not loaded from a CDN
 
 ## Privacy
 
 KidsOS is made for children. The app contacts only the server it was loaded from, and only to load its own files and to check for a new release. It has no analytics, no ads, no accounts, and no third-party scripts. Everything a child makes or types stays in the browser storage of the device.
+
+Game on two devices: the two devices connect directly in the home Wi-Fi. There is no server between them, no STUN or TURN server, and no discovery service. The children pair the devices with a QR code that one screen shows and the other camera reads. The code holds a local network address and a certificate fingerprint. It is valid for one connection. The devices send paddle positions only.
 
 ## Development
 

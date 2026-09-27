@@ -567,13 +567,15 @@ const OS = (() => {
     apps[name] = appObj;
   }
 
-  function loadScript(id) {
-    return scriptLoads[id] ||= new Promise((resolve, reject) => {
+  // dir 'apps': code of an app. dir 'lib': shared code that an app loads when it needs it (OS.loadLib).
+  function loadScript(id, dir = 'apps') {
+    const key = `${dir}/${id}`;
+    return scriptLoads[key] ||= new Promise((resolve, reject) => {
       const s = document.createElement('script');
-      s.src = `js/apps/${id}.js?v=${version}`;
+      s.src = `js/${key}.js?v=${version}`;
       s.onload = resolve;
       s.onerror = () => {
-        delete scriptLoads[id]; // a later tap tries again
+        delete scriptLoads[key]; // a later tap tries again
         s.remove();
         reject(new Error('could not load ' + id));
       };
@@ -595,7 +597,7 @@ const OS = (() => {
     if (!entry) { console.warn('Unknown app:', name); return; }
     const ids = [...withNeeds(name)];
     if (ids.every(id => apps[id])) return openApp(name);
-    Promise.all(ids.map(loadScript))
+    Promise.all(ids.map(id => loadScript(id)))
       .then(() => openApp(name))
       .catch(() => alert(`${entry.icon} ${entry.label} could not open. Try again.`));
   }
@@ -866,5 +868,6 @@ const OS = (() => {
     get VERSION() { return version; },
     checkForUpdate, applyUpdate, _nukeAndReload,
     awardCoins, esc, createLoop,
+    loadLib: name => loadScript(name, 'lib'),
   };
 })();
