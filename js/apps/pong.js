@@ -99,13 +99,10 @@ var PongApp = (() => {
     const ITEM_LIFE = 10 * HZ;      // a power-up that nobody takes goes away
     const ITEM_WAIT = [8 * HZ, 8 * HZ]; // a power-up appears after 8 to 16 s of play: [minimum, random part]
 
-    // mulberry32: small seeded random number generator
-    function random(state) {
-      state.seed = (state.seed + 0x6D2B79F5) | 0;
-      let v = Math.imul(state.seed ^ (state.seed >>> 15), 1 | state.seed);
-      v = (v + Math.imul(v ^ (v >>> 7), 61 | v)) ^ v;
-      return ((v ^ (v >>> 14)) >>> 0) / 4294967296;
-    }
+    // The ball physics is shared with Breakout (js/lib/paddle.js)
+    const P = Paddle.physics;
+    const K = { SPIN_SLOW, SPIN_CURVE, KICK, KICK_SLOPE, FIRE, GUARD: SPEED_GUARD, SLICE_MIN, PADDLE_SPEED };
+    const random = P.random;
 
     function newBall(state, values) {
       return {
@@ -140,16 +137,8 @@ var PongApp = (() => {
     }
 
     // Speed of a ball with all effects
-    function speedOf(b) {
-      const v = b.speed * (b.spin !== 0 ? SPIN_SLOW : 1) * (b.kick ? KICK : 1) * (b.fire ? FIRE : 1);
-      return Math.min(SPEED_GUARD, v);
-    }
-
-    function aim(b, dx, dy) {
-      const v = speedOf(b) / Math.sqrt(dx * dx + dy * dy);
-      b.vx = dx * v;
-      b.vy = dy * v;
-    }
+    const speedOf = b => P.speedOf(b, K);
+    const aim = (b, dx, dy) => P.aim(b, dx, dy, K);
 
     const say = (state, name, b) => state.events.push(b ? [name, b.x, b.y] : [name]);
 
@@ -198,27 +187,16 @@ var PongApp = (() => {
 
     // Returns true when the ball met a brick. The brick goes away and the ball turns back.
     function hitBrick(state, b, px, py) {
-      for (let n = 0; n < state.bricks.length; n++) {
-        const k = state.bricks[n];
-        const nx = b.x < k.x0 ? k.x0 : b.x > k.x1 ? k.x1 : b.x;
-        const ny = b.y < k.y0 ? k.y0 : b.y > k.y1 ? k.y1 : b.y;
-        const dx = b.x - nx, dy = b.y - ny;
-        if (dx * dx + dy * dy > BALL_R * BALL_R) continue;
-        // The ball came from the side where it was one part of a step before
-        const fromSide = px < k.x0 || px > k.x1;
-        const fromEnd = py < k.y0 || py > k.y1;
-        if (fromSide || !fromEnd) b.vx = px < (k.x0 + k.x1) / 2 ? (b.vx < 0 ? b.vx : -b.vx) : (b.vx > 0 ? b.vx : -b.vx);
-        else b.vy = py < (k.y0 + k.y1) / 2 ? (b.vy < 0 ? b.vy : -b.vy) : (b.vy > 0 ? b.vy : -b.vy);
-        b.x = px; b.y = py;
-        state.events.push(['brick', (k.x0 + k.x1) / 2, (k.y0 + k.y1) / 2, k.row]);
-        state.bricks.splice(n, 1);
-        return true;
-      }
-      return false;
+      const n = P.touch(state.bricks, b, BALL_R);
+      if (n < 0) return false;
+      const k = state.bricks[n];
+      P.bounce(b, k, px, py);
+      state.events.push(['brick', (k.x0 + k.x1) / 2, (k.y0 + k.y1) / 2, k.row]);
+      state.bricks.splice(n, 1);
+      return true;
     }
 
     function hit(state, b, i, yHit, face) {
-      const offset = (yHit - state.paddles[i]) / (PADDLE_HALF + BALL_R);
       // Lightning ball of the other player: this paddle returns it, then it cannot move
       if (b.zap && b.owner !== i) {
         state.stun[i] = STUN_STEPS;
@@ -229,18 +207,17 @@ var PongApp = (() => {
       b.spin = 0; b.kick = false; b.fire = false; b.zap = false; // effects of the last shot end here
       b.owner = i;
       b.x = face + (i === 0 ? BALL_R : -BALL_R);
+      // Where the ball meets the paddle sets the direction
+      let slope = P.slope(yHit, state.paddles[i], PADDLE_HALF, BALL_R);
       b.y = Math.max(BALL_R, Math.min(H - BALL_R, yHit));
-      let slope = offset * 0.9;                     // where the ball meets the paddle sets the direction
       if (state.style === 'plus') {
         const power = state.power[i];
         state.power[i] = null;
         if (power === 'fire') { b.fire = true; say(state, 'fire', b); }
         if (power === 'zap') { b.zap = true; say(state, 'zap', b); }
-        const v = state.stun[i] > 0 ? 0 : state.vel[i];
-        const fast = v < 0 ? -v : v;
-        if (fast >= SLICE_MIN) {
-          const amount = Math.min(1, 0.5 + 0.5 * (fast - SLICE_MIN) / (PADDLE_SPEED - SLICE_MIN));
-          b.spin = v < 0 ? -amount : amount;
+        const spin = P.slice(state.stun[i] > 0 ? 0 : state.vel[i], K);
+        if (spin !== 0) {
+          b.spin = spin;
           slope += b.spin * 0.35;
           say(state, 'spin', b);
         }
@@ -253,19 +230,8 @@ var PongApp = (() => {
     // Moves one ball by one step. Returns the player who scores with it, or -1.
     function move(state, b) {
       const plus = state.style === 'plus';
-      if (plus && b.spin !== 0) {
-        // The ball bends toward the wall, at the same speed. It keeps a part of its forward motion.
-        const v = speedOf(b);
-        let vy = b.vy + b.spin * SPIN_CURVE * v;
-        const limit = v * 0.92;
-        if (vy > limit) vy = limit; else if (vy < -limit) vy = -limit;
-        const vx = Math.sqrt(v * v - vy * vy);
-        b.vx = b.vx < 0 ? -vx : vx;
-        b.vy = vy;
-      }
-
-      const fastest = Math.max(b.vx < 0 ? -b.vx : b.vx, b.vy < 0 ? -b.vy : b.vy);
-      const parts = Math.max(1, Math.ceil(fastest / SUB_STEP));
+      if (plus && b.spin !== 0) P.bend(b, K);
+      const parts = P.parts(b, SUB_STEP);
       for (let part = 0; part < parts; part++) {
         const out = movePart(state, b, parts, plus);
         if (out >= 0) return out;
@@ -278,35 +244,16 @@ var PongApp = (() => {
       b.x += b.vx / parts;
       b.y += b.vy / parts;
 
-      let wall = false;
-      if (b.y < BALL_R) { b.y = 2 * BALL_R - b.y; b.vy = -b.vy; wall = true; }
-      if (b.y > H - BALL_R) { b.y = 2 * (H - BALL_R) - b.y; b.vy = -b.vy; wall = true; }
-      if (wall) {
-        if (b.spin !== 0) {
-          // The trick: at the wall, spin changes into forward speed
-          b.spin = 0;
-          b.kick = true;
-          aim(b, b.vx < 0 ? -1 : 1, b.vy < 0 ? -KICK_SLOPE : KICK_SLOPE);
-          say(state, 'kick', b);
-        } else {
-          say(state, 'wall', b);
-        }
-      }
+      const wall = P.sideWalls(b, H, BALL_R, K);
+      if (wall) say(state, wall, b);
 
       for (let i = 0; i < 2; i++) {
         const toward = i === 0 ? b.vx < 0 : b.vx > 0;
         if (!toward) continue;
-        const face = PADDLE_X[i] + (i === 0 ? PADDLE_THICK / 2 : -PADDLE_THICK / 2);
-        const edge = i === 0 ? -BALL_R : BALL_R;      // the side of the ball that meets the paddle
-        const before = px + edge - face, after = b.x + edge - face;
-        const crossed = i === 0 ? before > 0 && after <= 0 : before < 0 && after >= 0;
-        // A paddle that arrives late still returns a ball that is next to it
-        const beside = i === 0 ? after <= 0 && b.x >= PADDLE_X[0] - PADDLE_THICK : after >= 0 && b.x <= PADDLE_X[1] + PADDLE_THICK;
-        if (!crossed && !beside) continue;
-        // A fast ball moves more than one paddle width per step: use the point where its path meets the paddle
-        const yHit = crossed ? py + (b.y - py) * (before / (before - after)) : b.y;
+        const m = P.meet(b, px, py, i, PADDLE_X[i], PADDLE_THICK, BALL_R);
+        if (!m) continue;
         const reach = PADDLE_HALF + BALL_R;
-        if (yHit >= state.paddles[i] - reach && yHit <= state.paddles[i] + reach) hit(state, b, i, yHit, face);
+        if (m.y >= state.paddles[i] - reach && m.y <= state.paddles[i] + reach) hit(state, b, i, m.y, m.face);
       }
 
       if (plus && state.bricks.length) hitBrick(state, b, px, py);
@@ -425,51 +372,30 @@ var PongApp = (() => {
     };
   })();
 
-  /* ---- App ---- */
+  /* ---- App ----
+     Screen, sound, effects, pictures, and panels come from the kit of the paddle games (js/lib/paddle.js). */
   const COLORS = ['#4fc3f7', '#ffb74d'];
-  const POWER = {
-    fire: { icon: '🔥', color: '#ff7043', glow: 'rgba(255,112,67,' },
-    zap: { icon: '⚡', color: '#ffee58', glow: 'rgba(255,238,88,' },
-    split: { icon: '', color: '#80deea', glow: 'rgba(128,222,234,' },
-    wall: { icon: '🧱', color: '#ff8a65', glow: 'rgba(255,138,101,' },
-  };
-  const BRICK_COLORS = ['#ff4757', '#ffa502', '#ffd32a', '#2ed573', '#1e90ff'];
-  const KEY_SLOW = 5, KEY_GAIN = 0.3; // a held key starts slowly and gets faster: a long press is a slice
-  let root = null, canvas = null, ctx = null, overlay = null;
+  const POWER = Paddle.POWER;
+  let root = null, kit = null, canvas = null, ctx = null, overlay = null, view = null;
   let loop = null, observer = null, controller = null;
   let state = null;
   let before = null;       // positions one step back, for smooth drawing between two steps
   let mode = 0;            // 1 or 2 players on this device, 3 = two devices, 0 = menu
   let style = 'plus';      // 'classic' | 'plus'
   let paused = false;
-  let turned = false;      // true: window is taller than wide, players are at the bottom and at the top
-  let flipped = false;     // true: the court is shown mirrored. Two devices: the own paddle is at the left on each.
+  let muted = false;
   // Game on two devices: { link, player, lock, game, live, log, otherPaused, waitShown }
   let net = null;
   // Pairing of two devices, before the game: { role, session, scanner, code, accept, front, timer, hintTimer }
   let pair = null;
   const CHECK_EACH = 60;  // steps between two checks that both devices have the same game
   const WAIT_SHOW = 60;    // ticks with no step before the wait screen shows: 0.5 s
-  let view = { scale: 1, ratio: 1, left: 0, top: 0, width: 0, height: 0 };
   const pointers = new Map(); // pointerId -> player
   const targets = [null, null];
   const keys = [0, 0];     // direction per player from the keyboard: -1, 0, 1
   const held = [0, 0];     // steps the key is down
-  let muted = false, audio = null;
-  // Effects are for the eye only. They are not part of the simulation.
-  let trails = new Map(), sparks = [], turn = 0;
 
-  function getHTML() {
-    return `
-    <div class="pg-wrap">
-      <canvas class="pg-canvas"></canvas>
-      <div class="pg-hud">
-        <button class="pg-round-btn" data-act="pause" aria-label="${T.paused}">⏸</button>
-        <button class="pg-round-btn" data-act="sound" aria-label="${T.sound}">🔊</button>
-      </div>
-      <div class="pg-overlay"></div>
-    </div>`;
-  }
+  const getHTML = () => Paddle.html(T);
 
   function loadStore() {
     try {
@@ -485,9 +411,9 @@ var PongApp = (() => {
 
   function init(winId) {
     root = document.getElementById('win-body-' + winId).querySelector('.pg-wrap');
-    canvas = root.querySelector('.pg-canvas');
-    ctx = canvas.getContext('2d');
-    overlay = root.querySelector('.pg-overlay');
+    kit = Paddle.kit(root, sim.W, sim.H, 'auto');
+    ({ canvas, ctx, overlay, view } = kit);
+    Paddle.loadPictures();
     loadStore();
 
     controller = new AbortController();
@@ -513,58 +439,23 @@ var PongApp = (() => {
     if (loop) loop.stop();
     if (observer) observer.disconnect();
     if (controller) controller.abort();
-    if (audio) { audio.close(); audio = null; }
+    if (kit) kit.destroy();
     pointers.clear();
-    root = canvas = ctx = overlay = loop = observer = controller = state = before = null;
-    trails = new Map(); sparks = [];
+    root = kit = canvas = ctx = overlay = view = loop = observer = controller = state = before = null;
     mode = 0;
     paused = false;
   }
 
-  /* ---- Screen and court ---- */
+  /* ---- Screen and court ----
+     Turned (window taller than wide): player 0 is at the bottom, player 1 at the top.
+     Flipped (two devices): the court is shown mirrored, so the own paddle is at the left on each device. */
   function resize() {
-    if (!canvas) return;
-    const box = root.getBoundingClientRect();
-    if (!box.width || !box.height) return;
-    const ratio = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = Math.round(box.width * ratio);
-    canvas.height = Math.round(box.height * ratio);
-    turned = box.height > box.width;
-    const long = turned ? canvas.height : canvas.width;
-    const short = turned ? canvas.width : canvas.height;
-    const scale = Math.min(long / sim.W, short / sim.H);
-    view = {
-      scale, ratio,
-      width: (turned ? sim.H : sim.W) * scale,
-      height: (turned ? sim.W : sim.H) * scale,
-    };
-    view.left = (canvas.width - view.width) / 2;
-    view.top = (canvas.height - view.height) / 2;
-    root.classList.toggle('pg-turned', turned);
-    trails = new Map();
+    if (!kit || !kit.fit()) return;
     if (!loop || !loop.running) render(1);
   }
 
-  // Court units to canvas pixels. Turned: player 0 is at the bottom, player 1 at the top.
-  // Flipped: the two players change places on the screen.
-  function toScreen(x, y) {
-    if (flipped) x = sim.W - x;
-    return turned
-      ? [view.left + y * view.scale, view.top + (sim.W - x) * view.scale]
-      : [view.left + x * view.scale, view.top + y * view.scale];
-  }
-
-  // Pointer position to court units. Positions outside the court count too: the whole half is a touch zone.
-  function toCourt(e) {
-    const box = canvas.getBoundingClientRect();
-    const px = (e.clientX - box.left) * view.ratio - view.left;
-    const py = (e.clientY - box.top) * view.ratio - view.top;
-    const p = turned
-      ? { x: sim.W - py / view.scale, y: px / view.scale }
-      : { x: px / view.scale, y: py / view.scale };
-    if (flipped) p.x = sim.W - p.x;
-    return p;
-  }
+  const toScreen = (x, y) => kit.at(x, y);
+  const rect = (x, y, halfW, halfH, radius) => kit.rect(x, y, halfW, halfH, radius);
 
   // The paddle that an input moves, when the place of the input does not select it
   const ownPlayer = () => (mode === 3 ? net.player : 0);
@@ -572,7 +463,7 @@ var PongApp = (() => {
   /* ---- Input ---- */
   function onPointerDown(e) {
     if (!state || mode === 0) return;
-    const p = toCourt(e);
+    const p = kit.court(e);
     const player = mode === 2 ? (p.x < sim.W / 2 ? 0 : 1) : ownPlayer();
     pointers.set(e.pointerId, player);
     targets[player] = p.y;
@@ -583,7 +474,7 @@ var PongApp = (() => {
   function onPointerMove(e) {
     const player = pointers.get(e.pointerId);
     if (player === undefined) return;
-    targets[player] = toCourt(e).y;
+    targets[player] = kit.court(e).y;
   }
 
   function onPointerUp(e) {
@@ -621,7 +512,7 @@ var PongApp = (() => {
   function onClick(e) {
     const btn = e.target.closest('[data-act]');
     if (!btn) return;
-    unlockAudio();
+    kit.sound.unlock();
     const act = btn.dataset.act;
     if (act === 'one') start(1);
     else if (act === 'two') start(2);
@@ -643,17 +534,9 @@ var PongApp = (() => {
   const newSeed = () => (Date.now() ^ (Math.random() * 0x7fffffff)) | 0;
   const canPause = () => mode !== 0 && !!state && state.phase !== 'over' && (mode !== 3 || net.live);
 
-  function panel(logo, note, buttons) {
-    overlay.innerHTML = `<div class="pg-panel"><div class="pg-logo">${logo}</div><div class="pg-note">${note}</div>${buttons}</div>`;
-    overlay.classList.add('pg-show');
-  }
-
-  function noPanel() {
-    overlay.innerHTML = '';
-    overlay.classList.remove('pg-show');
-  }
-
-  const button = (act, icon, label, plain) => `<button class="pg-btn${plain ? ' pg-btn-plain' : ''}" data-act="${act}" style="--pg-c:${COLORS[0]}"><span>${icon}</span>${label}</button>`;
+  const panel = (logo, note, buttons) => kit.panel(logo, note, buttons);
+  const noPanel = () => kit.hide();
+  const button = (act, icon, label, plain) => Paddle.button(act, icon, label, COLORS[0], plain);
   const menuButton = () => button('menu', '🏠', T.menu, true);
 
   function start(players) {
@@ -671,7 +554,7 @@ var PongApp = (() => {
     keys[0] = keys[1] = 0;
     held[0] = held[1] = 0;
     pointers.clear();
-    trails = new Map(); sparks = [];
+    kit.clear();
     paused = false;
     noPanel();
     root.classList.add('pg-playing');
@@ -685,22 +568,20 @@ var PongApp = (() => {
     mode = 0;
     state = null;
     paused = false;
-    flipped = false;
-    trails = new Map(); sparks = [];
+    kit.flipped = false;
+    kit.clear();
     root.classList.remove('pg-playing');
     root.classList.toggle('pg-classic', style === 'classic');
-    const pick = (id, icon, label) => `<button class="pg-pick${style === id ? ' pg-on' : ''}" data-act="${id}" aria-pressed="${style === id}"><span>${icon}</span>${label}</button>`;
-    overlay.innerHTML = `
+    kit.show(`
       <div class="pg-panel pg-wide">
         <div class="pg-title">🏓 ${T.title}</div>
-        <div class="pg-picks">${pick('classic', '🕹️', T.classic)}${pick('plus', '🔥', T.plus)}</div>
+        <div class="pg-picks">${Paddle.pick('classic', style === 'classic', '🕹️', T.classic)}${Paddle.pick('plus', style === 'plus', '🔥', T.plus)}</div>
         <div class="pg-modes">
-          <button class="pg-btn" data-act="one" style="--pg-c:${COLORS[0]}"><span>🧒🤖</span>${T.onePlayer}</button>
-          <button class="pg-btn" data-act="two" style="--pg-c:${COLORS[1]}"><span>🧒🧒</span>${T.twoPlayers}</button>
-          <button class="pg-btn" data-act="net" style="--pg-c:#81c784"><span>📱📱</span>${T.twoDevices}</button>
+          ${Paddle.button('one', '🧒🤖', T.onePlayer, COLORS[0])}
+          ${Paddle.button('two', '🧒🧒', T.twoPlayers, COLORS[1])}
+          ${Paddle.button('net', '📱📱', T.twoDevices, '#81c784')}
         </div>
-      </div>`;
-    overlay.classList.add('pg-show');
+      </div>`);
     setMuted(muted);
     render(1);
   }
@@ -718,13 +599,7 @@ var PongApp = (() => {
       panel('⏸', T.otherPaused, menuButton());
     } else if (paused) {
       loop.stop();
-      overlay.innerHTML = `
-        <div class="pg-panel">
-          <div class="pg-logo">${logo}</div>
-          <button class="pg-btn" data-act="resume" style="--pg-c:${COLORS[0]}"><span>▶</span>${T.resume}</button>
-          <button class="pg-btn pg-btn-plain" data-act="menu"><span>🏠</span>${T.menu}</button>
-        </div>`;
-      overlay.classList.add('pg-show');
+      kit.pausePanel(logo, T, COLORS[0]);
     } else {
       noPanel();
       if (net) net.waitShown = false; // the next step shows the wait screen again, if the game still waits
@@ -739,15 +614,7 @@ var PongApp = (() => {
     const w = state.winner;
     const lost = mode === 3 ? w !== net.player : mode === 1 && w === 1;
     const text = mode === 3 ? (lost ? T.youLose : T.youWin) : mode === 1 && w === 1 ? T.computerWins : T.wins[w];
-    overlay.innerHTML = `
-      <div class="pg-panel">
-        <div class="pg-logo">${lost ? (mode === 1 ? '🤖' : '🎈') : '🏆'}</div>
-        <div class="pg-title pg-keep" style="color:${COLORS[w]}">${text}</div>
-        <div class="pg-final">${state.score[0]} : ${state.score[1]}</div>
-        <button class="pg-btn" data-act="again" style="--pg-c:${COLORS[w]}"><span>🔁</span>${T.playAgain}</button>
-        <button class="pg-btn pg-btn-plain" data-act="menu"><span>🏠</span>${T.menu}</button>
-      </div>`;
-    overlay.classList.add('pg-show');
+    kit.endPanel(lost ? (mode === 1 ? '🤖' : '🎈') : '🏆', text, COLORS[w], `${state.score[0]} : ${state.score[1]}`, T);
     root.classList.remove('pg-playing');
     if (mode !== 1) OS.awardCoins(2, 'pong', '🏓', T.coinsDuo);
     else if (w === 0) OS.awardCoins(3, 'pong', '🏓', T.coinsSolo);
@@ -911,7 +778,7 @@ var PongApp = (() => {
     mode = 3;
     state = null;
     paused = false;
-    flipped = net.player === 1;
+    kit.flipped = net.player === 1;
     root.classList.remove('pg-playing');
     render(1);
     if (link.state !== 'open') return onLost();
@@ -1017,7 +884,7 @@ var PongApp = (() => {
   function ownInput(i) {
     if (keys[i] === 0) return targets[i];
     held[i]++;
-    return state.paddles[i] + keys[i] * Math.min(sim.PADDLE_SPEED, KEY_SLOW + held[i] * KEY_GAIN);
+    return Paddle.keyTarget(state.paddles[i], keys[i], held[i], sim.PADDLE_SPEED);
   }
 
   function step() {
@@ -1031,81 +898,13 @@ var PongApp = (() => {
 
   // Sounds and sparks for what occurred in the last step
   function effects() {
-    for (const [ev, x, y, extra] of state.events) {
-      if (ev === 'hit') tone(520, 520, 0.05);
-      else if (ev === 'wall') tone(330, 330, 0.04);
-      else if (ev === 'point') tone(260, 140, 0.3);
-      else if (ev === 'spin') tone(500, 900, 0.18);
-      else if (ev === 'kick') { tone(300, 1200, 0.22); burst(x, y, '#7df9ff', 14); }
-      else if (ev === 'fire') { tone(160, 80, 0.35, 'sawtooth'); burst(x, y, POWER.fire.color, 18); }
-      else if (ev === 'zap') { tone(1400, 500, 0.2, 'square'); burst(x, y, POWER.zap.color, 18); }
-      else if (ev === 'stun') { tone(90, 60, 0.5, 'sawtooth'); burst(x, y, POWER.zap.color, 26); }
-      else if (ev === 'split') { tone(700, 700, 0.08); tone(1050, 1050, 0.16); burst(x, y, POWER.split.color, 18); }
-      else if (ev === 'brick') { tone(880, 660, 0.07, 'square'); burst(x, y, BRICK_COLORS[extra], 10); }
-      else if (ev === 'wallup') { tone(200, 400, 0.12, 'square'); tone(400, 800, 0.24, 'square'); }
-      else if (ev === 'walldown') tone(500, 200, 0.25);
-      else if (ev === 'item') tone(700, 1000, 0.12);
-      else if (ev === 'pickup') { tone(600, 1200, 0.1); tone(900, 1500, 0.2); burst(x, y, '#ffd54f', 16); }
-      else if (ev === 'over') gameOver();
+    for (const ev of state.events) {
+      if (ev[0] === 'over') gameOver();
+      else kit.effect(ev);
     }
   }
 
   /* ---- Drawing ---- */
-  function rect(x, y, halfW, halfH, radius) {
-    // Court units. Turned court swaps the two axes.
-    const [sx, sy] = toScreen(x, y);
-    const w = (turned ? halfH : halfW) * view.scale;
-    const h = (turned ? halfW : halfH) * view.scale;
-    ctx.beginPath();
-    ctx.roundRect(sx - w, sy - h, w * 2, h * 2, radius * view.scale);
-    ctx.fill();
-  }
-
-  function burst(x, y, color, count) {
-    for (let n = 0; n < count; n++) {
-      const a = Math.random() * Math.PI * 2, v = 2 + Math.random() * 5;
-      sparks.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 1, color });
-    }
-  }
-
-  function ballColor(b) {
-    if (b.fire) return POWER.fire.color;
-    if (b.zap) return POWER.zap.color;
-    if (b.kick) return '#7df9ff';
-    if (b.spin !== 0) return '#b388ff';
-    return '#ffffff';
-  }
-
-  // Picture of a power-up, in a circle with radius r on the screen
-  function powerIcon(type, sx, sy, r) {
-    if (type === 'split') {
-      // Two balls that leave to two sides
-      ctx.fillStyle = '#fff';
-      for (const side of [-1, 1]) {
-        ctx.beginPath();
-        ctx.arc(sx + side * r * 0.42, sy + side * r * 0.3, r * 0.34, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      return;
-    }
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.font = `${r * 1.25}px system-ui, sans-serif`;
-    ctx.fillStyle = '#fff';
-    ctx.fillText(POWER[type].icon, sx, sy + r * 0.06);
-  }
-
-  // Number from 3 x 5 blocks, like the first Pong machines. Always upright on the screen.
-  const BLOCKS = ['111101101101111', '010110010010111', '111001111100111', '111001111001111', '101101111001001', '111100111001111'];
-  function blockNumber(n, x, y, size) {
-    const [sx, sy] = toScreen(x, y);
-    const cell = size * view.scale;
-    const bits = BLOCKS[n] || BLOCKS[0];
-    for (let i = 0; i < 15; i++) {
-      if (bits[i] === '1') ctx.fillRect(Math.round(sx + ((i % 3) - 1.5) * cell), Math.round(sy + (Math.floor(i / 3) - 2.5) * cell), Math.ceil(cell), Math.ceil(cell));
-    }
-  }
-
   function render(alpha) {
     if (!ctx) return;
     const classic = style === 'classic';
@@ -1124,8 +923,8 @@ var PongApp = (() => {
       ctx.strokeRect(view.left, view.top, view.width, view.height);
       ctx.fillStyle = '#fff';
       for (let y = 15; y < sim.H; y += 40) rect(sim.W / 2, y + 10, 5, 10, 0);
-      blockNumber(score[0], sim.W * 0.3, 80, 16);
-      blockNumber(score[1], sim.W * 0.7, 80, 16);
+      kit.blockNumber(score[0], sim.W * 0.3, 80, 16);
+      kit.blockNumber(score[1], sim.W * 0.7, 80, 16);
     } else {
       ctx.fillStyle = '#12284a';
       ctx.beginPath();
@@ -1163,29 +962,12 @@ var PongApp = (() => {
 
     // Wall of bricks. It blinks in its last 2 seconds.
     if (s.bricks.length && !(s.wallUntil - s.tick < 2 * sim.HZ && Math.floor(s.tick / 12) % 2 === 0)) {
-      for (const k of s.bricks) {
-        ctx.fillStyle = BRICK_COLORS[k.row];
-        rect((k.x0 + k.x1) / 2, (k.y0 + k.y1) / 2, (k.x1 - k.x0) / 2, (k.y1 - k.y0) / 2, 6);
-      }
+      for (const k of s.bricks) kit.brick(k, k.row);
     }
 
-    // Power-up on the court
-    if (s.item) {
-      const [sx, sy] = toScreen(s.item.x, s.item.y);
-      const beat = 1 + 0.08 * Math.sin(s.tick / 14);
-      const r = sim.ITEM_R * view.scale * beat;
-      const leaving = s.item.until - s.tick < 2 * sim.HZ && Math.floor(s.tick / 12) % 2 === 0; // it blinks before it goes
-      if (!leaving) {
-        const look = POWER[s.item.type];
-        const glow = ctx.createRadialGradient(sx, sy, r * 0.2, sx, sy, r * 1.5);
-        glow.addColorStop(0, look.glow + '0.9)');
-        glow.addColorStop(1, look.glow + '0)');
-        ctx.fillStyle = glow;
-        ctx.beginPath();
-        ctx.arc(sx, sy, r * 1.5, 0, Math.PI * 2);
-        ctx.fill();
-        powerIcon(s.item.type, sx, sy, r);
-      }
+    // Power-up on the court. It blinks before it goes.
+    if (s.item && !(s.item.until - s.tick < 2 * sim.HZ && Math.floor(s.tick / 12) % 2 === 0)) {
+      kit.item(s.item.type, s.item.x, s.item.y, sim.ITEM_R, s.tick);
     }
 
     // Paddles
@@ -1203,22 +985,11 @@ var PongApp = (() => {
       const mark = stunned ? 'zap' : power;
       if (mark) {
         const [sx, sy] = toScreen(sim.PADDLE_X[i] + (i === 0 ? -30 : 30), y);
-        powerIcon(mark, sx, sy, 22 * view.scale);
+        kit.icon(mark, sx, sy, 22 * view.scale);
       }
     }
 
-    // Sparks
-    sparks = sparks.filter(p => p.life > 0);
-    for (const p of sparks) {
-      p.x += p.vx; p.y += p.vy; p.life -= 0.04;
-      const [sx, sy] = toScreen(p.x, p.y);
-      ctx.globalAlpha = Math.max(0, p.life);
-      ctx.fillStyle = p.color;
-      ctx.beginPath();
-      ctx.arc(sx, sy, 5 * view.scale, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.globalAlpha = 1;
+    kit.drawSparks();
 
     if (s.phase === 'over') return;
 
@@ -1228,103 +999,28 @@ var PongApp = (() => {
       const r = sim.BALL_R * view.scale * (1 + 0.25 * Math.abs(((s.serveIn % 40) / 20) - 1));
       ctx.fillStyle = '#fff';
       if (classic) ctx.fillRect(sx - r, sy - r, r * 2, r * 2);
-      else { ctx.beginPath(); ctx.arc(sx, sy, r, 0, Math.PI * 2); ctx.fill(); }
-      trails = new Map();
+      else kit.body(sx, sy, r);
+      kit.frame([]);
       return;
     }
 
-    turn += 0.45;
-    for (const id of trails.keys()) if (!s.balls.some(b => b.id === id)) trails.delete(id);
+    kit.frame(s.balls);
     for (const b of s.balls) {
       const old = before && before.balls.get(b.id);
-      const [sx, sy] = toScreen(old ? mix(old[0], b.x) : b.x, old ? mix(old[1], b.y) : b.y);
-      const r = sim.BALL_R * view.scale;
-
+      const x = old ? mix(old[0], b.x) : b.x, y = old ? mix(old[1], b.y) : b.y;
       if (classic) {
+        const [sx, sy] = toScreen(x, y);
+        const r = sim.BALL_R * view.scale;
         ctx.fillStyle = '#fff';
         ctx.fillRect(sx - r, sy - r, r * 2, r * 2);
-        continue;
-      }
-
-      const color = ballColor(b);
-      const special = b.fire || b.zap || b.kick || b.spin !== 0;
-      const trail = trails.get(b.id) || [];
-      trails.set(b.id, trail);
-      trail.push([sx, sy]);
-      const keep = b.fire || b.kick || b.zap ? 16 : b.spin !== 0 ? 12 : 6;
-      while (trail.length > keep) trail.shift();
-      for (let n = 0; n < trail.length - 1; n++) {
-        const part = (n + 1) / trail.length;
-        ctx.globalAlpha = part * 0.35;
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        ctx.arc(trail[n][0], trail[n][1], r * (0.4 + 0.6 * part), 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.globalAlpha = 1;
-
-      ctx.shadowColor = color;
-      ctx.shadowBlur = special ? 22 * view.scale : 0;
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      ctx.arc(sx, sy, r, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.shadowBlur = 0;
-
-      if (b.spin !== 0) {
-        // Two marks that go round: the child sees that the ball spins
-        const angle = turn * b.spin;
-        ctx.strokeStyle = '#311b92';
-        ctx.lineWidth = Math.max(2, 4 * view.scale);
-        for (const from of [angle, angle + Math.PI]) {
-          ctx.beginPath();
-          ctx.arc(sx, sy, r * 0.62, from, from + 1.3);
-          ctx.stroke();
-        }
-      }
-      if (b.zap) {
-        // Short flashes around a lightning ball
-        ctx.strokeStyle = '#fff';
-        ctx.lineWidth = Math.max(1.5, 3 * view.scale);
-        for (let n = 0; n < 3; n++) {
-          const a = Math.random() * Math.PI * 2, len = r * (1.4 + Math.random());
-          ctx.beginPath();
-          ctx.moveTo(sx + Math.cos(a) * r, sy + Math.sin(a) * r);
-          ctx.lineTo(sx + Math.cos(a + 0.3) * len * 0.8, sy + Math.sin(a + 0.3) * len * 0.8);
-          ctx.lineTo(sx + Math.cos(a) * len * 1.3, sy + Math.sin(a) * len * 1.3);
-          ctx.stroke();
-        }
-      }
+      } else kit.ball(b, x, y, sim.BALL_R);
     }
-  }
-
-  /* ---- Sound: short tones, no audio files ---- */
-  function unlockAudio() {
-    if (audio || muted) return;
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    if (Ctx) audio = new Ctx();
-  }
-
-  function tone(from, to, seconds, type = 'triangle') {
-    if (muted || !audio) return;
-    const osc = audio.createOscillator();
-    const gain = audio.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(from, audio.currentTime);
-    if (to !== from) osc.frequency.exponentialRampToValueAtTime(to, audio.currentTime + seconds);
-    gain.gain.setValueAtTime(0.12, audio.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + seconds);
-    osc.connect(gain).connect(audio.destination);
-    osc.start();
-    osc.stop(audio.currentTime + seconds);
   }
 
   function setMuted(value) {
     muted = value;
-    const btn = root && root.querySelector('[data-act="sound"]');
-    if (btn) btn.textContent = muted ? '🔇' : '🔊';
+    kit.setMuted(value);
     saveStore();
-    if (!muted) unlockAudio();
   }
 
   return {

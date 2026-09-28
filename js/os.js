@@ -662,6 +662,7 @@ const OS = (() => {
   // The picture of an app is art/icons/<id>.webp.
   //   short: label for the desktop icon when the full label is too long
   //   needs: apps whose code this app calls directly
+  //   libs: shared code in js/lib/ that loads before the code of the app
   const APPS = [
     { id: 'filemanager',    label: 'Files', needs: ['notepad', 'paint'] },
     { id: 'notepad',        label: 'Notepad', needs: ['filemanager'] },
@@ -682,8 +683,8 @@ const OS = (() => {
     { id: 'soundboard',     label: 'Sounds' },
     { id: 'tinyscanner',    label: 'Scanner' },
     { id: 'sillyskies',     label: 'SillySkies' },
-    { id: 'breakout',       label: 'Breakout' },
-    { id: 'pong',           label: 'Pong' },
+    { id: 'breakout',       label: 'Breakout', libs: ['paddle'] },
+    { id: 'pong',           label: 'Pong', libs: ['paddle'] },
     { id: 'captaincardio',  label: 'Captain Cardio', short: 'Cardio' },
     { id: 'pebbles',        label: 'Pebbles' },
     { id: 'pocketpal',      label: 'Pocket Pal' },
@@ -787,8 +788,9 @@ const OS = (() => {
     if (!entry) { console.warn('Unknown app:', name); return; }
     const ids = [...withNeeds(name)];
     if (ids.every(id => apps[id])) return openApp(name);
-    // The texts of an app load before its code: the code can read a text at the time it loads
-    Promise.all(ids.map(id => loadLanguage(id).then(() => loadScript(id))))
+    // The texts and the shared code of an app load before its code: the code can use them at the time it loads
+    const libs = id => (APPS.find(a => a.id === id) || {}).libs || [];
+    Promise.all(ids.map(id => loadLanguage(id).then(() => Promise.all(libs(id).map(n => loadScript(n, 'lib')))).then(() => loadScript(id))))
       .then(() => openApp(name))
       .catch(() => alert(t('{app} could not open. Try again.', { app: appName(name) })));
   }
