@@ -38,7 +38,8 @@ var BreakoutApp = (() => {
      Pure and deterministic, as the simulation of Pong: the same seed and the same inputs give
      the same game. The court has the axes of Pong: x is the forward direction, y goes across.
      The paddle defends x = 0, the bricks stand near the far end x = W, which is a wall.
-     The screen always shows the court turned, so the paddle is at the bottom.
+     The court lies along the long side of the window, as in Pong: in a wide window the paddle is
+     at the left, in a tall window it is at the bottom.
      Speeds are in units per step. One step is 1/120 s. */
   const sim = (() => {
     const P = Paddle.physics;
@@ -424,7 +425,7 @@ var BreakoutApp = (() => {
 
   function init(winId) {
     root = document.getElementById('win-body-' + winId).querySelector('.pg-wrap');
-    kit = Paddle.kit(root, sim.W, sim.H, 'always');
+    kit = Paddle.kit(root, sim.W, sim.H, 'auto');
     ({ canvas, ctx, view } = kit);
     Paddle.loadPictures();
     loadStore();
@@ -480,8 +481,9 @@ var BreakoutApp = (() => {
     fingers.delete(e.pointerId);
   }
 
-  // Physical keys, so the letters work on each keyboard layout. On the screen, left is a lower y.
-  const KEYS = { ArrowLeft: -1, KeyA: -1, ArrowRight: 1, KeyD: 1 };
+  // Physical keys, so the letters work on each keyboard layout. As in Pong, both key pairs work in each
+  // window shape: up and left are a lower y (up on the screen in a wide window, left in a tall one).
+  const KEYS = { ArrowUp: -1, ArrowLeft: -1, KeyW: -1, KeyA: -1, ArrowDown: 1, ArrowRight: 1, KeyS: 1, KeyD: 1 };
 
   function onKey(e, down) {
     const win = root && root.closest('.window');
@@ -623,9 +625,10 @@ var BreakoutApp = (() => {
       String(s.score).split('').reverse().forEach((d, n) => kit.blockNumber(+d, bandX, sim.H - 40 - n * 56, 9));
     } else {
       const [sx, sy] = kit.at(bandX, sim.H - 30);
-      ctx.textAlign = 'right';
+      // Tall window: the band is a row at the top. Wide window: it is a narrow column at the right.
+      ctx.textAlign = kit.turned ? 'right' : 'center';
       ctx.textBaseline = 'middle';
-      ctx.font = `700 ${36 * view.scale}px Nunito, system-ui, sans-serif`;
+      ctx.font = `700 ${(kit.turned ? 36 : 28) * view.scale}px Nunito, system-ui, sans-serif`;
       ctx.fillStyle = 'rgba(255,255,255,0.75)';
       ctx.fillText(T.level(s.level), sx, sy);
       // Score: a large number in the court, as in Pong+

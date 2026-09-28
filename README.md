@@ -47,7 +47,7 @@ For kids of age 5 to 9. Built by a parent for two very demanding beta testers.
 | 🐍 | **Snake** | Eat. Grow. Do not bite yourself. Beat your record. |
 | 🃏 | **Memory** | Find the pairs. Grown-ups will lose. |
 | 💣 | **Minesweeper** | The classic, with an easy level for small humans. |
-| 🧱 | **Breakout** | Paddle. Ball. Bricks. Smash. |
+| 🧱 | **Breakout** | Paddle. Ball. Bricks. Smash. 5 levels, one of them is a heart. Breakout+ drops power-ups from the bricks: catch the fireball, dodge the tiny paddle. |
 | 🏓 | **Pong** | Play the computer, a friend on the same tablet, or a friend on a second tablet. Pong+ has trick shots and power-ups. |
 | 🔊 | **Sounds** | 16 buttons of pure noise. Yes, there is a fart button. You have been warned. |
 
