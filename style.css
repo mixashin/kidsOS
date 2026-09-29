@@ -2321,10 +2321,12 @@ button.lang-option { font-family: inherit; }
 .pb-spot { position: absolute; left: calc(50% + var(--dx, 0px)); top: 54%; width: var(--rig, 320px); height: var(--rig, 320px); transform: translate(-50%, -50%); }
 .pb-box, .pb-move, .pb-rig, .pb-l { position: absolute; inset: 0; width: 100%; height: 100%; }
 .pb-l, .pb-box, .pb-scene { pointer-events: none; -webkit-user-drag: none; }
-.pb-box { transition: transform .8s ease, opacity .8s ease; }
-.pb-app:not(.pb-night) .pb-box-back { transform: translate(-58%, 6%) scale(.55); }
-.pb-app:not(.pb-night) .pb-box-front { display: none; }
-.pb-move { transform-origin: 50% 78.125%; }
+/* By day the whole bed box stands beside the rock and behind it (--box-x from the app keeps it inside the frame).
+   At night the rock sits in it: the front wall is in front of the rock */
+.pb-box { z-index: 0; transition: transform .8s ease, opacity .8s ease; }
+.pb-app:not(.pb-night) .pb-box { transform: translate(var(--box-x, -58%), 6%) scale(.55); }
+.pb-night .pb-box-front { z-index: 2; }
+.pb-move { z-index: 1; transform-origin: 50% 78.125%; }
 .pb-rig { transform-origin: 50% 78.125%; animation: pbBreathe 3.6s ease-in-out infinite; }
 .pb-sleep .pb-rig { animation-duration: 5s; }
 @keyframes pbBreathe { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(.99, 1.02); } }

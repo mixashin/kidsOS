@@ -355,7 +355,11 @@ var PebblesApp = (() => {
     const stage = app.querySelector('.pb-stage');
     stage.style.width = freeW + 'px';
     stage.style.height = freeH + 'px';
-    app.style.setProperty('--rig', Math.round(Math.max(80, Math.min(freeH * 0.62, freeW * 0.8))) + 'px');
+    const rig = Math.round(Math.max(80, Math.min(freeH * 0.62, freeW * 0.8)));
+    app.style.setProperty('--rig', rig + 'px');
+    // By day the box stands 0.58 of the rock to the left, or closer in a narrow frame: its painted left edge
+    // (x 110 of 1024, scale 0.55 around the middle) stays 8 px inside the frame
+    app.style.setProperty('--box-x', Math.round(Math.max(-0.58 * rig, 8 - freeW / 2 + 0.216 * rig)) + 'px');
   }
 
   /* ---- Face, blink, bubble ---- */
@@ -874,6 +878,8 @@ var PebblesApp = (() => {
     gameLater(() => { cover.innerHTML = '<span>3</span>'; tones.play('pop'); }, 2000);
     gameLater(() => { cover.remove(); showPiles(); }, 3000);
   }
+  // The painted pile fills the band from 26 to 74 percent of the height of its square picture
+  const PILE_TOP = 0.26, PILE_BOTTOM = 0.74;
   function showPiles() {
     hush();
     app.classList.add('pb-hiding');
@@ -883,13 +889,13 @@ var PebblesApp = (() => {
     const ground = s.top + s.height * 0.78;
     const center = s.left + s.width / 2;
     play().innerHTML = [0, 1, 2].map(i =>
-      `<button class="pb-pile" data-act="pile" data-pile="${i}" aria-label="${t('Leaves')}" style="width:${size}px;height:${size}px;left:${center + (i - 1) * gap - size / 2}px;top:${ground - size * 0.85}px">${img('', 'leaf-pile')}</button>`).join('');
+      `<button class="pb-pile" data-act="pile" data-pile="${i}" aria-label="${t('Leaves')}" style="width:${size}px;height:${size}px;left:${center + (i - 1) * gap - size / 2}px;top:${ground - size * PILE_BOTTOM}px">${img('', 'leaf-pile')}</button>`).join('');
     // The leaf zone of the rock canvas (brief 11): x 440 to 816, y 222 to 430
     const leafW = size * 0.5, leafH = leafW * 208 / 376;
     const hint = document.createElement('span');
     hint.className = 'pb-hint';
     hint.innerHTML = `<img src="${ART}pebbles-leaf.webp" alt="" draggable="false" style="width:${1024 / 376 * 100}%;height:${1024 / 208 * 100}%;left:${-440 / 376 * 100}%;top:${-222 / 208 * 100}%">`;
-    Object.assign(hint.style, { width: leafW + 'px', height: leafH + 'px', left: center + (hidden - 1) * gap - leafW / 2 + 'px', top: ground - size * 0.85 - leafH * 0.55 + 'px' });
+    Object.assign(hint.style, { width: leafW + 'px', height: leafH + 'px', left: center + (hidden - 1) * gap - leafW / 2 + 'px', top: ground - size * (PILE_BOTTOM - PILE_TOP) - leafH * 0.6 + 'px' });
     play().appendChild(hint);
   }
   function pickPile(i) {
