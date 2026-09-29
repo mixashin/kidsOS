@@ -1,514 +1,146 @@
-/* ===== Pebbles — Virtual Pet Rock ===== */
-(() => {
-  const t = OS.texts('pebbles');
+/* ===== Pebbles: the pet rock =====
+   A painted rock lives in a small meadow. It breathes, blinks, sleeps at night, and thinks in bubbles.
+   The child taps it, rubs it, gives it tricks, dresses it, and plays 2 small games with it.
+   Nothing decays and nothing resets: the rock never needs the child.
+   Pictures: art/pebbles/, all layers of the rock share one 1024 canvas (brief 11 of Astra). */
+{
+const t = OS.texts('pebbles');
+
+var PebblesApp = (() => {
   const STORE_KEY = 'kidsOS_pebbles';
 
-  /* ---- Data Constants ---- */
-  const TRICKS = [
-    { id: 'sit',        name: 'Sit',                       xpCost: 0,   anim: 'Rock sits there' },
-    { id: 'continue',   name: 'Continue Sitting',          xpCost: 10,  anim: 'Rock... continues sitting' },
-    { id: 'tilt',       name: 'Slightly Tilt',             xpCost: 25,  anim: 'tilt' },
-    { id: 'return',     name: 'Return to Sit',             xpCost: 50,  anim: 'untilt' },
-    { id: 'pause',      name: 'Dramatic Pause',            xpCost: 100, anim: 'pause' },
-    { id: 'legendary',  name: 'Legendary Stillness (Expert)', xpCost: 200, anim: 'legendary' },
-  ];
-
-  const AFFIRMATIONS = [
-    "You showed up. That counts.",
-    "Tiny progress is still progress.",
-    "You tried. Pebbles respected that. (Probably.)",
-    "Hydration check: you're the smart one here.",
-    "Pebbles believes in you. Silently.",
-    "Today was a day. You survived it.",
-    "Your existence is appreciated.",
-    "You are doing better than most rocks.",
-    "Breathe. Pebbles doesn't, but you should.",
-    "One step at a time. Pebbles prefers zero steps.",
-    "You are 100% more mobile than Pebbles. Flex.",
-    "Pebbles would clap for you if it could.",
-    "You matter. Pebbles is just matter.",
-    "That was brave. Pebbles saw nothing, but trusts you.",
-    "You're growing. Pebbles is eroding, but slowly.",
-    "Solid effort. Rock-solid, even.",
-    "Don't give up. Pebbles never starts, so it never quits either.",
-    "Great job existing today.",
-    "You are the main character. Pebbles is the rock.",
-    "Pebbles is proud of you. (Source: trust me.)",
-  ];
-
-  const ENCOURAGE_RESPONSES = [
-    "Pebbles tried really hard. (Internally.)",
-    "Was that a twitch? Nope. Just the wind.",
-    "Pebbles is processing your encouragement.",
-    "XP gained! Pebbles didn't move, but learned something.",
-    "The earth trembled slightly. Or that was you jumping.",
-    "Pebbles stared into the void. The void blinked first.",
-    "Training complete. (Was anything different? No. But still.)",
-    "Encouraging words absorbed. Pebbles is now 0.001% wiser.",
-    "You encouraged a rock. That takes character.",
-    "Pebbles leveled up! (Visually identical.)",
-    "A masterclass in patience from both of you.",
-    "Pebbles would thank you, but... you know.",
-  ];
-
-  const ROCK_MOODS = [
-    'Calm', 'Still calm', 'Aggressively calm', 'Zen', 'Unbothered',
-    'Contemplating gravity', 'Emotionally stable (literally)', 'Vibing',
-    'Peak relaxation', 'Resting (permanent)',
-  ];
-
-  const ACCESSORIES = [
-    { id: 'eyes',       name: 'Googly Eyes', xp: 0,   top: '👀', replace: false },
-    { id: 'hat',        name: 'Tiny Hat',    xp: 30,  top: '🎩', replace: false },
-    { id: 'bow',        name: 'Bow Tie',     xp: 75,  top: '🎀', replace: false },
-    { id: 'sunglasses', name: 'Sunglasses',  xp: 150, top: '😎', replace: true },
-    { id: 'crown',      name: 'Crown',       xp: 300, top: '👑', replace: false },
-    { id: 'cape',       name: 'Cape',        xp: 500, top: '🦸', replace: false },
-  ];
-
-  const MINI_GAMES = [
-    { id: 'roll',     name: 'Roll-a-Pixel',    emoji: '🎲', desc: 'Watch Pebbles move... 1 pixel!' },
-    { id: 'hide',     name: 'Hide & Seek',     emoji: '🙈', desc: 'Can you find Pebbles?' },
-    { id: 'karaoke',  name: 'Rock Karaoke',    emoji: '🎤', desc: 'Let Pebbles judge your singing' },
-    { id: 'obstacle', name: 'Obstacle Course',  emoji: '🏁', desc: 'Pebbles vs. obstacles' },
-  ];
-
-  /* ---- Lists in the language of the app ---- */
-  const tricks = () => t.list('pebbles.tricks', TRICKS);
-
-  // 'Pebbles' is the name of the first start: it shows in the language of the app. A name from the child shows as stored
-  function rockName() { return state.name === 'Pebbles' ? t('Pebbles') : state.name; }
-
-  /* ---- State ---- */
-  let state = null;
-  let currentScreen = 'home';
-  let bubbleTimeout = null;
-  let encourageCooldown = false;
-  let gameActive = false;
-  let winId = null;
-
-  function defaultState() {
-    return {
-      name: 'Pebbles',
-      xp: 0,
-      tricksLearned: ['sit'],
-      currentTrick: 'sit',
-      currentAccessory: 'eyes',
-      gamesPlayed: 0,
-      encouragements: 0,
-      lastDate: '',
-      streak: 0,
-      bestStreak: 0,
-      affirmationsGiven: 0,
+  /* ---- Rules with no screen. Node test: _work/pebbles.test.mjs ---- */
+  const core = (() => {
+    const PLACES = ['head', 'eyes', 'neck', 'back'];
+    const ITEMS = {
+      'top-hat': 'head', crown: 'head', 'flower-crown': 'head',
+      sunglasses: 'eyes', 'googly-eyes': 'eyes',
+      'bow-tie': 'neck', scarf: 'neck',
+      cape: 'back',
     };
-  }
+    const START_OPEN = ['top-hat', 'bow-tie'];
+    const GIFT_ORDER = ['crown', 'sunglasses', 'scarf', 'cape', 'flower-crown', 'googly-eyes'];
+    const GIFT_ACTIONS = ['roll', 'dead', 'jump', 'shake', 'rub', 'game'];
+    // First version of the app: accessories opened at an XP value
+    const OLD_ITEMS = { eyes: ['googly-eyes', 0], hat: ['top-hat', 30], bow: ['bow-tie', 75], sunglasses: ['sunglasses', 150], crown: ['crown', 300], cape: ['cape', 500] };
+    const EYES = ['open', 'closed', 'happy', 'wide', 'x'];
+    const MOUTHS = ['smile', 'open', 'flat'];
+    const PICTURES = [
+      'pebbles-body', 'pebbles-leaf', ...EYES.map(e => 'pebbles-eyes-' + e), ...MOUTHS.map(m => 'pebbles-mouth-' + m),
+      'pebbles-blush', 'pebbles-shine', 'pebbles-shadow',
+      ...Object.keys(ITEMS).map(id => 'wear-' + id),
+      'pebbles-box-back', 'pebbles-box-front', 'pebbles-scene-day', 'pebbles-scene-night',
+      ...['heart', 'star', 'zzz', 'question', 'exclaim', 'note', 'sparkle', 'drop', 'sun'].map(b => 'bubble-' + b),
+      ...['sit', 'stay', 'play-dead', 'roll-over', 'jump', 'shake-hands'].map(k => 'trick-' + k),
+      'hand-rock', 'hand-paper', 'hand-scissors', 'leaf-pile', 'critter-snail', 'critter-ladybug', 'fx-puff', 'gift',
+    ].map(f => f + '.webp');
+    // Rub: 3 changes of direction within 1.5 s, each part 12 px or longer. ponytail: first guess, tune on the tablet
+    const RUB_TURNS = 3, RUB_TIME = 1500, RUB_PART = 12;
 
-  function load() {
-    try {
-      const raw = localStorage.getItem(STORE_KEY);
-      state = raw ? Object.assign(defaultState(), JSON.parse(raw)) : defaultState();
-    } catch (e) { state = defaultState(); }
-    // streak check
-    const today = new Date().toISOString().slice(0, 10);
-    if (state.lastDate && state.lastDate !== today) {
-      const last = new Date(state.lastDate);
-      const now = new Date(today);
-      const diff = Math.round((now - last) / 86400000);
-      if (diff > 1) { state.streak = 0; }
-    }
-  }
+    const fresh = () => ({ v: 2, name: 'Pebbles', days: 0, lastDay: '', wear: { head: null, eyes: null, neck: null, back: null }, open: START_OPEN.slice(), firsts: [], muted: false });
+    const count = n => Number.isFinite(Number(n)) && Number(n) > 0 ? Math.floor(Number(n)) : 0;
+    const day = d => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : '';
+    const pad = n => String(n).padStart(2, '0');
+    const dayKey = date => date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate());
+    const isNight = date => date.getHours() >= 20 || date.getHours() < 7;
+    const openItem = (s, id) => { if (ITEMS[id] && !s.open.includes(id)) s.open.push(id); };
 
-  function save() {
-    try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {}
-  }
-
-  function recordVisit() {
-    const today = new Date().toISOString().slice(0, 10);
-    if (state.lastDate !== today) {
-      if (state.lastDate) {
-        const last = new Date(state.lastDate);
-        const now = new Date(today);
-        const diff = Math.round((now - last) / 86400000);
-        if (diff === 1) state.streak++;
-        else state.streak = 1;
-      } else {
-        state.streak = 1;
+    // A stored value of any form gives a working rock
+    function load(raw) {
+      let saved = null;
+      try { saved = JSON.parse(raw); } catch (e) { /* broken value: new rock */ }
+      const s = fresh();
+      if (!saved || typeof saved !== 'object' || Array.isArray(saved)) return s;
+      if (typeof saved.name === 'string' && saved.name.trim()) s.name = saved.name.trim().slice(0, 20);
+      if (saved.v === 2) {
+        s.days = count(saved.days);
+        s.lastDay = day(saved.lastDay);
+        s.muted = saved.muted === true;
+        if (Array.isArray(saved.open)) saved.open.forEach(id => openItem(s, id));
+        if (Array.isArray(saved.firsts)) saved.firsts.forEach(a => { if (GIFT_ACTIONS.includes(a) && !s.firsts.includes(a)) s.firsts.push(a); });
+        const wear = saved.wear && typeof saved.wear === 'object' ? saved.wear : {};
+        PLACES.forEach(p => { if (ITEMS[wear[p]] === p && s.open.includes(wear[p])) s.wear[p] = wear[p]; });
+        return s;
       }
-      if (state.streak > state.bestStreak) state.bestStreak = state.streak;
-      state.lastDate = today;
-      save();
-    }
-  }
-
-  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-
-  function getMood() { return pick(t.list('pebbles.moods', ROCK_MOODS)); }
-
-  function getNextTrick() {
-    for (const trick of TRICKS) {
-      if (!state.tricksLearned.includes(trick.id)) return trick;
-    }
-    return null;
-  }
-
-  function getAccessory(id) { return ACCESSORIES.find(a => a.id === id); }
-
-  function isAccessoryUnlocked(acc) { return state.xp >= acc.xp; }
-
-  /* ---- Rock Display ---- */
-  function rockHTML() {
-    const acc = getAccessory(state.currentAccessory) || ACCESSORIES[0];
-    let topEl = '', bottomEl = '', behindEl = '';
-    if (acc.id === 'eyes')       topEl = '<div class="pb-acc pb-acc-eyes">👀</div>';
-    else if (acc.id === 'hat')   topEl = '<div class="pb-acc pb-acc-top">🎩</div>';
-    else if (acc.id === 'bow')   bottomEl = '<div class="pb-acc pb-acc-bottom">🎀</div>';
-    else if (acc.id === 'sunglasses') topEl = '<div class="pb-acc pb-acc-eyes">😎</div>';
-    else if (acc.id === 'crown') topEl = '<div class="pb-acc pb-acc-top">👑</div>';
-    else if (acc.id === 'cape')  behindEl = '<div class="pb-acc pb-acc-behind">🦸</div>';
-    return '<div class="pb-rock" id="pb-rock">' + behindEl +
-      '<div class="pb-rock-emoji">🪨</div>' + topEl + bottomEl +
-      '<div class="pb-bubble" id="pb-bubble"></div></div>';
-  }
-
-  /* ---- Bubble ---- */
-  function showBubble(text, duration) {
-    const el = document.getElementById('pb-bubble');
-    if (!el) return;
-    el.textContent = text;
-    el.classList.add('pb-bubble-show');
-    clearTimeout(bubbleTimeout);
-    bubbleTimeout = setTimeout(() => {
-      el.classList.remove('pb-bubble-show');
-    }, duration || 3000);
-  }
-
-  /* ---- Meters (always fake) ---- */
-  function metersHTML() {
-    return '<div class="pb-meters">' +
-      meterRow(t('Hunger'), 0, t('Does not hunger')) +
-      meterRow(t('Energy'), 100, t('Stable (forever)')) +
-      meterRow(t('Happiness'), 92, t('Content')) +
-      meterRow(t('Neediness'), 0, t('Zero. Zilch. Nada.')) +
-      '</div>';
-  }
-
-  function meterRow(label, pct, desc) {
-    const color = pct === 0 ? '#9e9e9e' : pct >= 90 ? '#66bb6a' : '#ffb74d';
-    return '<div class="pb-meter"><div class="pb-meter-label">' + label +
-      '</div><div class="pb-meter-track"><div class="pb-meter-fill" style="width:' + pct +
-      '%;background:' + color + '"></div></div><div class="pb-meter-desc">' + desc + '</div></div>';
-  }
-
-  /* ---- Screens ---- */
-  function renderScreen() {
-    const wrap = document.getElementById('pb-wrap');
-    if (!wrap) return;
-    if (currentScreen === 'home')    wrap.innerHTML = homeHTML();
-    else if (currentScreen === 'train') wrap.innerHTML = trainHTML();
-    else if (currentScreen === 'games') wrap.innerHTML = gamesHTML();
-    else if (currentScreen === 'profile') wrap.innerHTML = profileHTML();
-  }
-
-  function navHTML() {
-    const items = [
-      { id: 'home',    icon: '🏠', label: t('Home') },
-      { id: 'train',   icon: '🏋️', label: t('Train') },
-      { id: 'games',   icon: '🎮', label: t('Games') },
-      { id: 'profile', icon: '📋', label: t('Profile') },
-    ];
-    return '<div class="pb-nav">' + items.map(i =>
-      '<button class="pb-nav-btn' + (currentScreen === i.id ? ' pb-nav-active' : '') +
-      '" onclick="_pbGo(\'' + i.id + '\')">' + i.icon + '<span>' + i.label + '</span></button>'
-    ).join('') + '</div>';
-  }
-
-  /* -- Home Screen -- */
-  function homeHTML() {
-    const trick = tricks().find(x => x.id === state.currentTrick) || tricks()[0];
-    return '<div class="pb-screen pb-home">' +
-      '<div class="pb-home-top">' +
-        '<div class="pb-name-display">' + escHtml(rockName()) + '</div>' +
-        '<div class="pb-mood">' + getMood() + '</div>' +
-      '</div>' +
-      rockHTML() +
-      '<div class="pb-trick-label">' + t('Current trick: {trick}', { trick: '<strong>' + trick.name + '</strong>' }) + '</div>' +
-      metersHTML() +
-      '<button class="pb-encourage-btn" onclick="_pbEncourage()">💪 ' + t('Encourage {name}', { name: escHtml(rockName()) }) + '</button>' +
-      '<div class="pb-streak">🔥 ' + t('Sediment Streak: {n} {days}', { n: state.streak, days: t.plural(state.streak, 'day', 'days') }) +
-        (state.bestStreak > state.streak ? ' ' + t('(best: {n})', { n: state.bestStreak }) : '') + '</div>' +
-      '</div>' + navHTML();
-  }
-
-  /* -- Train Screen -- */
-  function trainHTML() {
-    const next = getNextTrick();
-    const currentTrickObj = TRICKS.find(x => x.id === state.currentTrick) || TRICKS[0];
-    let xpBar = '';
-    if (next) {
-      const prevXP = TRICKS[TRICKS.indexOf(next) - 1] ? TRICKS[TRICKS.indexOf(next) - 1].xpCost : 0;
-      const needed = next.xpCost - prevXP;
-      const progress = Math.min(state.xp - prevXP, needed);
-      const pct = Math.round((progress / needed) * 100);
-      xpBar = '<div class="pb-xp-section">' +
-        '<div class="pb-xp-label">' + t('Next: {trick} ({xp}/{cost} XP)', { trick: '<strong>' + tricks().find(x => x.id === next.id).name + '</strong>', xp: state.xp, cost: next.xpCost }) + '</div>' +
-        '<div class="pb-xp-track"><div class="pb-xp-fill" style="width:' + pct + '%"></div></div></div>';
-    } else {
-      xpBar = '<div class="pb-xp-section"><div class="pb-xp-label">🏆 ' + t('All tricks mastered! ({xp} XP)', { xp: state.xp }) + '</div></div>';
+      s.days = Math.max(count(saved.bestStreak), count(saved.streak));
+      s.lastDay = day(saved.lastDate);
+      if (s.lastDay) s.days = Math.max(s.days, 1);
+      if ('xp' in saved) Object.values(OLD_ITEMS).forEach(([id, xp]) => { if (count(saved.xp) >= xp) openItem(s, id); });
+      const worn = OLD_ITEMS[saved.currentAccessory];
+      if (worn && saved.currentAccessory !== 'eyes' && s.open.includes(worn[0])) s.wear[ITEMS[worn[0]]] = worn[0];
+      return s;
     }
 
-    const trickList = tricks().map(trick => {
-      const learned = state.tricksLearned.includes(trick.id);
-      const active = state.currentTrick === trick.id;
-      return '<div class="pb-trick-item' + (learned ? ' pb-trick-learned' : ' pb-trick-locked') +
-        (active ? ' pb-trick-active' : '') + '">' +
-        '<span>' + (learned ? '✅' : '🔒') + ' ' + trick.name + '</span>' +
-        (learned ? '<button class="pb-trick-demo-btn" onclick="_pbTrickDemo(\'' + trick.id + '\')">' + t('Demo') + '</button>' : '<span class="pb-trick-cost">' + t('{n} XP', { n: trick.xpCost }) + '</span>') +
-        '</div>';
-    }).join('');
+    // One open of the app on this date: a new day together, and the greeting
+    function visit(s, date) {
+      const today = dayKey(date);
+      if (!s.lastDay) { s.days = Math.max(s.days, 1); s.lastDay = today; return 'first'; }
+      if (today <= s.lastDay) return null; // same day, or the clock went back
+      const gap = Math.round((new Date(today + 'T12:00') - new Date(s.lastDay + 'T12:00')) / 86400000);
+      s.days += 1;
+      s.lastDay = today;
+      if (gap >= 2) return 'back';
+      return date.getHours() >= 7 && date.getHours() < 12 ? 'morning' : null;
+    }
 
-    return '<div class="pb-screen pb-train">' +
-      '<div class="pb-train-header">' + t('Training {name}', { name: escHtml(rockName()) }) + '</div>' +
-      rockHTML() +
-      '<button class="pb-encourage-btn pb-big-btn" onclick="_pbEncourage()">💪 ' + t('ENCOURAGE') + '</button>' +
-      xpBar +
-      '<div class="pb-trick-list">' + trickList + '</div>' +
-      '</div>' + navHTML();
-  }
+    // First try of a gift action: the next closed item of the gift order, or null
+    function firstTry(s, action) {
+      if (!GIFT_ACTIONS.includes(action) || s.firsts.includes(action)) return null;
+      s.firsts.push(action);
+      const item = GIFT_ORDER.find(id => !s.open.includes(id)) || null;
+      if (item) s.open.push(item);
+      return item;
+    }
 
-  /* -- Games Screen -- */
-  function gamesHTML() {
-    const cards = t.list('pebbles.games', MINI_GAMES).map(g =>
-      '<button class="pb-game-card" onclick="_pbPlayGame(\'' + g.id + '\')">' +
-        '<div class="pb-game-emoji">' + g.emoji + '</div>' +
-        '<div class="pb-game-name">' + g.name + '</div>' +
-        '<div class="pb-game-desc">' + g.desc + '</div>' +
-      '</button>'
-    ).join('');
-    return '<div class="pb-screen pb-games">' +
-      '<div class="pb-games-header">🎮 ' + t('Mini-Games') + '</div>' +
-      '<div class="pb-game-grid">' + cards + '</div>' +
-      '<div class="pb-game-result" id="pb-game-result"></div>' +
-      '</div>' + navHTML();
-  }
+    // Put an open item on, or take it off when the rock wears it
+    function wear(s, id) {
+      const place = ITEMS[id];
+      if (!place || !s.open.includes(id)) return false;
+      s.wear[place] = s.wear[place] === id ? null : id;
+      return true;
+    }
 
-  /* -- Profile Screen -- */
-  function profileHTML() {
-    const accGrid = t.list('pebbles.accessories', ACCESSORIES).map(a => {
-      const unlocked = isAccessoryUnlocked(a);
-      const equipped = state.currentAccessory === a.id;
-      return '<button class="pb-acc-card' + (equipped ? ' pb-acc-equipped' : '') +
-        (unlocked ? '' : ' pb-acc-locked') + '"' +
-        (unlocked ? ' onclick="_pbSetAccessory(\'' + a.id + '\')"' : '') + '>' +
-        '<div class="pb-acc-emoji">' + a.top + '</div>' +
-        '<div class="pb-acc-name">' + a.name + '</div>' +
-        (unlocked ? (equipped ? '<div class="pb-acc-tag">' + t('Equipped') + '</div>' : '') : '<div class="pb-acc-tag">🔒 ' + t('{n} XP', { n: a.xp }) + '</div>') +
-        '</button>';
-    }).join('');
+    // The child against a rock. Pebbles always plays rock
+    const rps = hand => hand === 'paper' ? 'win' : hand === 'rock' ? 'tie' : 'lose';
 
-    return '<div class="pb-screen pb-profile">' +
-      '<div class="pb-profile-header">📋 ' + t('Profile') + '</div>' +
-      rockHTML() +
-      '<div class="pb-name-edit">' +
-        '<label>' + t('Name:') + '</label>' +
-        '<input class="pb-name-input" type="text" value="' + escHtml(rockName()) + '" maxlength="20" onchange="_pbSetName(this.value)">' +
-      '</div>' +
-      '<div class="pb-stats">' +
-        '<div class="pb-stat">⭐ ' + t('XP: {n}', { n: '<strong>' + state.xp + '</strong>' }) + '</div>' +
-        '<div class="pb-stat">🎯 ' + t('Tricks: {n}', { n: '<strong>' + state.tricksLearned.length + '/' + TRICKS.length + '</strong>' }) + '</div>' +
-        '<div class="pb-stat">🎮 ' + t('Games: {n}', { n: '<strong>' + state.gamesPlayed + '</strong>' }) + '</div>' +
-        '<div class="pb-stat">💪 ' + t('Encouragements: {n}', { n: '<strong>' + state.encouragements + '</strong>' }) + '</div>' +
-        '<div class="pb-stat">🔥 ' + t('Best Streak: {streak}', { streak: '<strong>' + t('{n} {days}', { n: state.bestStreak, days: t.plural(state.bestStreak, 'days', 'days') }) + '</strong>' }) + '</div>' +
-        '<div class="pb-stat">💬 ' + t('Affirmations: {n}', { n: '<strong>' + state.affirmationsGiven + '</strong>' }) + '</div>' +
-      '</div>' +
-      '<button class="pb-affirm-btn" onclick="_pbAffirm()">💬 ' + t('Get Affirmation') + '</button>' +
-      '<div class="pb-section-title">' + t('Accessories') + '</div>' +
-      '<div class="pb-accessory-grid">' + accGrid + '</div>' +
-      '</div>' + navHTML();
-  }
-
-  /* ---- Actions ---- */
-  function addXP(amount) {
-    state.xp += amount;
-    // check trick unlocks
-    for (const trick of tricks()) {
-      if (!state.tricksLearned.includes(trick.id) && state.xp >= trick.xpCost) {
-        state.tricksLearned.push(trick.id);
-        state.currentTrick = trick.id;
-        showBubble('🎉 ' + t('New trick: {trick}!', { trick: trick.name }), 4000);
-        OS.awardCoins(5, 'Pebbles', '🪨', t('New trick: {trick}', { trick: trick.name }));
-        save();
-        setTimeout(renderScreen, 500);
-        return;
+    function rubber() {
+      let runs = null, turns = [];
+      const run = v => ({ dir: 0, start: v, pos: v });
+      function track(r, v, now) {
+        const step = v - r.pos;
+        if (!step) return;
+        const dir = step > 0 ? 1 : -1;
+        if (r.dir && dir !== r.dir) {
+          if (Math.abs(r.pos - r.start) >= RUB_PART) turns.push(now);
+          r.start = r.pos;
+        }
+        r.dir = dir;
+        r.pos = v;
       }
-    }
-    save();
-  }
-
-  function doEncourage() {
-    if (encourageCooldown) return;
-    encourageCooldown = true;
-    setTimeout(() => { encourageCooldown = false; }, 1000);
-
-    state.encouragements++;
-    addXP(3);
-    showBubble(pick(t.list('pebbles.responses', ENCOURAGE_RESPONSES)), 3000);
-
-    // bonus coins every 10 encouragements
-    if (state.encouragements % 10 === 0) {
-      OS.awardCoins(2, 'Pebbles', '🪨', t('Encouragement milestone x{n}', { n: state.encouragements }));
-    }
-    save();
-    // animate rock
-    const rock = document.getElementById('pb-rock');
-    if (rock) {
-      rock.classList.add('pb-rock-bounce');
-      setTimeout(() => rock.classList.remove('pb-rock-bounce'), 500);
-    }
-  }
-
-  function playGame(gameId) {
-    if (gameActive) return;
-    gameActive = true;
-    const resultEl = document.getElementById('pb-game-result');
-    if (!resultEl) { gameActive = false; return; }
-    resultEl.className = 'pb-game-result pb-game-result-show';
-
-    if (gameId === 'roll') {
-      resultEl.innerHTML = '<div class="pb-game-anim">🪨 ' + t('Rolling...') + '</div>';
-      setTimeout(() => {
-        const dirs = t.list('pebbles.dirs', ['left', 'right', 'up', 'down']);
-        const dir = pick(dirs);
-        resultEl.innerHTML = '<div class="pb-game-anim">🪨 ' + t('moved 1 pixel {dir}!', { dir }) + '</div>' +
-          '<div class="pb-game-big">🎉🎊🥳 ' + t('INCREDIBLE!') + ' 🎊🎉🥳</div>' +
-          '<div class="pb-game-sub">' + t('Scientists are baffled. History has been made.') + '</div>';
-        finishGame(4);
-      }, 2000);
-    } else if (gameId === 'hide') {
-      resultEl.innerHTML = '<div class="pb-game-anim">🙈 ' + t('Pebbles is hiding!') + '</div><div class="pb-game-sub">' + t('Looking...') + '</div>';
-      setTimeout(() => {
-        resultEl.innerHTML = '<div class="pb-game-anim">👀 ' + t('Found!') + '</div>' +
-          '<div class="pb-game-big">' + t('Pebbles was right here the whole time.') + '</div>' +
-          '<div class="pb-game-sub">' + t('Masterful camouflage. Or... not.') + '</div>';
-        finishGame(3);
-      }, 3000);
-    } else if (gameId === 'karaoke') {
-      resultEl.innerHTML = '<div class="pb-game-anim">🎤 ' + t('Sing something!') + '</div>' +
-        '<button class="pb-encourage-btn" onclick="_pbKaraokeDone()">🎶 ' + t('Done Singing') + '</button>';
-    } else if (gameId === 'obstacle') {
-      resultEl.innerHTML = '<div class="pb-game-anim">🏁 ' + t('Obstacle Course') + '</div>' +
-        '<div class="pb-game-obstacles">🔥 → 🌊 → 🌪️</div>' +
-        '<div class="pb-game-sub">' + t('Starting in 3...') + '</div>';
-      setTimeout(() => {
-        resultEl.innerHTML = '<div class="pb-game-anim">✅ ' + t('Course Complete!') + '</div>' +
-          '<div class="pb-game-big">' + t('Pebbles let the obstacles go around it.') + '</div>' +
-          '<div class="pb-game-sub">' + t('Strategy: exist. Result: flawless.') + '</div>';
-        finishGame(5);
-      }, 3000);
-    }
-  }
-
-  function karaokeDone() {
-    const resultEl = document.getElementById('pb-game-result');
-    if (!resultEl) return;
-    resultEl.innerHTML = '<div class="pb-game-anim">🎤 ' + t("Pebbles' Rating:") + '</div>' +
-      '<div class="pb-game-big">' + t('Rock/10') + '</div>' +
-      '<div class="pb-game-sub">' + t('Every time.') + '</div>';
-    finishGame(3);
-  }
-
-  function finishGame(xp) {
-    state.gamesPlayed++;
-    addXP(xp);
-    OS.awardCoins(1, 'Pebbles', '🪨', t('Mini-game completed'));
-    save();
-    setTimeout(() => {
-      gameActive = false;
-      const resultEl = document.getElementById('pb-game-result');
-      if (resultEl) { resultEl.className = 'pb-game-result'; resultEl.innerHTML = ''; }
-    }, 4000);
-  }
-
-  function setAccessory(id) {
-    const acc = getAccessory(id);
-    if (!acc || !isAccessoryUnlocked(acc)) return;
-    state.currentAccessory = id;
-    save();
-    renderScreen();
-  }
-
-  function setName(name) {
-    const clean = (name || '').trim().slice(0, 20);
-    if (clean) {
-      state.name = clean;
-      save();
-    }
-  }
-
-  function affirm() {
-    state.affirmationsGiven++;
-    save();
-    showBubble(pick(t.list('pebbles.affirmations', AFFIRMATIONS)), 4000);
-  }
-
-  function trickDemo(trickId) {
-    if (!state.tricksLearned.includes(trickId)) return;
-    const rock = document.getElementById('pb-rock');
-    if (!rock) return;
-    const trick = tricks().find(x => x.id === trickId);
-    if (!trick) return;
-
-    if (trick.anim === 'tilt') {
-      rock.classList.add('pb-rock-tilt');
-      showBubble(t('*tilts 3 degrees*'), 2000);
-      setTimeout(() => rock.classList.remove('pb-rock-tilt'), 2000);
-    } else if (trick.anim === 'untilt') {
-      rock.classList.add('pb-rock-tilt');
-      setTimeout(() => { rock.classList.remove('pb-rock-tilt'); showBubble(t('*returns to sit*'), 2000); }, 1000);
-    } else if (trick.anim === 'pause') {
-      showBubble('...', 3000);
-    } else if (trick.anim === 'legendary') {
-      rock.classList.add('pb-rock-legendary');
-      showBubble('✨ ' + t('Legendary Stillness') + ' ✨', 3000);
-      setTimeout(() => rock.classList.remove('pb-rock-legendary'), 3000);
-    } else {
-      showBubble(trick.anim, 2000);
-    }
-  }
-
-  function escHtml(s) { return OS.esc(s); }
-
-  /* ---- Global Handlers ---- */
-  window._pbGo = function(screen) { currentScreen = screen; renderScreen(); };
-  window._pbEncourage = function() { doEncourage(); };
-  window._pbPlayGame = function(id) { playGame(id); };
-  window._pbKaraokeDone = function() { karaokeDone(); };
-  window._pbSetAccessory = function(id) { setAccessory(id); };
-  window._pbSetName = function(name) { setName(name); };
-  window._pbAffirm = function() { affirm(); };
-  window._pbTrickDemo = function(id) { trickDemo(id); };
-
-  /* ---- App Registration ---- */
-  OS.registerApp('pebbles', {
-    singleInstance: true,
-    getWindowOpts() {
       return {
-        id: 'pebbles', title: t('Pebbles'), icon: '🪨',
-        width: 420, height: 620,
-        content: '<div class="pb-wrap" id="pb-wrap"></div>',
+        down(x, y) { runs = [run(x), run(y)]; turns = []; },
+        move(x, y, now) {
+          if (!runs) return false;
+          track(runs[0], x, now);
+          track(runs[1], y, now);
+          turns = turns.filter(at => now - at <= RUB_TIME);
+          if (turns.length < RUB_TURNS) return false;
+          turns = [];
+          return true;
+        },
+        up() { runs = null; },
       };
-    },
-    onOpen(id) {
-      winId = id;
-      load();
-      recordVisit();
-      currentScreen = 'home';
-      gameActive = false;
-      encourageCooldown = false;
-      renderScreen();
-    },
-    onClose() {
-      clearTimeout(bubbleTimeout);
-      winId = null;
-    },
-  });
+    }
+
+    // A second press within ms after the last accepted press is a holdover (research): ignore it
+    function guard(ms) {
+      let last = -Infinity;
+      return now => { if (now - last < ms) return false; last = now; return true; };
+    }
+
+    return { PLACES, ITEMS, START_OPEN, GIFT_ORDER, GIFT_ACTIONS, EYES, MOUTHS, PICTURES, fresh, load, dayKey, isNight, visit, firstTry, wear, rps, rubber, guard };
+  })();
+
+  return { core, STORE_KEY };
 })();
+}
