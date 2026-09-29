@@ -401,13 +401,19 @@ const OS = (() => {
     clockInterval = setInterval(updateClock, 1000);
   }
 
-  function updateClock() {
+  // Date and time of KidsOS: the device clock with the time offset and the date of Settings
+  function clockNow() {
     const now = new Date();
     now.setMinutes(now.getMinutes() + (settings.timeOffset || 0));
     if (settings.dateOverride) {
       const [y,m,d] = settings.dateOverride.split('-');
       now.setFullYear(+y, +m - 1, +d);
     }
+    return now;
+  }
+
+  function updateClock() {
+    const now = clockNow();
     // The top bar and the taskbar have a clock each
     const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -1114,6 +1120,7 @@ const OS = (() => {
     get VERSION() { return version; },
     checkForUpdate, applyUpdate, _nukeAndReload,
     awardCoins, esc, createLoop,
+    now: clockNow,
     loadLib: name => loadScript(name, 'lib'),
   };
 })();
