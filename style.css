@@ -2405,6 +2405,24 @@ button.lang-option { font-family: inherit; }
 .pb-critter { position: absolute; left: 30%; top: -10%; width: 40%; height: 40%; animation: pbPopIn .3s ease-out; }
 .pb-hint { position: absolute; overflow: hidden; pointer-events: none; }
 .pb-hint img { position: absolute; max-width: none; }
+
+/* Rock ID card */
+.pb-card { position: absolute; inset: 0; z-index: 8; display: flex; align-items: center; justify-content: center; padding: 12px; background: rgba(43, 58, 103, .35); }
+.pb-card[hidden] { display: none; }
+.pb-card-box { width: min(560px, 100%); max-height: 100%; overflow: auto; padding: 16px; background: var(--k-paper); color: var(--k-ink); border: 3px solid var(--k-line); border-radius: 28px 24px 26px 30px; box-shadow: 0 6px 0 rgba(90, 70, 54, .28); }
+.pb-card-main { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+.pb-photo { position: relative; flex: none; width: 160px; height: 160px; overflow: hidden; background: var(--k-bg); border: 3px solid var(--k-line); border-radius: 18px; }
+.pb-facts { flex: 1 1 220px; margin: 0; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 6px 12px; }
+.pb-facts dt { font: 800 14px/1.2 var(--font); color: var(--k-ink-soft); }
+.pb-facts dd { margin: 0; font: 800 17px/1.2 var(--font); }
+.pb-name-row { display: flex; gap: 8px; }
+.pb-name-input { flex: 1; min-width: 0; height: 56px; padding: 0 12px; background: var(--k-bg); color: var(--k-ink); border: 3px solid var(--k-line); border-radius: 16px; font: 800 17px var(--font); user-select: text; -webkit-user-select: text; touch-action: manipulation; }
+.pb-ok { min-width: 64px; height: 56px; background: var(--k-honey); color: var(--k-ink); border: 3px solid var(--k-line); border-radius: 16px; box-shadow: 0 4px 0 rgba(90, 70, 54, .28); font: 800 16px var(--font); cursor: pointer; }
+.pb-meters { display: grid; gap: 8px; margin-top: 14px; }
+.pb-meter { display: grid; grid-template-columns: 96px 1fr auto; align-items: center; gap: 10px; font: 700 14px/1.2 var(--font); }
+.pb-bar-track { height: 14px; overflow: hidden; background: var(--k-bg); border: 2px solid var(--k-line); border-radius: 8px; }
+.pb-fill { display: block; height: 100%; background: var(--k-meadow); }
+.pb-meter-note { color: var(--k-ink-soft); }
 .pb-gift img, .pb-gift .pb-thumb { width: 100%; height: 100%; }
 .pb-gift-open { animation: pbPopIn .35s ease-out; }
 @keyframes pbPopIn { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }

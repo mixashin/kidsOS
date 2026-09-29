@@ -272,7 +272,7 @@ var PebblesApp = (() => {
         <button data-act="games">${img('', 'hand-paper')}<span>${t('Games')}</span></button>
       </nav>
       <div class="pb-fx"></div>
-      <div class="pb-card" hidden></div>
+      <div class="pb-card" data-act="card-close" hidden></div>
     </div>`;
   }
 
@@ -398,9 +398,9 @@ var PebblesApp = (() => {
     tag.querySelector('.pb-tag-name').textContent = rockName();
     tag.querySelector('.pb-tag-days').textContent = t('{n} {days} together', { n: state.days, days: t.plural(state.days, 'day', 'days') });
   }
-  function showWear() {
+  function showWear(target = rig) {
     for (const place of core.PLACES) {
-      const layer = rig.querySelector('.pb-l-wear-' + place);
+      const layer = target.querySelector('.pb-l-wear-' + place);
       const id = state.wear[place];
       if (id) { layer.src = ART + 'wear-' + id + '.webp'; layer.hidden = false; }
       else { layer.hidden = true; layer.removeAttribute('src'); }
@@ -886,6 +886,54 @@ var PebblesApp = (() => {
     gameLater(() => { roundBusy = false; hideRound(); }, 2400);
   }
 
+  /* ---- Rock ID card: a pet passport. The meters are a joke: they never change ---- */
+  const METERS = () => [
+    ['hunger', t('Hunger'), 0, t('Does not hunger')], ['energy', t('Energy'), 100, t('Forever')],
+    ['happiness', t('Happiness'), 100, t('Always')], ['moves', t('Moves'), 0, t('Proudly')],
+  ];
+  function openCard() {
+    const card = app.querySelector('.pb-card');
+    card.innerHTML = `<div class="pb-card-box" data-act="stay">
+      <div class="pb-panel-head"><h3>${t('Rock ID card')}</h3><button class="pb-close" data-act="card-close" aria-label="${t('Close')}">✕</button></div>
+      <div class="pb-card-main">
+        <div class="pb-photo">${rigHTML()}</div>
+        <dl class="pb-facts">
+          <dt>${t('Name')}</dt>
+          <dd class="pb-name-row"><input class="pb-name-input" type="text" maxlength="20" autocomplete="off" aria-label="${t('Name')}"><button class="pb-ok" data-act="save-name">${t('OK')}</button></dd>
+          <dt>${t('Days together')}</dt><dd>${state.days}</dd>
+          <dt>${t('Species')}</dt><dd>${t('Rock')}</dd>
+          <dt>${t('Favorite food')}</dt><dd>${t('None')}</dd>
+        </dl>
+      </div>
+      <div class="pb-meters">${METERS().map(([id, label, full, note]) =>
+        `<div class="pb-meter" data-meter="${id}"><span class="pb-meter-label">${label}</span><span class="pb-bar-track"><span class="pb-fill" style="width:${full}%"></span></span><span class="pb-meter-note">${note}</span></div>`).join('')}</div>
+    </div>`;
+    const photo = card.querySelector('.pb-rig');
+    photo.dataset.eyes = 'happy';
+    showWear(photo);
+    const input = card.querySelector('.pb-name-input');
+    input.value = rockName();
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); saveName(); } }, { signal: controller.signal });
+    card.hidden = false;
+  }
+  function closeCard() {
+    const card = app.querySelector('.pb-card');
+    card.hidden = true;
+    card.innerHTML = '';
+  }
+  function saveName() {
+    const input = app.querySelector('.pb-name-input');
+    if (!input) return;
+    const name = input.value.trim().slice(0, 20);
+    if (name) {
+      state.name = name;
+      save();
+      showTag();
+      say('heart', t('I like it!'));
+    }
+    input.value = rockName();
+  }
+
   /* ---- Input ---- */
   // A second press of the same button within 400 ms is a holdover (research): ignore it
   function pressed(btn) {
@@ -919,6 +967,9 @@ var PebblesApp = (() => {
     else if (act === 'game') { closePanel(); startGame(btn.dataset.game); }
     else if (act === 'hand') rpsRound(btn.dataset.hand);
     else if (act === 'pile') pickPile(Number(btn.dataset.pile));
+    else if (act === 'card') openCard();
+    else if (act === 'card-close') closeCard();
+    else if (act === 'save-name') saveName();
   }
 
   return {
@@ -933,6 +984,7 @@ var PebblesApp = (() => {
     get bubble() { return bubble && !bubble.hidden ? bubbleText.textContent : ''; },
     get taps() { return taps; },
     get panel() { return panelName; },
+    get card() { return !!app && !app.querySelector('.pb-card').hidden; },
     get game() { return game; },
     get rounds() { return rounds; },
     get hidden() { return hidden; },
