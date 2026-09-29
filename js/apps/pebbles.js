@@ -159,6 +159,8 @@ var PebblesApp = (() => {
     'top-hat': t('Top hat'), crown: t('Crown'), 'flower-crown': t('Flower crown'), sunglasses: t('Sunglasses'),
     'googly-eyes': t('Googly eyes'), 'bow-tie': t('Bow tie'), scarf: t('Scarf'), cape: t('Cape'),
   });
+  const PLACE_NAMES = () => ({ head: t('Head'), eyes: t('Eyes'), neck: t('Neck'), back: t('Back') });
+  const DRESS = () => [['sparkle', t('Fancy!')], ['heart', t('How do I look?')]];
   // Body box of the rock canvas (brief 11), 10 percent larger on each side: a touch slightly outside counts
   const ROCK_AREA = [123, 272, 901, 848];
 
@@ -598,6 +600,7 @@ var PebblesApp = (() => {
       tones.play('chime');
       say('sparkle', t('{item}!', { item: name }));
       pay(name);
+      if (panelName === 'dress') refreshPanel();
     }, 1300);
     later(() => box.remove(), 3600);
   }
@@ -631,7 +634,33 @@ var PebblesApp = (() => {
       return head + '<div class="pb-grid">' + TRICKS().map(([id, file, label]) =>
         `<button class="pb-choice" data-act="trick" data-trick="${id}">${img('', file)}<span>${label}</span></button>`).join('') + '</div>';
     }
+    if (name === 'dress') {
+      const names = ITEM_NAMES(), places = PLACE_NAMES();
+      // A closed item is a closed gift box: no text says how to open it
+      const item = (id, place) => state.open.includes(id)
+        ? `<button class="pb-choice pb-item${state.wear[place] === id ? ' pb-on' : ''}" data-act="wear" data-item="${id}" aria-pressed="${state.wear[place] === id}">${thumb(id)}<span>${names[id]}</span></button>`
+        : `<button class="pb-choice pb-item pb-closed" data-act="wear" data-item="${id}" aria-label="${t('Surprise')}">${img('', 'gift')}<span>?</span></button>`;
+      return head + core.PLACES.map(place => `<div class="pb-row" data-place="${place}"><span class="pb-row-label">${places[place]}</span><div class="pb-row-items">` +
+        Object.keys(core.ITEMS).filter(id => core.ITEMS[id] === place).map(id => item(id, place)).join('') + '</div></div>').join('');
+    }
     return head;
+  }
+  // New content of the open panel, with the same scroll place
+  function refreshPanel() {
+    if (!panelName) return;
+    const top = panel.scrollTop;
+    panel.innerHTML = panelHTML(panelName);
+    panel.scrollTop = top;
+  }
+
+  /* ---- Dress up: one item for each place, all places together ---- */
+  function putOn(id) {
+    if (!core.wear(state, id)) return; // a closed item does nothing
+    save();
+    showWear();
+    tones.play('pop');
+    if (state.wear[core.ITEMS[id]] === id) line(DRESS());
+    refreshPanel();
   }
   function openPanel(name) {
     if (panelName === name) { closePanel(); return; }
@@ -744,6 +773,7 @@ var PebblesApp = (() => {
     else if (act === 'tricks' || act === 'dress' || act === 'games') openPanel(act);
     else if (act === 'close') closePanel();
     else if (act === 'trick') runTrick(btn.dataset.trick);
+    else if (act === 'wear') putOn(btn.dataset.item);
   }
 
   return {
