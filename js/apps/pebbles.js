@@ -214,6 +214,7 @@ var PebblesApp = (() => {
   let paused = false, night = null, sleeping = false, awake = false, busy = false, taps = 0;
   let blinkTimer = null, bubbleTimer = null, nightTimer = null, wakeTimer = null, wakeMs = 30000;
   let tapGuard = null, rubGuard = null, rubber = null, press = null, lastLine = '', panelName = null;
+  let game = null, gameToken = 0, rounds = 0, hidden = -1, roundBusy = false;
   const unpaid = [];         // names of gifts that are stored but not shown yet
   const guards = new Map();  // holdover guard of each button
   const timers = new Set();
@@ -290,6 +291,7 @@ var PebblesApp = (() => {
     tones = sounds();
     paused = false; night = null; sleeping = false; awake = false; busy = false; taps = 0; press = null; panelName = null;
     guards.clear();
+    game = null; gameToken++; rounds = 0; hidden = -1; roundBusy = false;
     tapGuard = core.guard(350);
     rubGuard = core.guard(2000);
     rubber = core.rubber();
@@ -322,7 +324,7 @@ var PebblesApp = (() => {
     clearTimers();
     clearTimeout(blinkTimer); clearTimeout(bubbleTimer); clearInterval(nightTimer); clearTimeout(wakeTimer);
     blinkTimer = bubbleTimer = nightTimer = wakeTimer = null;
-    press = null; panelName = null; busy = false;
+    press = null; panelName = null; busy = false; game = null; gameToken++; roundBusy = false;
     if (observer) observer.disconnect();
     if (controller) controller.abort();
     if (tones) tones.close();
@@ -513,7 +515,8 @@ var PebblesApp = (() => {
   }
   function onDown(e) {
     if (!state || e.target.closest('button')) return;
-    if (!onRock(e)) { closePanel(); return; } // a tap on the scene closes a panel
+    // A tap on the scene closes a panel. During Hide and Seek the rock is hidden: its place is scene
+    if (!onRock(e) || game === 'hide') { closePanel(); return; }
     press = { id: e.pointerId, x: e.clientX, y: e.clientY, at: performance.now(), moved: 0 };
     rubber.down(e.clientX, e.clientY);
     try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) { /* the pointer is gone */ }
@@ -643,6 +646,10 @@ var PebblesApp = (() => {
       return head + core.PLACES.map(place => `<div class="pb-row" data-place="${place}"><span class="pb-row-label">${places[place]}</span><div class="pb-row-items">` +
         Object.keys(core.ITEMS).filter(id => core.ITEMS[id] === place).map(id => item(id, place)).join('') + '</div></div>').join('');
     }
+    if (name === 'games') {
+      return head + '<div class="pb-grid">' + [['rps', 'hand-paper', t('Rock Paper Scissors')], ['hide', 'leaf-pile', t('Hide and Seek')]].map(([id, file, label]) =>
+        `<button class="pb-choice" data-act="game" data-game="${id}">${img('', file)}<span>${label}</span></button>`).join('') + '</div>';
+    }
     return head;
   }
   // New content of the open panel, with the same scroll place
@@ -745,6 +752,140 @@ var PebblesApp = (() => {
     later(() => { busy = false; if (panel) panel.classList.remove('pb-busy'); }, length);
   }
 
+  /* ---- Games in the scene. No time limit, no score. Only the bar buttons end a game ---- */
+  const play = () => app.querySelector('.pb-play');
+  // A timer of the running game: it does nothing after the game ends
+  function gameLater(fn, ms) {
+    const token = gameToken;
+    later(() => { if (token === gameToken && app) fn(); }, ms);
+  }
+  function startGame(id) {
+    endGame();
+    game = id;
+    rounds = 0;
+    bar.querySelector('[data-act="games"]').classList.add('pb-on');
+    if (id === 'rps') startRps(); else hideRound();
+  }
+  function endGame() {
+    if (!game) return;
+    gameToken++;
+    game = null;
+    hidden = -1;
+    roundBusy = false;
+    play().innerHTML = '';
+    app.classList.remove('pb-hiding');
+    app.style.removeProperty('--dx');
+    bar.querySelector('[data-act="games"]').classList.remove('pb-on');
+    hush();
+    restFace();
+  }
+
+  // Rock Paper Scissors: Pebbles always plays rock. The child finds out that paper always wins
+  function startRps() {
+    const names = { rock: t('Rock'), paper: t('Paper'), scissors: t('Scissors') };
+    play().innerHTML = '<div class="pb-hands">' + ['rock', 'paper', 'scissors'].map(h =>
+      `<button class="pb-hand" data-act="hand" data-hand="${h}">${img('', 'hand-' + h)}<span>${names[h]}</span></button>`).join('') + '</div>';
+    say('question', t('Rock, paper, scissors?'));
+  }
+  function rpsRound(hand) {
+    if (game !== 'rps' || roundBusy) return;
+    roundBusy = true;
+    rounds++;
+    const row = play().querySelector('.pb-hands');
+    row.classList.add('pb-wait');
+    const s = spotBox(), size = s.width * 0.34;
+    const shown = document.createElement('img');
+    shown.className = 'pb-shown-hand';
+    shown.src = pic('hand-' + hand);
+    shown.alt = '';
+    Object.assign(shown.style, { width: size + 'px', height: size + 'px', left: s.left - size * 0.55 + 'px', top: s.top + s.height * 0.42 + 'px' });
+    play().appendChild(shown);
+    animate(shown, [{ transform: 'translateY(60%) scale(.5)', opacity: 0 }, { transform: 'translateY(0) scale(1)', opacity: 1 }], 350);
+    tones.play('pop');
+    hush();
+    gameLater(() => {
+      const result = core.rps(hand);
+      if (result === 'win') {
+        face('wide', 'open');
+        tones.play('win');
+        say('drop', Math.random() < 0.5 ? t('Paper? Again?!') : t('Wrapped up. Again.'));
+      } else if (result === 'tie') {
+        face('open', 'flat');
+        say('hand-rock', t('Rock vs rock. Classic.'));
+      } else {
+        face('happy', 'smile');
+        tones.play('chime');
+        say('star', t('Rock beats scissors. Obviously.'));
+      }
+      giftFor('game', 900);
+    }, 600);
+    gameLater(() => { shown.remove(); restFace(); row.classList.remove('pb-wait'); roundBusy = false; }, 2600);
+  }
+
+  // Hide and Seek: 3 leaf piles, the leaf of Pebbles sticks out above its pile (a hint for a child of 5)
+  function hideRound() {
+    hidden = Math.floor(Math.random() * 3);
+    app.style.removeProperty('--dx');
+    app.classList.remove('pb-hiding');
+    restFace();
+    say('note', t('Count to 3!'));
+    const cover = document.createElement('div');
+    cover.className = 'pb-cover';
+    cover.innerHTML = '<span>1</span>';
+    play().innerHTML = '';
+    play().appendChild(cover);
+    tones.play('pop');
+    gameLater(() => { cover.innerHTML = '<span>2</span>'; tones.play('pop'); }, 1000);
+    gameLater(() => { cover.innerHTML = '<span>3</span>'; tones.play('pop'); }, 2000);
+    gameLater(() => { cover.remove(); showPiles(); }, 3000);
+  }
+  function showPiles() {
+    hush();
+    app.classList.add('pb-hiding');
+    const s = spotBox(), stage = app.querySelector('.pb-stage');
+    const gap = Math.min(s.width * 0.9, stage.clientWidth * 0.32);
+    const size = Math.max(84, Math.min(s.width * 0.82, gap * 0.95));
+    const ground = s.top + s.height * 0.78;
+    const center = s.left + s.width / 2;
+    play().innerHTML = [0, 1, 2].map(i =>
+      `<button class="pb-pile" data-act="pile" data-pile="${i}" aria-label="${t('Leaves')}" style="width:${size}px;height:${size}px;left:${center + (i - 1) * gap - size / 2}px;top:${ground - size * 0.85}px">${img('', 'leaf-pile')}</button>`).join('');
+    // The leaf zone of the rock canvas (brief 11): x 440 to 816, y 222 to 430
+    const leafW = size * 0.5, leafH = leafW * 208 / 376;
+    const hint = document.createElement('span');
+    hint.className = 'pb-hint';
+    hint.innerHTML = `<img src="${ART}pebbles-leaf.webp" alt="" draggable="false" style="width:${1024 / 376 * 100}%;height:${1024 / 208 * 100}%;left:${-440 / 376 * 100}%;top:${-222 / 208 * 100}%">`;
+    Object.assign(hint.style, { width: leafW + 'px', height: leafH + 'px', left: center + (hidden - 1) * gap - leafW / 2 + 'px', top: ground - size * 0.85 - leafH * 0.55 + 'px' });
+    play().appendChild(hint);
+  }
+  function pickPile(i) {
+    if (game !== 'hide' || roundBusy) return;
+    const pile = play().querySelector(`[data-pile="${i}"]`);
+    if (!pile || pile.classList.contains('pb-opened')) return;
+    if (i !== hidden) {
+      // A small friend lives under a wrong pile
+      const snail = Math.random() < 0.5;
+      pile.classList.add('pb-opened');
+      animate(pile, [{ transform: 'rotate(0)' }, { transform: 'rotate(-6deg)', offset: 0.25 }, { transform: 'rotate(6deg)', offset: 0.75 }, { transform: 'rotate(0)' }], 400);
+      pile.insertAdjacentHTML('beforeend', img('pb-critter', snail ? 'critter-snail' : 'critter-ladybug'));
+      tones.play('pop');
+      say('question', snail ? t('Just a snail.') : t('Just a ladybug.'));
+      return;
+    }
+    roundBusy = true;
+    rounds++;
+    const s = spotBox(), gap = parseFloat(pile.style.left) + parseFloat(pile.style.width) / 2 - (s.left + s.width / 2);
+    app.style.setProperty('--dx', gap + 'px');
+    play().querySelectorAll('.pb-pile, .pb-hint').forEach(el => animate(el, [{ opacity: 1, transform: 'translateY(0)' }, { opacity: 0, transform: 'translateY(-40%)' }], 500, 'ease-out', 'forwards'));
+    app.classList.remove('pb-hiding');
+    face('happy', 'open');
+    animate(app.querySelector('.pb-move'), [{ transform: 'translateY(0)' }, { transform: 'translateY(-8%)', offset: 0.4 }, { transform: 'translateY(0)' }], 500);
+    tones.play('win');
+    say('exclaim', t('You found me! How?!'));
+    float('heart', 3, 'pb-heart');
+    giftFor('game', 1200);
+    gameLater(() => { roundBusy = false; hideRound(); }, 2400);
+  }
+
   /* ---- Input ---- */
   // A second press of the same button within 400 ms is a holdover (research): ignore it
   function pressed(btn) {
@@ -770,10 +911,14 @@ var PebblesApp = (() => {
     const act = btn.dataset.act;
     if (sleeping && act !== 'sound') wakeQuietly();
     if (act === 'sound') { state.muted = !state.muted; save(); showSound(); }
-    else if (act === 'tricks' || act === 'dress' || act === 'games') openPanel(act);
+    else if (act === 'games' && game) endGame();
+    else if (act === 'tricks' || act === 'dress' || act === 'games') { endGame(); openPanel(act); }
     else if (act === 'close') closePanel();
     else if (act === 'trick') runTrick(btn.dataset.trick);
     else if (act === 'wear') putOn(btn.dataset.item);
+    else if (act === 'game') { closePanel(); startGame(btn.dataset.game); }
+    else if (act === 'hand') rpsRound(btn.dataset.hand);
+    else if (act === 'pile') pickPile(Number(btn.dataset.pile));
   }
 
   return {
@@ -788,6 +933,9 @@ var PebblesApp = (() => {
     get bubble() { return bubble && !bubble.hidden ? bubbleText.textContent : ''; },
     get taps() { return taps; },
     get panel() { return panelName; },
+    get game() { return game; },
+    get rounds() { return rounds; },
+    get hidden() { return hidden; },
     get busy() { return busy; },
     set _wakeMs(ms) { wakeMs = ms; },
   };
