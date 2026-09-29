@@ -211,7 +211,9 @@ var PebblesApp = (() => {
   let state = null, tones = null, controller = null, observer = null;
   let paused = false, night = null, sleeping = false, awake = false, busy = false, taps = 0;
   let blinkTimer = null, bubbleTimer = null, nightTimer = null, wakeTimer = null, wakeMs = 30000;
-  let tapGuard = null, rubGuard = null, rubber = null, press = null, lastLine = '';
+  let tapGuard = null, rubGuard = null, rubber = null, press = null, lastLine = '', panelName = null;
+  const unpaid = [];         // names of gifts that are stored but not shown yet
+  const guards = new Map();  // holdover guard of each button
   const timers = new Set();
 
   // A timer that destroy() and pause() can clear
@@ -284,7 +286,8 @@ var PebblesApp = (() => {
     const greet = core.visit(state, OS.now());
     save();
     tones = sounds();
-    paused = false; night = null; sleeping = false; awake = false; busy = false; taps = 0; press = null;
+    paused = false; night = null; sleeping = false; awake = false; busy = false; taps = 0; press = null; panelName = null;
+    guards.clear();
     tapGuard = core.guard(350);
     rubGuard = core.guard(2000);
     rubber = core.rubber();
@@ -313,10 +316,11 @@ var PebblesApp = (() => {
   }
 
   function destroy() {
+    unpaid.slice().forEach(pay);
     clearTimers();
     clearTimeout(blinkTimer); clearTimeout(bubbleTimer); clearInterval(nightTimer); clearTimeout(wakeTimer);
     blinkTimer = bubbleTimer = nightTimer = wakeTimer = null;
-    press = null;
+    press = null; panelName = null; busy = false;
     if (observer) observer.disconnect();
     if (controller) controller.abort();
     if (tones) tones.close();
@@ -450,13 +454,13 @@ var PebblesApp = (() => {
   /* ---- Motion helpers ---- */
   const calm = () => app.classList.contains('pb-calm');
   // Web Animations. With calm motion only the opacity changes
-  function animate(el, frames, ms, easing = 'ease-out') {
+  function animate(el, frames, ms, easing = 'ease-out', fill = 'none') {
     if (!el) return null;
     if (calm()) {
       frames = frames.map(f => { const c = { ...f }; delete c.transform; return c; });
       if (!frames.some(f => 'opacity' in f)) return null;
     }
-    return el.animate(frames, { duration: ms, easing });
+    return el.animate(frames, { duration: ms, easing, fill });
   }
   // Box of the rock square in app pixels
   function spotBox() {
@@ -464,7 +468,7 @@ var PebblesApp = (() => {
     return { left: s.left - a.left, top: s.top - a.top, width: s.width, height: s.height };
   }
   // Small pictures that float up from the rock and go away
-  function float(name, count, cls) {
+  function float(name, count, cls, from = 0.32) {
     const fx = app.querySelector('.pb-fx');
     const s = spotBox();
     const size = Math.max(22, s.width * 0.09);
@@ -476,7 +480,7 @@ var PebblesApp = (() => {
       el.draggable = false;
       el.style.width = el.style.height = size + 'px';
       el.style.left = s.left + s.width * (0.35 + 0.3 * Math.random()) - size / 2 + 'px';
-      el.style.top = s.top + s.height * 0.32 + 'px';
+      el.style.top = s.top + s.height * from + 'px';
       fx.appendChild(el);
       const a = animate(el, [
         { opacity: 0, transform: 'translate(0, 0) scale(.6)' },
@@ -506,7 +510,8 @@ var PebblesApp = (() => {
     return x >= ROCK_AREA[0] && x <= ROCK_AREA[2] && y >= ROCK_AREA[1] && y <= ROCK_AREA[3];
   }
   function onDown(e) {
-    if (!state || e.target.closest('button') || !onRock(e)) return;
+    if (!state || e.target.closest('button')) return;
+    if (!onRock(e)) { closePanel(); return; } // a tap on the scene closes a panel
     press = { id: e.pointerId, x: e.clientX, y: e.clientY, at: performance.now(), moved: 0 };
     rubber.down(e.clientX, e.clientY);
     try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) { /* the pointer is gone */ }
@@ -560,14 +565,21 @@ var PebblesApp = (() => {
     giftFor('rub', 1400);
   }
 
-  /* ---- Gifts: at the first try of a gift action. Stored and paid at once, shown after the action ---- */
+  /* ---- Gifts: at the first try of a gift action. Stored at once, shown and paid after the action.
+     A gift that the app did not show yet is paid at the close of the window ---- */
   function giftFor(action, delay) {
     const item = core.firstTry(state, action);
     if (!item) return;
     save();
     const name = ITEM_NAMES()[item];
-    OS.awardCoins(2, 'Pebbles', '🪨', t('Gift: {item}', { item: name }));
+    unpaid.push(name);
     later(() => showGift(item, name), delay);
+  }
+  function pay(name) {
+    const i = unpaid.indexOf(name);
+    if (i < 0) return;
+    unpaid.splice(i, 1);
+    OS.awardCoins(2, 'Pebbles', '🪨', t('Gift: {item}', { item: name }));
   }
   function showGift(item, name) {
     const s = spotBox();
@@ -585,6 +597,7 @@ var PebblesApp = (() => {
       box.classList.add('pb-gift-open');
       tones.play('chime');
       say('sparkle', t('{item}!', { item: name }));
+      pay(name);
     }, 1300);
     later(() => box.remove(), 3600);
   }
@@ -606,14 +619,131 @@ var PebblesApp = (() => {
     wakeTimer = setTimeout(() => { wakeTimer = null; if (app && night) fallAsleep(); }, wakeMs);
   }
 
+  /* ---- Panels over the scene ---- */
+  const TRICKS = () => [
+    ['sit', 'trick-sit', t('Sit')], ['stay', 'trick-stay', t('Stay')], ['dead', 'trick-play-dead', t('Play dead')],
+    ['roll', 'trick-roll-over', t('Roll over')], ['jump', 'trick-jump', t('Jump')], ['shake', 'trick-shake-hands', t('Shake hands')],
+  ];
+  function panelHTML(name) {
+    const title = { tricks: t('Tricks'), dress: t('Dress up'), games: t('Games') }[name];
+    const head = `<div class="pb-panel-head"><h3>${title}</h3><button class="pb-close" data-act="close" aria-label="${t('Close')}">✕</button></div>`;
+    if (name === 'tricks') {
+      return head + '<div class="pb-grid">' + TRICKS().map(([id, file, label]) =>
+        `<button class="pb-choice" data-act="trick" data-trick="${id}">${img('', file)}<span>${label}</span></button>`).join('') + '</div>';
+    }
+    return head;
+  }
+  function openPanel(name) {
+    if (panelName === name) { closePanel(); return; }
+    panelName = name;
+    panel.innerHTML = panelHTML(name);
+    panel.hidden = false;
+    panel.classList.toggle('pb-busy', busy);
+    bar.querySelectorAll('[data-act]').forEach(b => b.classList.toggle('pb-on', b.dataset.act === name));
+    layout();
+  }
+  function closePanel() {
+    if (!panelName) return;
+    panelName = null;
+    panel.hidden = true;
+    panel.innerHTML = '';
+    bar.querySelectorAll('.pb-on').forEach(b => b.classList.remove('pb-on'));
+    layout();
+  }
+
+  /* ---- Tricks: the rock does nothing, and gets big praise for it (Pet Rock manual, 1975) ---- */
+  function runTrick(id) {
+    if (busy) return;
+    busy = true;
+    panel.classList.add('pb-busy');
+    hush();
+    const move = app.querySelector('.pb-move');
+    let length = 1600;
+    if (id === 'sit' || id === 'stay') {
+      const [wait, text] = id === 'sit' ? [1000, t('Perfect sit!')] : [2000, t('Still staying.')];
+      later(() => { float('star', 3, 'pb-star'); tones.play('chime'); say('star', text); }, wait);
+      length = wait + 600;
+    } else if (id === 'dead') {
+      face('x', 'flat');
+      later(() => { restFace(); tones.play('chime'); say('star', t('Ta-da! Still a rock.')); }, 2000);
+      length = 2400;
+    } else if (id === 'roll') {
+      // Out of the frame to the right, back in from the left, turning around the middle of the rock
+      const s = spotBox(), W = app.clientWidth;
+      tones.play('whoosh');
+      face('wide', 'open');
+      say('exclaim', t('Wheee!'));
+      move.style.transformOrigin = '50% 54.7%';
+      const out = animate(move, [{ transform: 'translateX(0) rotate(0)', opacity: 1 }, { opacity: 1, offset: 0.8 },
+        { transform: `translateX(${Math.round(W - s.left + 20)}px) rotate(360deg)`, opacity: 0 }], 900, 'ease-in', 'forwards');
+      later(() => {
+        if (out) out.cancel();
+        animate(move, [{ transform: `translateX(${-Math.round(s.left + s.width + 20)}px) rotate(-360deg)`, opacity: 0 }, { opacity: 1, offset: 0.2 },
+          { transform: 'translateX(0) rotate(0)', opacity: 1 }], 900, 'ease-out');
+      }, 900);
+      later(() => {
+        move.style.transformOrigin = '';
+        float('fx-puff', 1, 'pb-puff', 0.66);
+        restFace();
+        tones.play('chime');
+        say('star', t('Back! Did you miss me?'));
+      }, 1850);
+      length = 2300;
+    } else if (id === 'jump') {
+      // The whole jump is 1.5 percent of the rock high. Big praise
+      tones.play('boing');
+      face('happy', 'open');
+      say('note', t('Big jump!'));
+      animate(move, [{ transform: 'translateY(0) scale(1, 1)' }, { transform: 'translateY(0) scale(1.1, .88)', offset: 0.25 },
+        { transform: 'translateY(-1.5%) scale(.96, 1.05)', offset: 0.5 }, { transform: 'translateY(0) scale(1.08, .92)', offset: 0.75 },
+        { transform: 'translateY(0) scale(1, 1)' }], 800);
+      later(() => float('sparkle', 5, 'pb-sparkle'), 450);
+      later(restFace, 1000);
+      length = 1400;
+    } else if (id === 'shake') {
+      // No hands: the leaf waves
+      tones.play('pop');
+      face('open', 'flat');
+      say('question', t('Hands? What hands?'));
+      animate(rig.querySelector('.pb-l-leaf'), [{ transform: 'rotate(0)' }, { transform: 'rotate(16deg)', offset: 0.17 }, { transform: 'rotate(-10deg)', offset: 0.34 },
+        { transform: 'rotate(16deg)', offset: 0.5 }, { transform: 'rotate(-10deg)', offset: 0.67 }, { transform: 'rotate(16deg)', offset: 0.83 },
+        { transform: 'rotate(0)' }], 1200, 'ease-in-out');
+      later(restFace, 1400);
+      length = 1600;
+    }
+    // Gift actions: the gift is stored now, so a close during the trick keeps it
+    if (['dead', 'roll', 'jump', 'shake'].includes(id)) giftFor(id, length + 300);
+    later(() => { busy = false; if (panel) panel.classList.remove('pb-busy'); }, length);
+  }
+
   /* ---- Input ---- */
+  // A second press of the same button within 400 ms is a holdover (research): ignore it
+  function pressed(btn) {
+    const d = btn.dataset;
+    const key = d.act + ':' + (d.trick || d.item || d.game || d.hand || d.pile || '');
+    if (!guards.has(key)) guards.set(key, core.guard(400));
+    return guards.get(key)(performance.now());
+  }
+  // A button at night wakes the rock with no bubble
+  function wakeQuietly() {
+    awake = true;
+    sleeping = false;
+    app.classList.remove('pb-sleep');
+    restFace();
+    hush();
+    touched();
+  }
   function onClick(e) {
     const btn = e.target.closest('[data-act]');
-    if (!btn || !state) return;
+    if (!btn || !state || !pressed(btn)) return;
     tones.unlock();
     touched();
     const act = btn.dataset.act;
+    if (sleeping && act !== 'sound') wakeQuietly();
     if (act === 'sound') { state.muted = !state.muted; save(); showSound(); }
+    else if (act === 'tricks' || act === 'dress' || act === 'games') openPanel(act);
+    else if (act === 'close') closePanel();
+    else if (act === 'trick') runTrick(btn.dataset.trick);
   }
 
   return {
@@ -627,6 +757,7 @@ var PebblesApp = (() => {
     get muted() { return !!(state && state.muted); },
     get bubble() { return bubble && !bubble.hidden ? bubbleText.textContent : ''; },
     get taps() { return taps; },
+    get panel() { return panelName; },
     get busy() { return busy; },
     set _wakeMs(ms) { wakeMs = ms; },
   };
