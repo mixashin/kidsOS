@@ -204,6 +204,9 @@ var PebblesApp = (() => {
         if (audio && audio.state === 'suspended') audio.resume();
       },
       play(name) { if (audio && state && !state.muted) (TUNES[name] || []).forEach(n => tone(...n)); },
+      suspend() { if (audio && audio.state === 'running') audio.suspend(); },
+      resume() { if (audio && audio.state === 'suspended') audio.resume(); },
+      get state() { return audio ? audio.state : 'none'; },
       close() { if (audio) { audio.close(); audio = null; } },
     };
   }
@@ -215,7 +218,7 @@ var PebblesApp = (() => {
   let blinkTimer = null, bubbleTimer = null, nightTimer = null, wakeTimer = null, wakeMs = 30000;
   let tapGuard = null, rubGuard = null, rubber = null, press = null, lastLine = '', panelName = null;
   let game = null, gameToken = 0, rounds = 0, hidden = -1, roundBusy = false;
-  const unpaid = [];         // names of gifts that are stored but not shown yet
+  const unpaid = [];         // gifts that are stored but not shown yet: { item, name }
   const guards = new Map();  // holdover guard of each button
   const timers = new Set();
 
@@ -320,7 +323,7 @@ var PebblesApp = (() => {
   }
 
   function destroy() {
-    unpaid.slice().forEach(pay);
+    unpaid.slice().forEach(g => pay(g.item));
     clearTimers();
     clearTimeout(blinkTimer); clearTimeout(bubbleTimer); clearInterval(nightTimer); clearTimeout(wakeTimer);
     blinkTimer = bubbleTimer = nightTimer = wakeTimer = null;
@@ -381,10 +384,24 @@ var PebblesApp = (() => {
     bubbleText.textContent = text;
     bubble.hidden = false;
     bubble.classList.remove('pb-pop');
+    place(bubble);
     void bubble.offsetWidth; // start the pop again
     bubble.classList.add('pb-pop');
     clearTimeout(bubbleTimer);
     bubbleTimer = keep ? null : setTimeout(hush, Math.min(5000, 2500 + 50 * text.length));
+  }
+  // The bubble stays inside the frame, and left of a panel at the right side
+  function place(el) {
+    el.style.setProperty('--bx', '0px');
+    el.style.setProperty('--by', '0px');
+    const r = el.getBoundingClientRect(), a = app.getBoundingClientRect();
+    let right = a.right - 8;
+    if (panelName && app.classList.contains('pb-wide')) right = Math.min(right, panel.getBoundingClientRect().left - 8);
+    let bx = r.right > right ? right - r.right : 0;
+    if (r.left + bx < a.left + 8) bx = a.left + 8 - r.left;
+    const by = r.top < a.top + 8 ? a.top + 8 - r.top : 0;
+    el.style.setProperty('--bx', Math.round(bx) + 'px');
+    el.style.setProperty('--by', Math.round(by) + 'px');
   }
   function hush() {
     clearTimeout(bubbleTimer);
@@ -438,21 +455,39 @@ var PebblesApp = (() => {
   }
 
   /* ---- Home button: the app waits in the dock ---- */
+  // Nothing runs in the dock: no trick, no game, no gift, no sound. A gift that did not show waits for the return
   function pause() {
     if (!app || paused) return;
     paused = true;
     app.classList.add('pb-paused');
     clearTimeout(blinkTimer); blinkTimer = null;
     clearInterval(nightTimer); nightTimer = null;
+    clearTimeout(wakeTimer); wakeTimer = null;
+    clearTimers();
+    endGame();
+    app.getAnimations({ subtree: true }).filter(a => !(a instanceof CSSAnimation)).forEach(a => a.cancel());
+    app.querySelector('.pb-fx').innerHTML = '';
+    app.querySelector('.pb-move').style.transformOrigin = '';
+    busy = false;
+    panel.classList.remove('pb-busy');
+    restFace();
+    tones.suspend();
   }
   function resume() {
     if (!app || !paused) return;
     paused = false;
     app.classList.remove('pb-paused');
+    tones.resume();
+    // Back from the dock is an open too: a new day counts
+    const greet = core.visit(state, OS.now());
+    save();
+    showTag();
     checkNight();
     nightTimer = setInterval(checkNight, 60000);
     blinkLater();
     touched();
+    if (!night && greet) say(GREETING[greet][0], GREETING[greet][1]());
+    unpaid.forEach((g, i) => later(() => showGift(g.item, g.name), 400 + i * 3800));
   }
 
   /* ---- Motion helpers ---- */
@@ -577,14 +612,14 @@ var PebblesApp = (() => {
     if (!item) return;
     save();
     const name = ITEM_NAMES()[item];
-    unpaid.push(name);
+    unpaid.push({ item, name });
     later(() => showGift(item, name), delay);
   }
-  function pay(name) {
-    const i = unpaid.indexOf(name);
+  function pay(item) {
+    const i = unpaid.findIndex(g => g.item === item);
     if (i < 0) return;
-    unpaid.splice(i, 1);
-    OS.awardCoins(2, 'Pebbles', '🪨', t('Gift: {item}', { item: name }));
+    const [gift] = unpaid.splice(i, 1);
+    OS.awardCoins(2, 'Pebbles', '🪨', t('Gift: {item}', { item: gift.name }));
   }
   function showGift(item, name) {
     const s = spotBox();
@@ -602,7 +637,7 @@ var PebblesApp = (() => {
       box.classList.add('pb-gift-open');
       tones.play('chime');
       say('sparkle', t('{item}!', { item: name }));
-      pay(name);
+      pay(item);
       if (panelName === 'dress') refreshPanel();
     }, 1300);
     later(() => box.remove(), 3600);
@@ -873,8 +908,10 @@ var PebblesApp = (() => {
     }
     roundBusy = true;
     rounds++;
+    // The rock comes out at its pile, but its body (0.63 of the canvas wide) stays inside the frame
     const s = spotBox(), gap = parseFloat(pile.style.left) + parseFloat(pile.style.width) / 2 - (s.left + s.width / 2);
-    app.style.setProperty('--dx', gap + 'px');
+    const room = Math.max(0, app.querySelector('.pb-stage').clientWidth / 2 - s.width * 0.32 - 8);
+    app.style.setProperty('--dx', Math.max(-room, Math.min(room, gap)) + 'px');
     play().querySelectorAll('.pb-pile, .pb-hint').forEach(el => animate(el, [{ opacity: 1, transform: 'translateY(0)' }, { opacity: 0, transform: 'translateY(-40%)' }], 500, 'ease-out', 'forwards'));
     app.classList.remove('pb-hiding');
     face('happy', 'open');
@@ -988,7 +1025,9 @@ var PebblesApp = (() => {
     get game() { return game; },
     get rounds() { return rounds; },
     get hidden() { return hidden; },
+    set hidden(i) { hidden = i; }, // tests: put the rock under a known pile
     get busy() { return busy; },
+    get audio() { return tones ? tones.state : 'none'; },
     set _wakeMs(ms) { wakeMs = ms; },
   };
 })();

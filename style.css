@@ -2341,14 +2341,15 @@ button.lang-option { font-family: inherit; }
 .pb-calm .pb-rig, .pb-calm .pb-l-leaf { animation: none; }
 
 /* Thought bubble: a cloud with 2 small circles that lead down to the rock */
-.pb-bubble { position: absolute; left: 50%; bottom: 80%; z-index: 2; display: flex; align-items: center; gap: 8px; width: max-content; max-width: min(78vw, 320px); padding: 12px 18px; background: var(--k-paper); color: var(--k-ink); border: 3px solid var(--k-line); border-radius: 48% 52% 50% 46% / 60% 55% 45% 50%; box-shadow: 0 4px 0 rgba(90, 70, 54, .28); font: 800 17px/1.25 var(--font); pointer-events: none; transform: translateX(-30%); }
+.pb-bubble { position: absolute; left: 50%; bottom: 80%; z-index: 4; display: flex; align-items: center; gap: 8px; width: max-content; max-width: min(78vw, 320px); padding: 12px 18px; background: var(--k-paper); color: var(--k-ink); border: 3px solid var(--k-line); border-radius: 48% 52% 50% 46% / 60% 55% 45% 50%; box-shadow: 0 4px 0 rgba(90, 70, 54, .28); font: 800 17px/1.25 var(--font); pointer-events: none; transform: translate(calc(-30% + var(--bx, 0px)), var(--by, 0px)); }
 .pb-bubble[hidden] { display: none; }
 .pb-bubble img { width: 44px; height: 44px; flex: none; }
 .pb-bubble::before, .pb-bubble::after { content: ''; position: absolute; background: var(--k-paper); border: 3px solid var(--k-line); border-radius: 50%; }
 .pb-bubble::before { width: 18px; height: 18px; left: 26%; bottom: -26px; }
 .pb-bubble::after { width: 10px; height: 10px; left: 21%; bottom: -42px; }
 .pb-pop { animation: pbPop .25s ease-out; }
-@keyframes pbPop { from { opacity: 0; transform: translateX(-30%) scale(.8); } to { opacity: 1; transform: translateX(-30%) scale(1); } }
+/* --bx and --by: the app moves the bubble so it stays inside the frame */
+@keyframes pbPop { from { opacity: 0; transform: translate(calc(-30% + var(--bx, 0px)), var(--by, 0px)) scale(.8); } to { opacity: 1; transform: translate(calc(-30% + var(--bx, 0px)), var(--by, 0px)) scale(1); } }
 
 /* Name tag, sound button, bar of 3 picture buttons */
 .pb-tag { position: absolute; left: 12px; top: 12px; z-index: 3; max-width: calc(100% - 96px); min-height: 56px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; padding: 6px 16px; background: var(--k-paper); color: var(--k-ink); border: 3px solid var(--k-line); border-radius: 22px 18px 24px 20px; box-shadow: 0 4px 0 rgba(90, 70, 54, .28); font-family: var(--font); text-align: left; cursor: pointer; }
@@ -2358,7 +2359,7 @@ button.lang-option { font-family: inherit; }
 .pb-bar { position: absolute; left: 0; right: 0; bottom: 0; z-index: 4; display: flex; justify-content: center; gap: 12px; padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); }
 .pb-bar button { flex: 0 1 140px; min-width: 76px; min-height: 76px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 6px 8px; background: var(--k-paper); color: var(--k-ink); border: 3px solid var(--k-line); border-radius: 24px 20px 26px 22px; box-shadow: 0 4px 0 rgba(90, 70, 54, .28); font: 800 15px/1.1 var(--font); cursor: pointer; }
 .pb-bar button > img { width: 44px; height: 44px; object-fit: contain; }
-.pb-bar button.pb-on { background: var(--k-honey); }
+.pb-bar button.pb-on { background: var(--k-honey); color: var(--k-on-color); }
 .pb-app button:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(90, 70, 54, .28); }
 .pb-app button:focus-visible { outline: 3px solid var(--k-sky); outline-offset: 2px; }
 .pb-app button img, .pb-app button span { pointer-events: none; }
@@ -2383,7 +2384,7 @@ button.lang-option { font-family: inherit; }
 .pb-row-label { display: block; margin: 0 0 6px 4px; font: 800 14px/1.2 var(--font); color: var(--k-ink-soft); }
 .pb-row-items { display: flex; flex-wrap: wrap; gap: 10px; }
 .pb-item { width: 96px; }
-.pb-item.pb-on { background: var(--k-honey); }
+.pb-item.pb-on { background: var(--k-honey); color: var(--k-on-color); }
 .pb-item.pb-closed { opacity: .8; }
 .pb-choice .pb-thumb { width: 52px; height: 52px; }
 
@@ -2398,6 +2399,7 @@ button.lang-option { font-family: inherit; }
 .pb-hand > img { width: 64px; height: 64px; object-fit: contain; }
 .pb-shown-hand { position: absolute; pointer-events: none; }
 .pb-cover { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(255, 246, 227, .72); pointer-events: auto; }
+[data-theme="dark"] .pb-cover { background: rgba(35, 44, 82, .72); }
 .pb-cover span { font: 900 min(30vh, 180px)/1 var(--font); color: var(--k-ink); animation: pbPopIn .3s ease-out; }
 .pb-pile { position: absolute; min-width: 76px; min-height: 76px; padding: 0; border: 0; background: none; cursor: pointer; }
 .pb-pile > img { width: 100%; height: 100%; object-fit: contain; }
@@ -2417,7 +2419,7 @@ button.lang-option { font-family: inherit; }
 .pb-facts dd { margin: 0; font: 800 17px/1.2 var(--font); }
 .pb-name-row { display: flex; gap: 8px; }
 .pb-name-input { flex: 1; min-width: 0; height: 56px; padding: 0 12px; background: var(--k-bg); color: var(--k-ink); border: 3px solid var(--k-line); border-radius: 16px; font: 800 17px var(--font); user-select: text; -webkit-user-select: text; touch-action: manipulation; }
-.pb-ok { min-width: 64px; height: 56px; background: var(--k-honey); color: var(--k-ink); border: 3px solid var(--k-line); border-radius: 16px; box-shadow: 0 4px 0 rgba(90, 70, 54, .28); font: 800 16px var(--font); cursor: pointer; }
+.pb-ok { min-width: 64px; height: 56px; background: var(--k-honey); color: var(--k-on-color); border: 3px solid var(--k-line); border-radius: 16px; box-shadow: 0 4px 0 rgba(90, 70, 54, .28); font: 800 16px var(--font); cursor: pointer; }
 .pb-meters { display: grid; gap: 8px; margin-top: 14px; }
 .pb-meter { display: grid; grid-template-columns: 96px 1fr auto; align-items: center; gap: 10px; font: 700 14px/1.2 var(--font); }
 .pb-bar-track { height: 14px; overflow: hidden; background: var(--k-bg); border: 2px solid var(--k-line); border-radius: 8px; }
