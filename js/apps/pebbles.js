@@ -149,6 +149,19 @@ var PebblesApp = (() => {
   // Zone of each place in the rock canvas (brief 11): a square around it makes the picture of an item
   const ZONES = { head: [230, 110, 640, 420], eyes: [330, 555, 690, 660], neck: [390, 660, 630, 790], back: [110, 250, 914, 800] };
 
+  // Lines with their bubble picture. A function, so the language of the moment is used
+  const TAPS = () => [
+    ['heart', t('Hee hee! That tickles.')], ['note', t('Boop!')], ['exclaim', t('Whoa. I moved!')], ['heart', t('Best human ever.')],
+    ['sparkle', t('I feel so rocky.')], ['question', t('Was that a poke?')], ['note', t('Wiggle wiggle.')], ['heart', t('Again! Again!')],
+  ];
+  const RUBS = () => [['sparkle', t('Shiny!')], ['sparkle', t('So polished!')], ['sparkle', t('I can see myself!')]];
+  const ITEM_NAMES = () => ({
+    'top-hat': t('Top hat'), crown: t('Crown'), 'flower-crown': t('Flower crown'), sunglasses: t('Sunglasses'),
+    'googly-eyes': t('Googly eyes'), 'bow-tie': t('Bow tie'), scarf: t('Scarf'), cape: t('Cape'),
+  });
+  // Body box of the rock canvas (brief 11), 10 percent larger on each side: a touch slightly outside counts
+  const ROCK_AREA = [123, 272, 901, 848];
+
   const GREETING = {
     first: ['heart', () => t("Hi! I'm Pebbles. I'm a rock.")],
     back: ['heart', () => t("You're back! I didn't move.")],
@@ -196,8 +209,9 @@ var PebblesApp = (() => {
   /* ---- The app ---- */
   let app = null, rig = null, bubble = null, bubbleText = null, bubbleImg = null, tag = null, bar = null, panel = null;
   let state = null, tones = null, controller = null, observer = null;
-  let paused = false, night = null, sleeping = false, awake = false;
-  let blinkTimer = null, bubbleTimer = null, nightTimer = null;
+  let paused = false, night = null, sleeping = false, awake = false, busy = false, taps = 0;
+  let blinkTimer = null, bubbleTimer = null, nightTimer = null, wakeTimer = null, wakeMs = 30000;
+  let tapGuard = null, rubGuard = null, rubber = null, press = null, lastLine = '';
   const timers = new Set();
 
   // A timer that destroy() and pause() can clear
@@ -270,10 +284,19 @@ var PebblesApp = (() => {
     const greet = core.visit(state, OS.now());
     save();
     tones = sounds();
-    paused = false; night = null; sleeping = false; awake = false;
+    paused = false; night = null; sleeping = false; awake = false; busy = false; taps = 0; press = null;
+    tapGuard = core.guard(350);
+    rubGuard = core.guard(2000);
+    rubber = core.rubber();
 
     controller = new AbortController();
-    app.addEventListener('click', onClick, { signal: controller.signal });
+    const on = (el, type, fn) => el.addEventListener(type, fn, { signal: controller.signal });
+    on(app, 'click', onClick);
+    const stage = app.querySelector('.pb-stage');
+    on(stage, 'pointerdown', onDown);
+    on(stage, 'pointermove', onMove);
+    on(stage, 'pointerup', onUp);
+    on(stage, 'pointercancel', onUp);
     observer = new ResizeObserver(layout);
     observer.observe(app);
     const calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -291,8 +314,9 @@ var PebblesApp = (() => {
 
   function destroy() {
     clearTimers();
-    clearTimeout(blinkTimer); clearTimeout(bubbleTimer); clearInterval(nightTimer);
-    blinkTimer = bubbleTimer = nightTimer = null;
+    clearTimeout(blinkTimer); clearTimeout(bubbleTimer); clearInterval(nightTimer); clearTimeout(wakeTimer);
+    blinkTimer = bubbleTimer = nightTimer = wakeTimer = null;
+    press = null;
     if (observer) observer.disconnect();
     if (controller) controller.abort();
     if (tones) tones.close();
@@ -390,12 +414,14 @@ var PebblesApp = (() => {
     if (night) fallAsleep(); else wakeUp();
   }
   function fallAsleep() {
+    clearTimeout(wakeTimer); wakeTimer = null;
     sleeping = true; awake = false;
     app.classList.add('pb-sleep');
     restFace();
     say('zzz', t('Zzz...'), true);
   }
   function wakeUp() {
+    clearTimeout(wakeTimer); wakeTimer = null;
     const wasAsleep = sleeping;
     sleeping = false; awake = false;
     app.classList.remove('pb-sleep');
@@ -418,6 +444,166 @@ var PebblesApp = (() => {
     checkNight();
     nightTimer = setInterval(checkNight, 60000);
     blinkLater();
+    touched();
+  }
+
+  /* ---- Motion helpers ---- */
+  const calm = () => app.classList.contains('pb-calm');
+  // Web Animations. With calm motion only the opacity changes
+  function animate(el, frames, ms, easing = 'ease-out') {
+    if (!el) return null;
+    if (calm()) {
+      frames = frames.map(f => { const c = { ...f }; delete c.transform; return c; });
+      if (!frames.some(f => 'opacity' in f)) return null;
+    }
+    return el.animate(frames, { duration: ms, easing });
+  }
+  // Box of the rock square in app pixels
+  function spotBox() {
+    const s = app.querySelector('.pb-spot').getBoundingClientRect(), a = app.getBoundingClientRect();
+    return { left: s.left - a.left, top: s.top - a.top, width: s.width, height: s.height };
+  }
+  // Small pictures that float up from the rock and go away
+  function float(name, count, cls) {
+    const fx = app.querySelector('.pb-fx');
+    const s = spotBox();
+    const size = Math.max(22, s.width * 0.09);
+    for (let i = 0; i < count; i++) {
+      const el = document.createElement('img');
+      el.className = cls;
+      el.src = pic(name);
+      el.alt = '';
+      el.draggable = false;
+      el.style.width = el.style.height = size + 'px';
+      el.style.left = s.left + s.width * (0.35 + 0.3 * Math.random()) - size / 2 + 'px';
+      el.style.top = s.top + s.height * 0.32 + 'px';
+      fx.appendChild(el);
+      const a = animate(el, [
+        { opacity: 0, transform: 'translate(0, 0) scale(.6)' },
+        { opacity: 1, offset: 0.2 },
+        { opacity: 0, transform: `translate(${Math.round((Math.random() - 0.5) * 60)}px, ${-Math.round(s.height * 0.35)}px) scale(1)` },
+      ], 900 + i * 150);
+      if (a) a.onfinish = () => el.remove(); else later(() => el.remove(), 900);
+    }
+  }
+  function buzz(pattern) {
+    if (state.muted || typeof navigator.vibrate !== 'function') return;
+    try { navigator.vibrate(pattern); } catch (e) { /* no vibration on this device */ }
+  }
+  // A line of a list, not the same as the last one
+  function line(list) {
+    const pool = list.filter(([, text]) => text !== lastLine);
+    const [name, text] = pool[Math.floor(Math.random() * pool.length)];
+    lastLine = text;
+    say(name, text);
+  }
+
+  /* ---- Touch the rock ---- */
+  // Place of a pointer in the rock canvas (0 to 1024)
+  function onRock(e) {
+    const r = app.querySelector('.pb-spot').getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width * 1024, y = (e.clientY - r.top) / r.height * 1024;
+    return x >= ROCK_AREA[0] && x <= ROCK_AREA[2] && y >= ROCK_AREA[1] && y <= ROCK_AREA[3];
+  }
+  function onDown(e) {
+    if (!state || e.target.closest('button') || !onRock(e)) return;
+    press = { id: e.pointerId, x: e.clientX, y: e.clientY, at: performance.now(), moved: 0 };
+    rubber.down(e.clientX, e.clientY);
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) { /* the pointer is gone */ }
+    e.preventDefault();
+  }
+  function onMove(e) {
+    if (!press || e.pointerId !== press.id) return;
+    press.moved = Math.max(press.moved, Math.hypot(e.clientX - press.x, e.clientY - press.y));
+    if (rubber.move(e.clientX, e.clientY, performance.now())) rubRock();
+  }
+  function onUp(e) {
+    if (!press || e.pointerId !== press.id) return;
+    const quick = performance.now() - press.at <= 350 && press.moved <= 10;
+    press = null;
+    rubber.up();
+    if (quick && e.type === 'pointerup') tapRock();
+  }
+
+  function tapRock() {
+    if (busy || !tapGuard(performance.now())) return;
+    tones.unlock();
+    touched();
+    if (sleeping) { halfWake(); return; }
+    taps++;
+    tones.play(Math.random() < 0.3 ? 'giggle' : 'pop');
+    buzz(15);
+    animate(app.querySelector('.pb-move'), [
+      { transform: 'scale(1, 1)' }, { transform: 'scale(1.08, .9)', offset: 0.3 },
+      { transform: 'scale(.97, 1.06)', offset: 0.65 }, { transform: 'scale(1, 1)' },
+    ], 450);
+    animate(rig.querySelector('.pb-l-leaf'), [{ transform: 'rotate(0)' }, { transform: 'rotate(12deg)', offset: 0.3 }, { transform: 'rotate(-8deg)', offset: 0.65 }, { transform: 'rotate(0)' }], 600);
+    face('happy', 'open');
+    later(restFace, 450);
+    float('heart', 3, 'pb-heart');
+    line(TAPS());
+  }
+
+  function rubRock() {
+    if (busy || !rubGuard(performance.now())) return;
+    tones.unlock();
+    touched();
+    if (sleeping) { halfWake(); return; }
+    tones.play('shine');
+    buzz([8, 30, 8]);
+    animate(rig.querySelector('.pb-l-shine'), [{ opacity: 0, transform: 'translateX(-45%)' }, { opacity: 1, offset: 0.35 }, { opacity: 0, transform: 'translateX(55%)' }], 700);
+    animate(rig.querySelector('.pb-l-blush'), [{ opacity: 0.85 }, { opacity: 1, offset: 0.15 }, { opacity: 0.85 }], 2000);
+    float('sparkle', 3, 'pb-sparkle');
+    face('happy', 'smile');
+    later(restFace, 900);
+    line(RUBS());
+    giftFor('rub', 1400);
+  }
+
+  /* ---- Gifts: at the first try of a gift action. Stored and paid at once, shown after the action ---- */
+  function giftFor(action, delay) {
+    const item = core.firstTry(state, action);
+    if (!item) return;
+    save();
+    const name = ITEM_NAMES()[item];
+    OS.awardCoins(2, 'Pebbles', '🪨', t('Gift: {item}', { item: name }));
+    later(() => showGift(item, name), delay);
+  }
+  function showGift(item, name) {
+    const s = spotBox();
+    const size = s.width * 0.3;
+    const box = document.createElement('div');
+    box.className = 'pb-gift';
+    box.innerHTML = `<img src="${pic('gift')}" alt="" draggable="false">`;
+    Object.assign(box.style, { width: size + 'px', height: size + 'px', left: s.left + s.width * 0.02 + 'px', top: s.top + s.height * 0.78 - size + 'px' });
+    app.querySelector('.pb-fx').appendChild(box);
+    animate(box, [{ transform: 'translateY(-300%)' }, { transform: 'translateY(0)', offset: 0.6 }, { transform: 'translateY(-12%)', offset: 0.8 }, { transform: 'translateY(0)' }], 700, 'ease-in');
+    tones.play('pop');
+    say('gift', t('A present? For me?'));
+    later(() => {
+      box.innerHTML = thumb(item);
+      box.classList.add('pb-gift-open');
+      tones.play('chime');
+      say('sparkle', t('{item}!', { item: name }));
+    }, 1300);
+    later(() => box.remove(), 3600);
+  }
+
+  /* ---- Night: a touch half-wakes the rock. After wakeMs with no touch it sleeps again ---- */
+  function halfWake() {
+    awake = true;
+    sleeping = false;
+    app.classList.remove('pb-sleep');
+    face('open', 'open');
+    later(restFace, 1500);
+    tones.play('snore');
+    say('zzz', t('5 more minutes...'));
+    touched();
+  }
+  function touched() {
+    if (!night || !awake) return;
+    clearTimeout(wakeTimer);
+    wakeTimer = setTimeout(() => { wakeTimer = null; if (app && night) fallAsleep(); }, wakeMs);
   }
 
   /* ---- Input ---- */
@@ -425,6 +611,7 @@ var PebblesApp = (() => {
     const btn = e.target.closest('[data-act]');
     if (!btn || !state) return;
     tones.unlock();
+    touched();
     const act = btn.dataset.act;
     if (act === 'sound') { state.muted = !state.muted; save(); showSound(); }
   }
@@ -439,6 +626,9 @@ var PebblesApp = (() => {
     get blinking() { return blinkTimer !== null; },
     get muted() { return !!(state && state.muted); },
     get bubble() { return bubble && !bubble.hidden ? bubbleText.textContent : ''; },
+    get taps() { return taps; },
+    get busy() { return busy; },
+    set _wakeMs(ms) { wakeMs = ms; },
   };
 })();
 
