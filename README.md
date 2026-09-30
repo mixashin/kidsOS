@@ -72,7 +72,7 @@ For kids of age 5 to 9. Built by a parent for two very demanding beta testers.
 | | App | What it does |
 |---|---|---|
 | 🐶 | **Pocket Pal** | A 3D corgi. Give it a name, then feed it, play with it, give it a bath, and put it to bed. Boop! |
-| 🪨 | **Pebbles** | A pet rock. It does nothing. Its needs: "Zero. Zilch. Nada." Your job is to cheer for it. |
+| 🪨 | **Pebbles** | A pet rock. It does nothing, very well. Tap it, polish it, dress it up, teach it to sit (it already can). Plays Rock Paper Scissors and always picks rock. Sleeps in its box at night. |
 | ⚙️ | **Settings** | Your name, the wallpaper, Day or Night, the language, and even a pretend clock. |
 
 ## 📱 Pictures
@@ -81,7 +81,7 @@ For kids of age 5 to 9. Built by a parent for two very demanding beta testers.
 |---|---|---|---|
 | <img src="docs/screenshots/apps/kidflix.jpg" alt="Kidflix: a dark film list with Frozen Chicken, Finding Memo, The Lion Bling, and Toy Snory" width="190"> | <img src="docs/screenshots/apps/snackdash.jpg" alt="SnackDash: how hungry are you, from Kinda hungry to FEED ME NOW" width="190"> | <img src="docs/screenshots/apps/sillyskies.jpg" alt="SillySkies: Glitter Snow, 14 degrees Sparkles, feels like a craft store exploded" width="190"> | <img src="docs/screenshots/apps/soundboard.jpg" alt="Sounds: 16 colorful buttons, the first one is Fart" width="190"> |
 | **Pebbles** | **Pocket Pal** | **Kidstagram** | **Zoomer** |
-| <img src="docs/screenshots/apps/pebbles.jpg" alt="Pebbles: a small gray rock, happiness content, neediness zero" width="190"> | <img src="docs/screenshots/apps/pocketpal.jpg" alt="Pocket Pal: a 3D corgi named Biscuit raises its paws on green grass" width="190"> | <img src="docs/screenshots/apps/kidstagram.jpg" alt="Kidstagram: a drawing of a rocket and a planet with 47 likes" width="190"> | <img src="docs/screenshots/apps/zoomer.jpg" alt="Zoomer: where to, tiny boss? Pillow Fort Plaza, Cookie Corner, Teddy Bear Hospital" width="190"> |
+| <img src="docs/screenshots/apps/pebbles.jpg" alt="Pebbles: a painted pet rock with a leaf, a top hat, and a bow tie thinks Fancy! next to its bed box in a meadow" width="190"> | <img src="docs/screenshots/apps/pocketpal.jpg" alt="Pocket Pal: a 3D corgi named Biscuit raises its paws on green grass" width="190"> | <img src="docs/screenshots/apps/kidstagram.jpg" alt="Kidstagram: a drawing of a rocket and a planet with 47 likes" width="190"> | <img src="docs/screenshots/apps/zoomer.jpg" alt="Zoomer: where to, tiny boss? Pillow Fort Plaza, Cookie Corner, Teddy Bear Hospital" width="190"> |
 
 It fits the device it runs on:
 
