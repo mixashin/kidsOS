@@ -205,8 +205,13 @@ var PocketPalApp = (() => {
     const w = container.clientWidth;
     const h = container.clientHeight;
 
-    // Renderer
-    ui.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    // Renderer. No WebGL: a note in place of the pet
+    try {
+      ui.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    } catch (err) {
+      container.innerHTML = failHTML();
+      return false;
+    }
     ui.renderer.setSize(w, h);
     ui.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     ui.renderer.shadowMap.enabled = true;
@@ -360,11 +365,13 @@ var PocketPalApp = (() => {
     if (!clip) return false;
 
     const action = ui.mixer.clipAction(clip);
-    if (currentGLBAction && currentGLBAction !== action) {
-      currentGLBAction.fadeOut(0.3);
-    }
-    action.reset().fadeIn(0.3).play();
+    const same = action === currentGLBAction;
     if (ui.bowl) ui.bowl.visible = name === 'eat';
+    // The loop that plays goes on. A new start of the same clip has no fade: a fade in starts at the rest pose.
+    if (same && action.isRunning() && !ONCE_CLIPS.includes(name)) return true;
+    if (currentGLBAction && !same) currentGLBAction.fadeOut(0.3);
+    if (same) action.reset().play();
+    else action.reset().fadeIn(0.3).play();
     // One-shot animations: clamp on finish
     if (ONCE_CLIPS.includes(name)) {
       action.setLoop(THREE.LoopOnce);
@@ -734,7 +741,7 @@ var PocketPalApp = (() => {
   // 1.3 times the start distance: the feet stand at 70 percent of the height, so the pet and its bowl
   // stay between the name card and the bar. A narrow screen: farther, so the pet fits the width.
   function fitCamera() {
-    if (!ui.controls) return;
+    if (!ui.controls || !(ui.camera.aspect > 0)) return; // a window in the dock has no size
     ui.controls.minDistance = ui.controls.maxDistance = CAM_DIST * Math.max(1.3, 0.82 / ui.camera.aspect);
     ui.controls.update();
   }
@@ -914,7 +921,7 @@ var PocketPalApp = (() => {
 
   function startMiniGame(gameId) {
     const game = GAMES.find(g => g.id === gameId);
-    if (!game) return;
+    if (!game || !ui.scene) return; // no 3D view: no game
     ui.miniGame = gameId;
     mgState = { score: 0, timeLeft: 15, active: true, objects: [], game };
     playAnim('play_bounce');
@@ -1107,13 +1114,13 @@ var PocketPalApp = (() => {
   let _pointerStart = null;
 
   function onPointerDown(e) {
-    const p = e.touches ? e.touches[0] : e;
-    _pointerStart = { x: p.clientX, y: p.clientY, time: Date.now() };
+    if (!e.isPrimary) return;
+    _pointerStart = { x: e.clientX, y: e.clientY, time: Date.now() };
   }
 
   function onPointerUp(e) {
-    if (!_pointerStart) return;
-    const p = e.changedTouches ? e.changedTouches[0] : e;
+    if (!_pointerStart || !e.isPrimary) return;
+    const p = e;
     const dx = p.clientX - _pointerStart.x;
     const dy = p.clientY - _pointerStart.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
@@ -1371,12 +1378,12 @@ var PocketPalApp = (() => {
       }
       const ok = initScene(canvasWrap);
       if (ok) {
-        startRenderLoop();
-        // Attach tap listeners (pointer down/up to distinguish taps from drags)
-        ui.renderer.domElement.addEventListener('mousedown', onPointerDown);
-        ui.renderer.domElement.addEventListener('mouseup', onPointerUp);
-        ui.renderer.domElement.addEventListener('touchstart', onPointerDown, { passive: true });
-        ui.renderer.domElement.addEventListener('touchend', onPointerUp, { passive: true });
+        // In the dock (Home during the load): the return from the dock starts the drawing
+        if (!body.closest('.window').classList.contains('minimized')) startRenderLoop();
+        // Tap listeners (pointer down/up to distinguish taps from drags). Pointer events only:
+        // a touch tap also sends mouse events, and it must count one time
+        canvasWrap.addEventListener('pointerdown', onPointerDown);
+        canvasWrap.addEventListener('pointerup', onPointerUp);
         playAnim(getIdleAnimForMood());
       }
     }
@@ -1479,6 +1486,8 @@ var PocketPalApp = (() => {
     get glb() { return !!(ui.corgi && ui.corgi._isGLB); },
     get clips() { return Object.keys(ui.animations || {}); },
     get anim() { return currentGLBAction ? currentGLBAction.getClip().name : null; },
+    get animTime() { return currentGLBAction ? currentGLBAction.time : null; },
+    get animWeight() { return currentGLBAction ? currentGLBAction.getEffectiveWeight() : null; },
     get looping() { return ui.animFrame !== null; },
     get pet() { const c = ui.corgi; return c ? { x: c.position.x, y: c.position.y, z: c.position.z, scale: c.scale.x } : null; },
     get shadow() { const l = ui.scene && ui.scene.children.find(o => o.isDirectionalLight && o.castShadow); return l ? { bias: l.shadow.bias, normalBias: l.shadow.normalBias } : null; },
