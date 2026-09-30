@@ -60,6 +60,16 @@ var PocketPalApp = (() => {
   const BOWL_COLORS = { snack: 0x9a6a3a, meal: 0xb5523b, treat: 0xf2a0b8, water: 0x7cc4f0 };
   const ONCE_CLIPS = ['eat', 'shake', 'wave', 'boop', 'dizzy', 'refuse_food', 'sleep_enter'];
 
+  // Painted pictures of Astra (stage 12). The thought bubbles use the bubble pictures of Pebbles (stage 11) too.
+  const art = name => 'art/' + (name.startsWith('bubble-') ? 'pebbles/' : 'pocketpal/') + name + '.webp';
+  const PICS = {
+    snack: 'food-kibble', meal: 'food-meal', treat: 'food-pupcake', water: 'food-water',
+    soap: 'clean-soap', brush: 'clean-brush', bubble: 'play-bubbles', ball: 'play-ball', copyme: 'play-copy',
+  };
+  const MOOD_PICS = { happy: 'bubble-heart', content: 'bubble-note', meh: 'bubble-question', needy: 'bubble-exclaim', sad: 'bubble-drop' };
+  const PALETTE = [0x8ec9e8, 0xb9a6dc, 0xf7b5c4, 0xf6c85f]; // sky, lavender, blossom pink, honey
+  const CAM_DIST = Math.hypot(0.5, 3); // start distance of the camera to the middle of the pet
+
   /* ── Three.js references (loaded dynamically) ── */
   let THREE = null;
   let GLTFLoader = null;
@@ -178,11 +188,6 @@ var PocketPalApp = (() => {
     return 'sad';
   }
 
-  function getMoodEmoji() {
-    const m = getMood();
-    return { happy: '😃', content: '😊', meh: '😐', needy: '😟', sad: '😢' }[m];
-  }
-
   function getLowestNeed() {
     const stats = { hunger: state.hunger, happiness: state.happiness, cleanliness: state.cleanliness, energy: state.energy };
     let lowest = 'hunger', min = 101;
@@ -193,7 +198,7 @@ var PocketPalApp = (() => {
   /* ── Three.js Setup ── */
   function initScene(container) {
     if (!THREE) {
-      container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#999;text-align:center;padding:20px;">' + t('Pocket Pal could not load its 3D engine.') + '<br>' + t('Close the app and open it again.') + '</div>';
+      container.innerHTML = failHTML();
       return false;
     }
 
@@ -217,21 +222,21 @@ var PocketPalApp = (() => {
     // Scene
     ui.scene = new THREE.Scene();
 
-    // Camera
+    // Camera: looks at the middle of the pet a little from above
     ui.camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100);
-    ui.camera.position.set(0, 1.5, 3.5);
+    ui.camera.position.set(0, PET_HEIGHT / 2 + 0.5, 3);
 
-    // Controls
+    // Controls: a swipe turns the pet. No tilt, zoom, or pan: the painted garden behind does not move.
     if (OrbitControls) {
       ui.controls = new OrbitControls(ui.camera, ui.renderer.domElement);
-      ui.controls.target.set(0, 0.5, 0);
+      ui.controls.target.set(0, PET_HEIGHT / 2, 0);
       ui.controls.enableDamping = true;
       ui.controls.dampingFactor = 0.08;
-      ui.controls.minDistance = 2;
-      ui.controls.maxDistance = 6;
-      ui.controls.maxPolarAngle = Math.PI / 2 + 0.3;
-      ui.controls.minPolarAngle = 0.2;
+      ui.controls.enableZoom = false;
+      ui.controls.enablePan = false;
       ui.controls.update();
+      ui.controls.minPolarAngle = ui.controls.maxPolarAngle = ui.controls.getPolarAngle();
+      fitCamera();
     }
 
     // Lights
@@ -248,17 +253,12 @@ var PocketPalApp = (() => {
     fillLight.position.set(-3, 2, -2);
     ui.scene.add(fillLight);
 
-    // Ground plane
-    const groundGeo = new THREE.CircleGeometry(2.5, 32);
-    const groundMat = new THREE.MeshStandardMaterial({ color: srgb(0x88cc88), roughness: 0.9 });
-    const ground = new THREE.Mesh(groundGeo, groundMat);
+    // Ground: only the shadow shows, on the painted lawn behind the clear canvas
+    const ground = new THREE.Mesh(new THREE.CircleGeometry(2.5, 32), new THREE.ShadowMaterial({ color: srgb(0x5a4636), opacity: 0.3 }));
     ground.name = 'ground';
     ground.rotation.x = -Math.PI / 2;
     ground.receiveShadow = true;
     ui.scene.add(ground);
-
-    // Sky gradient (background)
-    ui.scene.background = new THREE.Color(0x87ceeb);
 
     // Raycaster for pet taps
     ui.raycaster = new THREE.Raycaster();
@@ -318,12 +318,6 @@ var PocketPalApp = (() => {
           playAnim(getIdleAnimForMood());
         }
 
-        // Camera looks at the middle of the pet
-        if (ui.controls) {
-          ui.controls.target.set(0, PET_HEIGHT / 2, 0);
-          ui.controls.update();
-        }
-        ui.camera.position.set(0, PET_HEIGHT / 2 + 0.5, 3);
       },
       undefined, // progress
       (err) => {
@@ -734,24 +728,36 @@ var PocketPalApp = (() => {
     ui.renderer.setSize(w, h);
     ui.camera.aspect = w / h;
     ui.camera.updateProjectionMatrix();
+    fitCamera();
+  }
+
+  // 1.3 times the start distance: the feet stand at 70 percent of the height, so the pet and its bowl
+  // stay between the name card and the bar. A narrow screen: farther, so the pet fits the width.
+  function fitCamera() {
+    if (!ui.controls) return;
+    ui.controls.minDistance = ui.controls.maxDistance = CAM_DIST * Math.max(1.3, 0.82 / ui.camera.aspect);
+    ui.controls.update();
   }
 
   /* ── Thought Bubbles ── */
-  function showThought(text) {
+  // Its own timer: ui.thoughtTimeout is the loop of the random thoughts
+  function showThought(text, picture) {
     const bubble = document.getElementById('pp-thought');
     if (!bubble) return;
-    bubble.textContent = text;
-    bubble.classList.add('pp-thought-show');
-    clearTimeout(ui.thoughtTimeout);
-    ui.thoughtTimeout = setTimeout(() => {
-      bubble.classList.remove('pp-thought-show');
-    }, 2500);
+    bubble.querySelector('img').src = art(picture || 'bubble-note');
+    bubble.querySelector('span').textContent = text;
+    bubble.hidden = false;
+    bubble.classList.remove('pp-pop');
+    void bubble.offsetWidth; // start the pop again
+    bubble.classList.add('pp-pop');
+    clearTimeout(ui.bubbleTimeout);
+    ui.bubbleTimeout = setTimeout(() => { bubble.hidden = true; }, 2500);
   }
 
   function randomThought() {
     const mood = getMood();
     const pool = thoughtsOf(mood);
-    showThought(pool[Math.floor(Math.random() * pool.length)]);
+    showThought(pool[Math.floor(Math.random() * pool.length)], MOOD_PICS[mood]);
   }
 
   /* ── Action Handlers ── */
@@ -761,7 +767,7 @@ var PocketPalApp = (() => {
     // Too full?
     if (state.hunger >= 95) {
       playAnimOnce('refuse_food');
-      showThought(t("I'm so full!") + ' 🤭');
+      showThought(t("I'm so full!"), 'bubble-drop');
       return;
     }
     state.hunger = clamp(state.hunger + food.hunger);
@@ -770,7 +776,7 @@ var PocketPalApp = (() => {
     save();
     fillBowl(food.id);
     playAnimOnce('eat', 2000, 'happy');
-    showThought(food.desc);
+    showThought(food.desc, PICS[food.id]);
     updateHUD();
     // Award coins occasionally
     if (state.totalFeeds % 5 === 0) {
@@ -785,7 +791,7 @@ var PocketPalApp = (() => {
     state.totalCleans++;
     save();
     playAnimOnce('shake', 2000, getIdleAnimForMood());
-    showThought(tool.desc);
+    showThought(tool.desc, PICS[tool.id]);
     // Add soap bubbles to scene
     addBubbleBurst();
     updateHUD();
@@ -801,7 +807,7 @@ var PocketPalApp = (() => {
       state.sleepStart = null;
       save();
       playAnimOnce('shake', 1000, getIdleAnimForMood());
-      showThought(t('Good morning!') + ' ☀️');
+      showThought(t('Good morning!'), 'bubble-sun');
       clearInterval(ui.sleepInterval);
       ui.sleepInterval = null;
     } else {
@@ -810,7 +816,7 @@ var PocketPalApp = (() => {
       state.totalSleeps++;
       save();
       playAnimOnce('sleep_enter', 1500, 'sleep');
-      showThought(t('Zzz...') + ' 💤');
+      showThought(t('Zzz...'), 'bubble-zzz');
       // Recover energy over time while window is open
       ui.sleepInterval = setInterval(() => {
         if (state.isSleeping) {
@@ -840,16 +846,16 @@ var PocketPalApp = (() => {
     if (taps.length >= 5) {
       taps = [];
       playAnimOnce('dizzy');
-      showThought(t('Whoa... dizzy!') + ' 💫');
+      showThought(t('Whoa... dizzy!'), 'think-dizzy');
     } else if (rand < 0.3) {
       playAnimOnce('boop', 1200);
-      showThought(t('Boop!') + ' 👃');
+      showThought(t('Boop!'), 'think-paw');
     } else if (rand < 0.6) {
       playAnimOnce('wave', 1500);
-      showThought(t('Hi there!') + ' 🐾');
+      showThought(t('Hi there!'), 'think-paw');
     } else {
       playAnimOnce('happy', 1500);
-      showThought(t('Yay!') + ' 💕');
+      showThought(t('Yay!'), 'bubble-heart');
     }
     state.happiness = clamp(state.happiness + 2);
     save();
@@ -863,7 +869,7 @@ var PocketPalApp = (() => {
     for (let i = 0; i < 15; i++) {
       const geo = new THREE.SphereGeometry(0.05 + Math.random() * 0.06, 8, 8);
       const mat = new THREE.MeshStandardMaterial({
-        color: new THREE.Color().setHSL(0.5 + Math.random() * 0.2, 0.6, 0.7),
+        color: srgb(PALETTE[i % 3]),
         transparent: true, opacity: 0.6, roughness: 0.1, metalness: 0.3,
       });
       const bubble = new THREE.Mesh(geo, mat);
@@ -939,9 +945,8 @@ var PocketPalApp = (() => {
   function spawnGameBubble() {
     if (!ui.scene || !mgState) return;
     const geo = new THREE.SphereGeometry(0.15 + Math.random() * 0.1, 12, 12);
-    const hue = Math.random();
     const mat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color().setHSL(hue, 0.8, 0.6),
+      color: srgb(PALETTE[Math.floor(Math.random() * PALETTE.length)]),
       transparent: true, opacity: 0.7, roughness: 0.1, metalness: 0.2,
     });
     const bubble = new THREE.Mesh(geo, mat);
@@ -963,7 +968,7 @@ var PocketPalApp = (() => {
     mgState._catches = 0;
     // Create a ball
     const geo = new THREE.SphereGeometry(0.12, 12, 12);
-    const mat = new THREE.MeshStandardMaterial({ color: 0xff4444, roughness: 0.4 });
+    const mat = new THREE.MeshStandardMaterial({ color: srgb(0xe76f51), roughness: 0.4 }); // persimmon
     const ball = new THREE.Mesh(geo, mat);
     ball.position.set(1.5, 0.12, 0);
     ball.name = 'gameBall';
@@ -1003,7 +1008,7 @@ var PocketPalApp = (() => {
     mgState._currentPose = poses[Math.floor(Math.random() * poses.length)];
     mgState._waitingForInput = true;
     playAnim(mgState._currentPose);
-    showThought(t('Copy this pose!'));
+    showThought(t('Copy this pose!'), 'play-copy');
     updateGameHUD();
   }
 
@@ -1011,10 +1016,10 @@ var PocketPalApp = (() => {
     if (!mgState || !mgState._waitingForInput) return;
     if (pose === mgState._currentPose) {
       mgState.score += 10;
-      showThought(t('Correct!') + ' 🎉');
+      showThought(t('Correct!'), 'bubble-star');
       playAnimOnce('happy', 800);
     } else {
-      showThought(t('Not quite!') + ' 😅');
+      showThought(t('Not quite!'), 'bubble-drop');
       playAnimOnce('boop', 800);
     }
     mgState._waitingForInput = false;
@@ -1050,16 +1055,15 @@ var PocketPalApp = (() => {
   }
 
   function updateGameHUD() {
-    const hud = document.getElementById('pp-game-hud');
-    if (!hud || !mgState) return;
-    let extra = '';
-    if (ui.miniGame === 'copyme' && mgState._waitingForInput) {
-      const poseEmojis = { happy: '😃', wave: '👋', boop: '👃', shake: '🐕' };
-      extra = `<div class="pp-copyme-btns">
-        ${mgState._poses.map(p => `<button class="pp-copyme-btn" onclick="window._ppCopyGuess('${p}')">${poseEmojis[p] || '❓'} ${poseName(p)}</button>`).join('')}
-      </div>`;
-    }
-    hud.innerHTML = `<span>⭐ ${mgState.score}</span><span>⏱️ ${t('{n}s', { n: mgState.timeLeft })}</span>${extra}`;
+    const score = document.getElementById('pp-score');
+    if (!score || !mgState) return;
+    score.textContent = mgState.score;
+    document.getElementById('pp-time').textContent = t('{n}s', { n: mgState.timeLeft });
+    const main = document.getElementById('pp-game-main');
+    if (main.childElementCount) return;
+    main.innerHTML = ui.miniGame === 'copyme'
+      ? `<div class="pp-poses">${mgState._poses.map(p => `<button class="pp-pose" onclick="window._ppCopyGuess('${p}')"><img src="${art('pose-' + p)}" alt=""><span>${poseName(p)}</span></button>`).join('')}</div>`
+      : `<div class="pp-note">${t('Tap the 3D objects!')}</div>`;
   }
 
   function endMiniGame() {
@@ -1088,7 +1092,7 @@ var PocketPalApp = (() => {
       OS.awardCoins(1, 'Pocket Pal', '⚽', state.name ? t('Played with {name}!', { name: state.name }) : t('Played with your pet!'));
     }
 
-    showThought(t('That was fun! Score: {n}', { n: score }) + ' ⭐');
+    showThought(t('That was fun! Score: {n}', { n: score }), 'bubble-star');
     playAnimOnce('happy', 2000, getIdleAnimForMood());
     ui.miniGame = null;
     mgState = null;
@@ -1135,7 +1139,7 @@ var PocketPalApp = (() => {
         hit.visible = false;
         mgState.score += 10;
         updateGameHUD();
-        showThought(t('Pop!') + ' 🫧');
+        showThought(t('Pop!'), 'play-bubbles');
         return;
       }
     }
@@ -1149,7 +1153,7 @@ var PocketPalApp = (() => {
         ball._velZ = (Math.random() - 0.5) * 0.06;
         mgState.score += 10;
         updateGameHUD();
-        showThought(t('Nice throw!') + ' ⚽');
+        showThought(t('Nice throw!'), 'play-ball');
         return;
       }
     }
@@ -1175,9 +1179,10 @@ var PocketPalApp = (() => {
       return;
     }
 
-    const canvas = body.querySelector('.pp-canvas-wrap');
     const overlay = body.querySelector('.pp-overlay');
     if (!overlay) return;
+    // A game: the pet must stay free, so the bar and the meters give their place to the game
+    body.querySelector('.pp-wrap').classList.toggle('pp-gaming', !!ui.miniGame);
 
     if (state.isSleeping && ui.screen === 'home') {
       overlay.innerHTML = renderSleepOverlay();
@@ -1186,6 +1191,7 @@ var PocketPalApp = (() => {
     } else if (ui.screen === 'play') {
       if (ui.miniGame) {
         overlay.innerHTML = renderMiniGameOverlay();
+        updateGameHUD();
       } else {
         overlay.innerHTML = renderPlayMenu();
       }
@@ -1196,129 +1202,95 @@ var PocketPalApp = (() => {
     }
   }
 
+  const sceneHTML = () => `<img class="pp-scene pp-scene-day" src="${art('garden-day')}" alt=""><img class="pp-scene pp-scene-night" src="${art('garden-night')}" alt="">`;
+  const failHTML = () => `<div class="pp-note pp-fail">${t('Pocket Pal could not load its 3D engine.')}<span>${t('Close the app and open it again.')}</span></div>`;
+
   function renderNamePicker(body) {
     body.innerHTML = `
       <div class="pp-name-picker">
-        <div class="pp-name-title">🐶 ${t('Name Your Corgi!')}</div>
-        <div class="pp-name-subtitle">${t('Pick a name for your new best friend')}</div>
-        <div class="pp-name-grid">
-          ${t.list('pocketpal.names', PET_NAMES).map(n => `<button class="pp-name-btn" onclick="window._ppName('${n}')">${n}</button>`).join('')}
-        </div>
-        <div class="pp-name-custom">
-          <input type="text" id="pp-custom-name" class="pp-name-input" placeholder="${t('Or type a custom name...')}" maxlength="14">
-          <button class="pp-name-go" onclick="window._ppCustomName()">${t('Go!')}</button>
+        ${sceneHTML()}
+        <div class="pp-name-card">
+          <img class="pp-hello" src="${art('corgi-hello')}" alt="">
+          <div class="pp-name-title">${t('Name Your Corgi!')}</div>
+          <div class="pp-name-subtitle">${t('Pick a name for your new best friend')}</div>
+          <div class="pp-name-grid">
+            ${t.list('pocketpal.names', PET_NAMES).map(n => `<button class="pp-name-btn" onclick="window._ppName('${n}')">${n}</button>`).join('')}
+          </div>
+          <div class="pp-name-custom">
+            <input type="text" id="pp-custom-name" class="pp-name-input" placeholder="${t('Or type a custom name...')}" maxlength="14">
+            <button class="pp-name-go" onclick="window._ppCustomName()">${t('Go!')}</button>
+          </div>
         </div>
       </div>
     `;
   }
 
   function getMainHTML() {
+    const stat = (fill, picture, value) => `<div class="pp-stat"><img src="${art(picture)}" alt=""><div class="pp-stat-bar"><div class="pp-stat-fill ${fill}" style="width:${value}%"></div></div></div>`;
+    const button = (screen, picture, label) => `<button class="pp-btn pp-btn-${screen}" onclick="window._ppGo('${screen}')"><img src="${art(picture)}" alt=""><span>${label}</span></button>`;
     return `
-      <div class="pp-wrap">
-        <div class="pp-hud" id="pp-hud">
-          <div class="pp-pet-name">${OS.esc(state.name || t('Corgi'))} ${getMoodEmoji()}</div>
+      <div class="pp-wrap${state.isSleeping ? ' pp-night' : ''}">
+        ${sceneHTML()}
+        <div class="pp-canvas-wrap" id="pp-canvas"></div>
+        <div class="pp-top" id="pp-hud">
+          <div class="pp-tag"><img class="pp-mood" src="${art('mood-' + getMood())}" alt=""><span class="pp-pet-name">${OS.esc(state.name || t('Corgi'))}</span></div>
           <div class="pp-stats">
-            <div class="pp-stat">
-              <span class="pp-stat-icon">🍖</span>
-              <div class="pp-stat-bar"><div class="pp-stat-fill pp-fill-hunger" style="width:${state.hunger}%"></div></div>
-            </div>
-            <div class="pp-stat">
-              <span class="pp-stat-icon">😊</span>
-              <div class="pp-stat-bar"><div class="pp-stat-fill pp-fill-happy" style="width:${state.happiness}%"></div></div>
-            </div>
-            <div class="pp-stat">
-              <span class="pp-stat-icon">✨</span>
-              <div class="pp-stat-bar"><div class="pp-stat-fill pp-fill-clean" style="width:${state.cleanliness}%"></div></div>
-            </div>
-            <div class="pp-stat">
-              <span class="pp-stat-icon">💤</span>
-              <div class="pp-stat-bar"><div class="pp-stat-fill pp-fill-energy" style="width:${state.energy}%"></div></div>
-            </div>
+            ${stat('pp-fill-hunger', 'btn-feed', state.hunger)}
+            ${stat('pp-fill-happy', 'bubble-heart', state.happiness)}
+            ${stat('pp-fill-clean', 'bubble-sparkle', state.cleanliness)}
+            ${stat('pp-fill-energy', 'btn-sleep', state.energy)}
           </div>
         </div>
-        <div class="pp-canvas-wrap" id="pp-canvas"></div>
-        <div class="pp-thought" id="pp-thought"></div>
+        <div class="pp-thought" id="pp-thought" hidden><img alt=""><span></span></div>
         <div class="pp-overlay" id="pp-overlay"></div>
-        <div class="pp-game-hud pp-hidden" id="pp-game-hud"></div>
-        <div class="pp-controls" id="pp-controls">
-          <button class="pp-btn pp-btn-feed" onclick="window._ppGo('feed')">🍖<span>${t('Feed')}</span></button>
-          <button class="pp-btn pp-btn-play" onclick="window._ppGo('play')">⚽<span>${t('Play')}</span></button>
-          <button class="pp-btn pp-btn-clean" onclick="window._ppGo('clean')">🧼<span>${t('Clean')}</span></button>
-          <button class="pp-btn pp-btn-sleep" onclick="window._ppGo('sleep')">💤<span>${state.isSleeping ? t('Wake') : t('Sleep')}</span></button>
+        <nav class="pp-controls" id="pp-controls">
+          ${button('feed', 'btn-feed', t('Feed'))}
+          ${button('play', 'btn-play', t('Play'))}
+          ${button('clean', 'btn-clean', t('Clean'))}
+          ${button('sleep', state.isSleeping ? 'btn-wake' : 'btn-sleep', state.isSleeping ? t('Wake') : t('Sleep'))}
+        </nav>
+      </div>
+    `;
+  }
+
+  // A paper panel with picture choices and a round close button
+  function panelHTML(title, items, act, desc) {
+    return `
+      <div class="pp-panel">
+        <div class="pp-panel-head"><h3>${title}</h3><button class="pp-close" onclick="window._ppGo('home')" aria-label="${t('Back')}">✕</button></div>
+        <div class="pp-choices">
+          ${items.map(it => `
+            <button class="pp-choice" onclick="window.${act}('${it.id}')">
+              <img src="${art(PICS[it.id])}" alt="">
+              <span class="pp-choice-name">${it.name}</span>
+              <span class="pp-choice-desc">${desc(it)}</span>
+            </button>
+          `).join('')}
         </div>
       </div>
     `;
   }
 
   function renderFeedTray() {
-    return `
-      <div class="pp-tray">
-        <div class="pp-tray-title">🍖 ${t('Feed {name}', { name: OS.esc(state.name) })}</div>
-        <div class="pp-tray-grid">
-          ${t.list('pocketpal.foods', FOODS).map(f => `
-            <button class="pp-tray-item" onclick="window._ppFeed('${f.id}')">
-              <span class="pp-tray-emoji">${f.emoji}</span>
-              <span class="pp-tray-name">${f.name}</span>
-              <span class="pp-tray-desc">${t('+{n} hunger', { n: f.hunger })}</span>
-            </button>
-          `).join('')}
-        </div>
-        <button class="pp-tray-back" onclick="window._ppGo('home')">← ${t('Back')}</button>
-      </div>
-    `;
+    return panelHTML(t('Feed {name}', { name: OS.esc(state.name) }), t.list('pocketpal.foods', FOODS), '_ppFeed', f => t('+{n} hunger', { n: f.hunger }));
   }
 
   function renderPlayMenu() {
-    return `
-      <div class="pp-tray">
-        <div class="pp-tray-title">⚽ ${t('Play with {name}', { name: OS.esc(state.name) })}</div>
-        <div class="pp-tray-grid">
-          ${t.list('pocketpal.games', GAMES).map(g => `
-            <button class="pp-tray-item" onclick="window._ppPlay('${g.id}')">
-              <span class="pp-tray-emoji">${g.emoji}</span>
-              <span class="pp-tray-name">${g.name}</span>
-              <span class="pp-tray-desc">${g.desc}</span>
-            </button>
-          `).join('')}
-        </div>
-        <button class="pp-tray-back" onclick="window._ppGo('home')">← ${t('Back')}</button>
-      </div>
-    `;
+    return panelHTML(t('Play with {name}', { name: OS.esc(state.name) }), t.list('pocketpal.games', GAMES), '_ppPlay', g => g.desc);
   }
 
   function renderCleanTray() {
-    return `
-      <div class="pp-tray">
-        <div class="pp-tray-title">🧼 ${t('Clean {name}', { name: OS.esc(state.name) })}</div>
-        <div class="pp-tray-grid">
-          ${t.list('pocketpal.tools', CLEAN_TOOLS).map(c => `
-            <button class="pp-tray-item" onclick="window._ppClean('${c.id}')">
-              <span class="pp-tray-emoji">${c.emoji}</span>
-              <span class="pp-tray-name">${c.name}</span>
-              <span class="pp-tray-desc">${t('+{n} clean', { n: c.clean })}</span>
-            </button>
-          `).join('')}
-        </div>
-        <button class="pp-tray-back" onclick="window._ppGo('home')">← ${t('Back')}</button>
-      </div>
-    `;
+    return panelHTML(t('Clean {name}', { name: OS.esc(state.name) }), t.list('pocketpal.tools', CLEAN_TOOLS), '_ppClean', c => t('+{n} clean', { n: c.clean }));
   }
 
   function renderSleepOverlay() {
-    return `
-      <div class="pp-sleep-overlay">
-        <div class="pp-sleep-stars">
-          ${'⭐'.repeat(5)} 🌙 ${'⭐'.repeat(5)}
-        </div>
-        <div class="pp-sleep-text">💤 ${t('{name} is sleeping...', { name: OS.esc(state.name) })} 💤</div>
-        <div class="pp-sleep-hint">${t('Tap to wake up')}</div>
-      </div>
-    `;
+    return `<div class="pp-note">${t('{name} is sleeping...', { name: OS.esc(state.name) })}<span>${t('Tap to wake up')}</span></div>`;
   }
 
   function renderMiniGameOverlay() {
-    return `<div class="pp-game-overlay">
-      <div class="pp-game-info">${t('Tap the 3D objects!')}</div>
+    return `<div class="pp-game">
+      <div class="pp-chips"><span class="pp-chip"><img src="${art('bubble-star')}" alt=""><b id="pp-score">0</b></span><span class="pp-chip" id="pp-time"></span></div>
+      <div id="pp-game-main"></div>
     </div>`;
   }
 
@@ -1327,7 +1299,11 @@ var PocketPalApp = (() => {
     const hud = document.getElementById('pp-hud');
     if (!hud) return;
     const nameEl = hud.querySelector('.pp-pet-name');
-    if (nameEl) nameEl.textContent = (state.name || t('Corgi')) + ' ' + getMoodEmoji();
+    if (nameEl) nameEl.textContent = state.name || t('Corgi');
+    const mood = hud.querySelector('.pp-mood');
+    if (mood) mood.src = art('mood-' + getMood());
+    const wrap = hud.closest('.pp-wrap');
+    if (wrap) wrap.classList.toggle('pp-night', !!state.isSleeping);
     // Update stat bars
     const fills = hud.querySelectorAll('.pp-stat-fill');
     if (fills.length >= 4) {
@@ -1337,8 +1313,11 @@ var PocketPalApp = (() => {
       fills[3].style.width = state.energy + '%';
     }
     // Update sleep button text
-    const sleepBtn = document.querySelector('.pp-btn-sleep span');
-    if (sleepBtn) sleepBtn.textContent = state.isSleeping ? t('Wake') : t('Sleep');
+    const sleepBtn = document.querySelector('.pp-btn-sleep');
+    if (sleepBtn) {
+      sleepBtn.querySelector('span').textContent = state.isSleeping ? t('Wake') : t('Sleep');
+      sleepBtn.querySelector('img').src = art(state.isSleeping ? 'btn-wake' : 'btn-sleep');
+    }
   }
 
   /* ── Window Handlers (global) ── */
@@ -1387,7 +1366,7 @@ var PocketPalApp = (() => {
       const loaded = await loadThreeJS();
       if (!canvasWrap.isConnected) return; // the window closed during the load
       if (!loaded) {
-        canvasWrap.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#999;text-align:center;padding:20px;">' + t('Pocket Pal could not load its 3D engine.') + '<br>' + t('Close the app and open it again.') + '</div>';
+        canvasWrap.innerHTML = failHTML();
         return;
       }
       const ok = initScene(canvasWrap);
@@ -1421,6 +1400,7 @@ var PocketPalApp = (() => {
     clearInterval(ui.decayInterval);
     clearInterval(ui.sleepInterval);
     clearTimeout(ui.thoughtTimeout);
+    clearTimeout(ui.bubbleTimeout);
     if (ui.resizeObs) ui.resizeObs.disconnect();
     if (mgState) {
       clearInterval(mgState._timer);
@@ -1466,6 +1446,7 @@ var PocketPalApp = (() => {
         icon: '🐶',
         width: 420,
         height: 560,
+        stage: false, // fills the screen in touch mode: the garden and the 3D view fit any shape
         content: '<div class="pp-loading">' + t('Loading Pocket Pal...') + '</div>',
       };
     },
@@ -1501,7 +1482,11 @@ var PocketPalApp = (() => {
     get looping() { return ui.animFrame !== null; },
     get pet() { const c = ui.corgi; return c ? { x: c.position.x, y: c.position.y, z: c.position.z, scale: c.scale.x } : null; },
     get shadow() { const l = ui.scene && ui.scene.children.find(o => o.isDirectionalLight && o.castShadow); return l ? { bias: l.shadow.bias, normalBias: l.shadow.normalBias } : null; },
-    get ground() { const g = ui.scene && ui.scene.getObjectByName('ground'); return g ? g.material.color.getHexString() : null; },
+    get ground() { const g = ui.scene && ui.scene.getObjectByName('ground'); return g ? g.material.type + ' ' + g.material.color.getHexString() : null; },
+    get sky() { return ui.scene && ui.scene.background ? ui.scene.background.getHexString() : null; },
+    get turn() { const c = ui.controls; return c ? { tilt: c.maxPolarAngle - c.minPolarAngle, zoom: c.enableZoom, pan: c.enablePan } : null; },
+    get camDist() { return ui.controls ? ui.camera.position.distanceTo(ui.controls.target) : null; },
+    endGame() { endMiniGame(); },
     get bowl() { return ui.bowl && ui.bowl.visible ? ui.bowl.userData.hex.toString(16).padStart(6, '0') : null; },
     get bowlAt() { return ui.bowl ? { x: ui.bowl.position.x, y: ui.bowl.position.y, z: ui.bowl.position.z } : null; },
   };
