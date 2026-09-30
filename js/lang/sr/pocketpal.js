@@ -38,6 +38,7 @@ Lang.add('sr', 'pocketpal', {
   'Zzz...': 'Ззз...',
   'Boop!': 'Буп!',
   'Hi there!': 'Здраво!',
+  'Whoa... dizzy!': 'Ууу... врти ми се!',
   'Yay!': 'Јупи!',
 
   // Games

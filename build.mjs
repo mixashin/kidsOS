@@ -21,7 +21,7 @@ const OUT = resolve(ROOT, arg('out') || 'dist');
 // The site. Every other file in the repo stays out of the deployment.
 const SITE = ['index.html', 'shell.css', 'style.css', 'manifest.json', 'js', 'icons', 'art', 'fonts', 'vendor', 'media'];
 const EXCLUDE = [];
-// Larger files are cached on first use, not downloaded at install
+// Larger files and 3D models are cached on first use, not downloaded at install
 const LAZY_BYTES = 2 * 1024 * 1024;
 
 const sha = data => createHash('sha256').update(data).digest('hex');
@@ -68,7 +68,7 @@ const digest = createHash('sha256');
 let precacheBytes = 0;
 for (const path of files) {
   const data = readFileSync(join(OUT, path));
-  if (data.length > LAZY_BYTES) {
+  if (data.length > LAZY_BYTES || path.endsWith('.glb')) {
     media[path] = sha(data).slice(0, 16);
   } else {
     precache.push(path);

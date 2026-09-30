@@ -1,5 +1,5 @@
 /* ===== Pocket Pal 3D — Virtual Pet Corgi ===== */
-(() => {
+var PocketPalApp = (() => {
   const t = OS.texts('pocketpal');
   const STORE_KEY = 'kidsOS_pocketpal';
 
@@ -52,6 +52,14 @@
 
   const DECAY_PER_HOUR = { hunger: 3, happiness: 2, cleanliness: 1, energy: 2 };
 
+  // The corgi of Astra (stage 8): 0.5 m tall, origin on the ground between the paws, +Z forward.
+  // Box3 does not fit it: the morph targets make the box larger than the pet.
+  const MODEL_HEIGHT = 0.5;
+  const PET_HEIGHT = 1.4; // scene units
+  const BOWL_Z = 0.28;    // meters of the model: the mouth reaches the bowl here in the clip eat
+  const BOWL_COLORS = { snack: 0x9a6a3a, meal: 0xb5523b, treat: 0xf2a0b8, water: 0x7cc4f0 };
+  const ONCE_CLIPS = ['eat', 'shake', 'wave', 'boop', 'dizzy', 'refuse_food', 'sleep_enter'];
+
   /* ── Three.js references (loaded dynamically) ── */
   let THREE = null;
   let GLTFLoader = null;
@@ -74,6 +82,9 @@
       return false;
     }
   }
+
+  // three r149 reads a hex color as linear, and the output encodes it to sRGB: convert it first
+  const srgb = hex => new THREE.Color(hex).convertSRGBToLinear();
 
   /* ── State ── */
   let state = null;
@@ -230,6 +241,8 @@
     dirLight.position.set(3, 5, 4);
     dirLight.castShadow = true;
     dirLight.shadow.mapSize.set(512, 512);
+    dirLight.shadow.normalBias = 0.03; // no thin bands of shadow on the pet
+    dirLight.shadow.bias = -0.0005;
     ui.scene.add(dirLight);
     const fillLight = new THREE.DirectionalLight(0xaaccff, 0.3);
     fillLight.position.set(-3, 2, -2);
@@ -237,8 +250,9 @@
 
     // Ground plane
     const groundGeo = new THREE.CircleGeometry(2.5, 32);
-    const groundMat = new THREE.MeshStandardMaterial({ color: 0x88cc88, roughness: 0.9 });
+    const groundMat = new THREE.MeshStandardMaterial({ color: srgb(0x88cc88), roughness: 0.9 });
     const ground = new THREE.Mesh(groundGeo, groundMat);
+    ground.name = 'ground';
     ground.rotation.x = -Math.PI / 2;
     ground.receiveShadow = true;
     ui.scene.add(ground);
@@ -270,27 +284,15 @@
       buildProceduralCorgi();
       return;
     }
+    const scene = ui.scene;
     const loader = new GLTFLoader();
     loader.load(
       'media/corgi.glb',
       (gltf) => {
+        if (ui.scene !== scene) return; // the window closed during the load
         const model = gltf.scene;
         model.name = 'corgi';
-
-        // Auto-scale: normalize model to roughly fit our scene
-        const box = new THREE.Box3().setFromObject(model);
-        const size = box.getSize(new THREE.Vector3());
-        const maxDim = Math.max(size.x, size.y, size.z);
-        const targetHeight = 1.4; // desired height in scene units
-        const scale = targetHeight / maxDim;
-        model.scale.setScalar(scale);
-
-        // Center model on ground
-        const scaledBox = new THREE.Box3().setFromObject(model);
-        const center = scaledBox.getCenter(new THREE.Vector3());
-        model.position.x = -center.x;
-        model.position.z = -center.z;
-        model.position.y = -scaledBox.min.y; // sit on ground plane
+        model.scale.setScalar(PET_HEIGHT / MODEL_HEIGHT);
 
         // Enable shadows on all meshes
         model.traverse(child => {
@@ -300,7 +302,9 @@
           }
         });
 
-        ui.scene.add(model);
+        ui.bowl = makeBowl();
+        model.add(ui.bowl);
+        scene.add(model);
         ui.corgi = model;
         ui.corgi._isGLB = true;
 
@@ -311,25 +315,46 @@
           gltf.animations.forEach(clip => {
             ui.animations[clip.name.toLowerCase()] = clip;
           });
-          console.log('Pocket Pal: Loaded animations:', Object.keys(ui.animations).join(', '));
-          // Play idle if available
-          playGLBAnimation('idle');
+          playAnim(getIdleAnimForMood());
         }
 
-        // Adjust camera to look at model center
-        const modelCenter = new THREE.Box3().setFromObject(model).getCenter(new THREE.Vector3());
+        // Camera looks at the middle of the pet
         if (ui.controls) {
-          ui.controls.target.copy(modelCenter);
+          ui.controls.target.set(0, PET_HEIGHT / 2, 0);
           ui.controls.update();
         }
-        ui.camera.position.set(0, modelCenter.y + 0.5, 3);
+        ui.camera.position.set(0, PET_HEIGHT / 2 + 0.5, 3);
       },
       undefined, // progress
       (err) => {
+        if (ui.scene !== scene) return;
         console.warn('Pocket Pal: Could not load corgi.glb, using procedural corgi:', err);
         buildProceduralCorgi();
       }
     );
+  }
+
+  // Bowl for the clip eat, in meters of the model: the scale of the model applies to it
+  function makeBowl() {
+    const bowl = new THREE.Group();
+    const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.055, 0.04, 24),
+      new THREE.MeshStandardMaterial({ color: srgb(0xf6d6a8), roughness: 0.6 }));
+    cup.position.y = 0.02;
+    cup.castShadow = true;
+    const food = new THREE.Mesh(new THREE.CircleGeometry(0.06, 24), new THREE.MeshStandardMaterial({ roughness: 0.8 }));
+    food.rotation.x = -Math.PI / 2;
+    food.position.y = 0.041;
+    bowl.add(cup, food);
+    bowl.position.z = BOWL_Z;
+    bowl.visible = false;
+    bowl.userData.food = food.material;
+    return bowl;
+  }
+
+  function fillBowl(foodId) {
+    if (!ui.bowl) return;
+    ui.bowl.userData.hex = BOWL_COLORS[foodId];
+    ui.bowl.userData.food.color.copy(srgb(ui.bowl.userData.hex));
   }
 
   /* ── GLB Animation Playback ── */
@@ -345,9 +370,9 @@
       currentGLBAction.fadeOut(0.3);
     }
     action.reset().fadeIn(0.3).play();
+    if (ui.bowl) ui.bowl.visible = name === 'eat';
     // One-shot animations: clamp on finish
-    const onceAnims = ['eat', 'shake', 'wave', 'boop', 'dizzy', 'refuse_food', 'sleep_enter'];
-    if (onceAnims.includes(name)) {
+    if (ONCE_CLIPS.includes(name)) {
       action.setLoop(THREE.LoopOnce);
       action.clampWhenFinished = true;
     } else {
@@ -633,7 +658,12 @@
     });
   }
 
+  // Return to the mood clip after a one-shot. One timer: a new action cancels the old one.
+  let animTimer = null;
+
   function playAnim(name) {
+    clearTimeout(animTimer);
+    animTimer = null;
     // Try GLB animation first
     if (ui.corgi && ui.corgi._isGLB) {
       playGLBAnimation(name);
@@ -644,17 +674,18 @@
   }
 
   function playAnimOnce(name, duration, thenAnim) {
+    clearTimeout(animTimer);
+    const back = () => { animTimer = null; playAnim(thenAnim || getIdleAnimForMood()); };
     if (ui.corgi && ui.corgi._isGLB) {
       playGLBAnimation(name);
-      setTimeout(() => playGLBAnimation(thenAnim || getIdleAnimForMood()), duration || 1500);
-      return;
-    }
-    resetCorgiPose();
-    currentProceduralAnim = name;
-    setTimeout(() => {
+      // A one-shot clip plays to its end
+      const clip = ui.animations[name];
+      if (clip && ONCE_CLIPS.includes(name)) duration = clip.duration * 1000;
+    } else {
       resetCorgiPose();
-      currentProceduralAnim = thenAnim || getIdleAnimForMood();
-    }, (duration || 1500));
+      currentProceduralAnim = name;
+    }
+    animTimer = setTimeout(back, duration || 1500);
   }
 
   function getIdleAnimForMood() {
@@ -729,7 +760,7 @@
     if (!food) return;
     // Too full?
     if (state.hunger >= 95) {
-      playAnimOnce('boop', 1200);
+      playAnimOnce('refuse_food');
       showThought(t("I'm so full!") + ' 🤭');
       return;
     }
@@ -737,6 +768,7 @@
     state.happiness = clamp(state.happiness + food.happy);
     state.totalFeeds++;
     save();
+    fillBowl(food.id);
     playAnimOnce('eat', 2000, 'happy');
     showThought(food.desc);
     updateHUD();
@@ -777,7 +809,7 @@
       state.sleepStart = Date.now();
       state.totalSleeps++;
       save();
-      playAnim('sleep');
+      playAnimOnce('sleep_enter', 1500, 'sleep');
       showThought(t('Zzz...') + ' 💤');
       // Recover energy over time while window is open
       ui.sleepInterval = setInterval(() => {
@@ -792,14 +824,24 @@
     renderScreen();
   }
 
+  let taps = []; // times of the last taps
+
   function doPetTap() {
     if (state.isSleeping) {
       // Wake up on tap
       doSleep();
       return;
     }
+    // 5 fast taps: the pet gets dizzy
+    const now = Date.now();
+    taps = taps.filter(time => now - time < 3000);
+    taps.push(now);
     const rand = Math.random();
-    if (rand < 0.3) {
+    if (taps.length >= 5) {
+      taps = [];
+      playAnimOnce('dizzy');
+      showThought(t('Whoa... dizzy!') + ' 💫');
+    } else if (rand < 0.3) {
       playAnimOnce('boop', 1200);
       showThought(t('Boop!') + ' 👃');
     } else if (rand < 0.6) {
@@ -1343,6 +1385,7 @@
     if (canvasWrap) {
       // Load Three.js dynamically
       const loaded = await loadThreeJS();
+      if (!canvasWrap.isConnected) return; // the window closed during the load
       if (!loaded) {
         canvasWrap.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#999;text-align:center;padding:20px;">' + t('Pocket Pal could not load its 3D engine.') + '<br>' + t('Close the app and open it again.') + '</div>';
         return;
@@ -1363,7 +1406,7 @@
       applyDecay();
       save();
       updateHUD();
-      playAnim(getIdleAnimForMood());
+      if (!animTimer) playAnim(getIdleAnimForMood());
     }, 60000); // every minute
     // Random thoughts
     ui.thoughtTimeout = setTimeout(function think() {
@@ -1407,6 +1450,10 @@
     mgState = null;
     currentProceduralAnim = 'idle';
     animTime = 0;
+    currentGLBAction = null;
+    clearTimeout(animTimer);
+    animTimer = null;
+    taps = [];
   }
 
   /* ── App Registration ── */
@@ -1436,5 +1483,26 @@
       if (state) save();
       cleanup();
     },
+    // Home button: no drawing in the dock
+    onMinimize() { stopRenderLoop(); },
+    onRestore() {
+      if (!ui.renderer) return;
+      ui.clock.getDelta(); // no jump of the clips by the time in the dock
+      startRenderLoop();
+    },
   });
+
+  // For the tests
+  return {
+    get state() { return state; },
+    get glb() { return !!(ui.corgi && ui.corgi._isGLB); },
+    get clips() { return Object.keys(ui.animations || {}); },
+    get anim() { return currentGLBAction ? currentGLBAction.getClip().name : null; },
+    get looping() { return ui.animFrame !== null; },
+    get pet() { const c = ui.corgi; return c ? { x: c.position.x, y: c.position.y, z: c.position.z, scale: c.scale.x } : null; },
+    get shadow() { const l = ui.scene && ui.scene.children.find(o => o.isDirectionalLight && o.castShadow); return l ? { bias: l.shadow.bias, normalBias: l.shadow.normalBias } : null; },
+    get ground() { const g = ui.scene && ui.scene.getObjectByName('ground'); return g ? g.material.color.getHexString() : null; },
+    get bowl() { return ui.bowl && ui.bowl.visible ? ui.bowl.userData.hex.toString(16).padStart(6, '0') : null; },
+    get bowlAt() { return ui.bowl ? { x: ui.bowl.position.x, y: ui.bowl.position.y, z: ui.bowl.position.z } : null; },
+  };
 })();
