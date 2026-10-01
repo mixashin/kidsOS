@@ -254,6 +254,7 @@ const QR = (() => {
       if (2 * errors <= n) { prev = loc; errors = n + 1 - errors; last = d; gap = 1; } else gap++;
       loc = next;
     }
+    loc = Array.from(loc, c => c || 0); // no holes: reduceRight and map skip a hole, and a hole cuts a power of x
     if (2 * errors > count) return false;
     // Values of the errors (Forney)
     const at = (poly, x) => poly.reduceRight((v, c) => times(v, x) ^ (c || 0), 0);
